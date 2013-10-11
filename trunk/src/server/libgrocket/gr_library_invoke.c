@@ -4,7 +4,7 @@
  * @date 2013/10/08
  * @version $Revision$ 
  * @brief   
- * Revision History 大事件记
+ * Revision History 澶т簨浠惰
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -19,7 +19,7 @@
 
 int gr_invoke_test()
 {
-    // 测试
+    // 娴嬭瘯
     {
         char    buf[ 32 ] = "+=";
         char *  stack[ 2 ];
@@ -797,7 +797,7 @@ void gr_invoke_void(
 static inline
 void push_stack( char * stk, size_t * stk_len, void * data, size_t data_len )
 {
-    //TODO: 在这儿做padding
+    //TODO: 鍦ㄨ繖鍎垮仛padding
 
     memcpy( & stk[ * stk_len ], data, data_len );
     * stk_len += data_len;

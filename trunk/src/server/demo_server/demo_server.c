@@ -3,25 +3,25 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/29
  * @version $Revision$ 
- * @brief   ���������demo����������
- * Revision History ���¼���
+ * @brief   服务器框架demo服务器程序
+ * Revision History 大事件记
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-09-29    Created.
  **/
 
-// �ǳ���ϸ�ķ�������ܽӿ�ʹ�õ�ϸ����� demo_module.c
-// ������ʾ�����дһ�����������̡�
+// 非常详细的服务器框架接口使用的细节详见 demo_module.c
+// 本程序示范如何写一个服务器进程。
 
-// Ҫ�Լ��ṩһ����������ִ�г������ֳ���������һЩ�Ƚϸ��ӵ�Ӧ�ó���������Ǩ�Ƶȡ�
-// ʹ���߿��Գ�ʼ�����Լ����¶�֮���ٳ�ʼ�����������������������Ķ�����һ����������
-// �̻򵥶��Ľ�����ȥ��������ֻ����ʾһ����δ�ɸ�Ŀ�ꡣ
-// ��α���������� libgrocket.h ͷ�ļ���
+// 要自己提供一个服务器可执行程序，这种场景适用于一些比较复杂的应用场景，比如迁移等。
+// 使用者可以初始化完自己的事儿之后再初始化服务器，甚至启服务器的动作在一个单独的线
+// 程或单独的进程里去做。这里只是演示一下如何达成该目标。
+// 这次必须包含的是 libgrocket.h 头文件。
 #include "libgrocket.h"
 
-// ��α���Ҫ���Ӿ�̬����
-// Windows�µľ�̬������
+// 这次必须要连接静态库了
+// Windows下的静态库依赖
 #if defined(WIN32)
 
     #if defined(_DEBUG)
@@ -37,9 +37,9 @@
     #endif
 #endif
 
-// ע�⣺������ֱ��ʹ����demo_module.c Դ�ļ������Ը�������д��չ�ķ�������ԭ�ⲻ����,
-// Ψһ���������չ�Ĵ����������ڿ�ִ���ļ��������װ�ض�̬���ˡ�
-// ��ֻ��Ҫ�����ｫ demo_module.c �ļ��еĺ�������һ�¡�
+// 注意：本工程直接使用了demo_module.c 源文件，所以给服务器写扩展的方法还是原封不动的,
+// 唯一区别就是扩展的处理函数就在可执行文件里，不用再装载动态库了。
+// 我只需要在这里将 demo_module.c 文件中的函数声明一下。
 
 extern int gr_init(
     gr_process_type_t   proc_type,
@@ -83,13 +83,13 @@ extern void gr_proc_http(
     gr_http_ctxt_t *    http
 );
 
-// ������д main ����
+// 接下来写 main 函数
 int main( int argc, char ** argv )
 {
-    // ������Ѿ���� 89% �ˣ�������һ�����⣺�����������Ҫ������grocket.iniҲ��Ҫ
-    // ��������ִ�г���Ŀ¼�£�����ô��
-    // �����˵���У���˵����������������ļ��ж�ȡ���ã���������Ҫһ��û�������ļ��Ŀ�ִ�г���
-    // �Ǻã������ֹ���һ�����ã�
+    // 到这儿已经完成 89% 了，先问你一个问题：服务器框架需要的配置grocket.ini也需要
+    // 拷贝到可执行程序目录下，可以么？
+    // 如果你说不行，你说必须从其它的配置文件中读取配置？或者你需要一个没有配置文件的可执行程序？
+    // 那好，我们手工加一个配置：
     char config[ 1024 ] = "";
     int config_len;
     strcpy( config,
@@ -116,19 +116,19 @@ int main( int argc, char ** argv )
     );
     config_len = strlen( config );
 
-    // ������Ѿ���� 99% �ˣ��������ʣ��� 1%
+    // 到这儿已经完成 99% 了，继续完成剩余的 1%
 
     return gr_main(
-        // ��ִ���ļ�����
+        // 可执行文件参数
         argc, argv,
-        // �����ļ�
+        // 配置文件
         config, config_len,
-        // ������ģ�鴦������
+        // 服务器模块处理函数
         gr_init, gr_term, gr_tcp_accept, gr_tcp_close, gr_check, gr_proc, gr_proc_http
     );
 }
 
-// д���ˣ�
-// д���ˡ�
-// д���ˣ�!
-// д���ˡ�
+// 写完了？
+// 写完了。
+// 写完了？!
+// 写完了。

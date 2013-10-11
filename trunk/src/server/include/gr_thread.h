@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/28
  * @version $Revision$ 
- * @brief   Ïß³ÌÏà¹Ø¹¦ÄÜ
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   çº¿ç¨‹ç›¸å…³åŠŸèƒ½
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -26,13 +26,13 @@ extern "C" {
 int gr_processor_count();
 
 /**
- * @brief ´´½¨Ò»¸öÏß³Ì
- * @param[out] thread Ïß³Ì´´½¨³É¹¦ºó·µ»ØÏß³Ìid£¬ÓÉµ÷ÓÃÕßÌá¹©ÄÚ´æ
- * @param[in] start_routine Ïß³Ìº¯Êı
- * @param[in] arg Ïß³Ì²ÎÊı
- * @param[in] cpu_id cpu id, -1 ÊÇ²»°ó¶¨CPU
- * @param[in] priority ÓÅÏÈ¼¶£¬0ÊÇÒ»°ã¼¶±ğ£¬-1ÊÇÓÅÏÈ¼¶µÍÒ»¸ö¼¶±ğ£¬1ÊÇÓÅÏÈ¼¶¸ßÒ»¸ö¼¶±ğ
- * @return int ³É¹¦·µ»Ø0£¬Ê§°Ü·µ»Ø´íÎóÂë
+ * @brief åˆ›å»ºä¸€ä¸ªçº¿ç¨‹
+ * @param[out] thread çº¿ç¨‹åˆ›å»ºæˆåŠŸåè¿”å›çº¿ç¨‹idï¼Œç”±è°ƒç”¨è€…æä¾›å†…å­˜
+ * @param[in] start_routine çº¿ç¨‹å‡½æ•°
+ * @param[in] arg çº¿ç¨‹å‚æ•°
+ * @param[in] cpu_id cpu id, -1 æ˜¯ä¸ç»‘å®šCPU
+ * @param[in] priority ä¼˜å…ˆçº§ï¼Œ0æ˜¯ä¸€èˆ¬çº§åˆ«ï¼Œ-1æ˜¯ä¼˜å…ˆçº§ä½ä¸€ä¸ªçº§åˆ«ï¼Œ1æ˜¯ä¼˜å…ˆçº§é«˜ä¸€ä¸ªçº§åˆ«
+ * @return int æˆåŠŸè¿”å›0ï¼Œå¤±è´¥è¿”å›é”™è¯¯ç 
  */
 int
 gr_thread_create(
@@ -59,33 +59,33 @@ typedef void ( * gr_thread_func )( gr_thread_t * );
 
 struct gr_thread_t
 {
-    // Ïß³ÌÃû
+    // çº¿ç¨‹å
     const char *    name;
 
-    // Ïß³Ì±êÊ¶
+    // çº¿ç¨‹æ ‡è¯†
     pthread_t       h;
 
-    // Ïß³ÌÆô¶¯³É¹¦ÊÂ¼ş
+    // çº¿ç¨‹å¯åŠ¨æˆåŠŸäº‹ä»¶
     gr_event_t      event;
 
-    // ÓÃ»§Ïß³Ì³õÊ¼»¯º¯Êı
+    // ç”¨æˆ·çº¿ç¨‹åˆå§‹åŒ–å‡½æ•°
     gr_thread_func  init_routine;
 
-    // ÓÃ»§Ïß³ÌÔËĞĞº¯Êı
+    // ç”¨æˆ·çº¿ç¨‹è¿è¡Œå‡½æ•°
     gr_thread_func  routine;
 
-    // ÓÃ»§´«ÈëµÄ²ÎÊı
+    // ç”¨æˆ·ä¼ å…¥çš„å‚æ•°
     void *          param;
 
-    // Ïß³Ì±àºÅ
+    // çº¿ç¨‹ç¼–å·
     int             id;
 
-    // ÓëÏß³Ì°ó¶¨µÄÄÚ´æ£¬¹©µ÷ÓÃ·½Ê¹ÓÃ
+    // ä¸çº¿ç¨‹ç»‘å®šçš„å†…å­˜ï¼Œä¾›è°ƒç”¨æ–¹ä½¿ç”¨
     char *          cookie;
     unsigned long   cookie_max;
     unsigned long   cookie_len;
 
-    // Ïß³Ì¿ØÖÆ×´Ì¬
+    // çº¿ç¨‹æ§åˆ¶çŠ¶æ€
     volatile bool   is_started;
     volatile bool   is_running;
     volatile bool   is_need_exit;

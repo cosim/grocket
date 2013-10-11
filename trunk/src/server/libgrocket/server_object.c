@@ -4,7 +4,7 @@
  * @date 2013/10/09
  * @version $Revision$ 
  * @brief   
- * Revision History ´óÊÂ¼þ¼Ç
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -20,7 +20,7 @@
 static inline
 bool check( gr_i_server_t * self, void * func1, void * func2 )
 {
-    // Ò»´¦°²È«¼ì²é£¬·ÀÖ¹ÓÃ»§°Ñ´íÎóµÄÍ·ÎÄ¼þ·Åµ½ÁË´íÎóµÄ¶þ½øÖÆ¶ÔÏóÖ¸ÕëÉÏ
+    // ä¸€å¤„å®‰å…¨æ£€æŸ¥ï¼Œé˜²æ­¢ç”¨æˆ·æŠŠé”™è¯¯çš„å¤´æ–‡ä»¶æ”¾åˆ°äº†é”™è¯¯çš„äºŒè¿›åˆ¶å¯¹è±¡æŒ‡é’ˆä¸Š
     return (void*)g_ghost_rocket_global.server_interface.library->classes[ CLASS_SERVER ] == (void*)self
         && func1 == func2;
 }
@@ -35,7 +35,7 @@ bool server_class_config_get_bool(
     gr_ini * ini;
 
     if ( ! check( self, (void*)self->config_get_bool, (void*)server_class_config_get_bool ) ) {
-        // ²»ÄÜÊ¹ÓÃdefault_value£¬ÒòÎª²ÎÊýÕ»¿ÉÄÜÊÇ´íµÄ
+        // ä¸èƒ½ä½¿ç”¨default_valueï¼Œå› ä¸ºå‚æ•°æ ˆå¯èƒ½æ˜¯é”™çš„
         return false;
     }
 
@@ -53,7 +53,7 @@ int server_class_config_get_int(
     gr_ini * ini;
 
     if ( ! check( self, (void*)self->config_get_int, (void*)server_class_config_get_int ) ) {
-        // ²»ÄÜÊ¹ÓÃdefault_value£¬ÒòÎª²ÎÊýÕ»¿ÉÄÜÊÇ´íµÄ
+        // ä¸èƒ½ä½¿ç”¨default_valueï¼Œå› ä¸ºå‚æ•°æ ˆå¯èƒ½æ˜¯é”™çš„
         return -1;
     }
 
@@ -71,7 +71,7 @@ const char * server_class_config_get_string(
     gr_ini * ini;
 
     if ( ! check( self, (void*)self->config_get_string, (void*)server_class_config_get_string ) ) {
-        // ²»ÄÜÊ¹ÓÃdefault_value£¬ÒòÎª²ÎÊýÕ»¿ÉÄÜÊÇ´íµÄ
+        // ä¸èƒ½ä½¿ç”¨default_valueï¼Œå› ä¸ºå‚æ•°æ ˆå¯èƒ½æ˜¯é”™çš„
         return NULL;
     }
 
@@ -79,7 +79,7 @@ const char * server_class_config_get_string(
     return gr_ini_get_string( ini, section, name, default_value );
 }
 
-// ÉèÖÃ×î´ó·µ»Ø°ü³¤¶È
+// è®¾ç½®æœ€å¤§è¿”å›žåŒ…é•¿åº¦
 static
 void * server_class_set_max_response(
     gr_i_server_t *     self,
@@ -141,7 +141,7 @@ void server_class_log(
 
 bool server_class_construct( server_class_t * sc )
 {
-    // ³õÊ¼»¯¹¦ÄÜº¯Êý
+    // åˆå§‹åŒ–åŠŸèƒ½å‡½æ•°
     sc->face.config_get_bool    = server_class_config_get_bool;
     sc->face.config_get_int     = server_class_config_get_int;
     sc->face.config_get_string  = server_class_config_get_string;

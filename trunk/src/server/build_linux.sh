@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#Èç¹û·¢ÏÖgperftools-2.1Á´½Ó²»¹ıµÄÔ­ÒòÊÇpthread_atforkÕÒ²»µ½ÊµÏÖ£¬
-#ÄÇÊÇÄãµÄpthread¿â°æ±¾Ì«µÍÁË£¬´ò¿ª../third/gperftools-2.1/src/config.h ÎÄ¼ş
-#°Ñ#define HAVE_FORK 1ÄÇĞĞ×¢ÊÍµô£¬ÔÙÖØĞÂÖ´ĞĞ
+#å¦‚æœå‘ç°gperftools-2.1é“¾æ¥ä¸è¿‡çš„åŸå› æ˜¯pthread_atforkæ‰¾ä¸åˆ°å®ç°ï¼Œ
+#é‚£æ˜¯ä½ çš„pthreadåº“ç‰ˆæœ¬å¤ªä½äº†ï¼Œæ‰“å¼€../third/gperftools-2.1/src/config.h æ–‡ä»¶
+#æŠŠ#define HAVE_FORK 1é‚£è¡Œæ³¨é‡Šæ‰ï¼Œå†é‡æ–°æ‰§è¡Œ
 #make -f Makefile.linux clean
 #make -f Makefile.linux
-#¾ÍĞĞÁË
+#å°±è¡Œäº†
 
 cd ../third
 rm -fr gperftools-2.1

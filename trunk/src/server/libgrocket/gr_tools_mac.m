@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/07
  * @version $Revision$ 
- * @brief   Mac平台通用工具函数
- * Revision History 大事件记
+ * @brief   Mac骞冲彴閫氱敤宸ュ叿鍑芥暟
+ * Revision History 澶т簨浠惰
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+

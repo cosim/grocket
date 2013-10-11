@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ¹¤×÷Ïß³Ì»ò¹¤×÷½ø³Ì
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   å·¥ä½œçº¿ç¨‹æˆ–å·¥ä½œè¿›ç¨‹
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+

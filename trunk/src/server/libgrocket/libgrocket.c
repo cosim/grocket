@@ -3,10 +3,10 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/24
  * @version $Revision$ 
- * @brief ·şÎñ¿ò¼ÜÌá¹©µÄ¾²Ì¬¿â°æ±¾¡£
- *        ¸Ã°æ±¾ÊÊÓÃÓÚ±ØĞëÊ¹ÓÃ¶¨ÖÆµÄ¿ÉÖ´ĞĞ³ÌĞòµÄ³¡¾°¡£
+ * @brief æœåŠ¡æ¡†æ¶æä¾›çš„é™æ€åº“ç‰ˆæœ¬ã€‚
+ *        è¯¥ç‰ˆæœ¬é€‚ç”¨äºå¿…é¡»ä½¿ç”¨å®šåˆ¶çš„å¯æ‰§è¡Œç¨‹åºçš„åœºæ™¯ã€‚
  *
- * Revision History ´óÊÂ¼ş¼Ç
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -28,8 +28,8 @@
 #include "gr_library_invoke.h"
 #endif
 
-// Î¨Ò»µÄÈ«¾Ö±äÁ¿,Ã»¼ÓstaticÄ¿µÄÊÇ·½±ã extern ¹Ø¼ü×Ö
-// ¼Óextern¹Ø¼ü×ÖµÄÄ¿µÄÊÇĞÔÄÜ£¬²»±Ø¸¶³öº¯Êıµ÷ÓÃÊ±¼ä
+// å”¯ä¸€çš„å…¨å±€å˜é‡,æ²¡åŠ staticç›®çš„æ˜¯æ–¹ä¾¿ extern å…³é”®å­—
+// åŠ externå…³é”®å­—çš„ç›®çš„æ˜¯æ€§èƒ½ï¼Œä¸å¿…ä»˜å‡ºå‡½æ•°è°ƒç”¨æ—¶é—´
 gr_global_t g_ghost_rocket_global;
 
 static inline
@@ -45,7 +45,7 @@ int system_init()
 
     CoInitialize( NULL );
 
-    // ¼ÓÔØ Winsock 2.2
+    // åŠ è½½ Winsock 2.2
     if ( ( ret = WSAStartup( 0x0202, & wsa_data ) ) != 0 ) {
         gr_fatal( "[init]WSAStartup failed, GetLastError = %d", (int)GetLastError() );
         return GR_ERR_SYSTEM_CALL_FAILED;
@@ -123,20 +123,20 @@ gr_main(
     gr_proc_http_t  proc_http
 )
 {
-    // ×¢Òâ£ºÕâ¸öº¯ÊıÊÇ¸¸×Ó½ø³Ì¶¼µ÷ÓÃµÄ´úÂë
+    // æ³¨æ„ï¼šè¿™ä¸ªå‡½æ•°æ˜¯çˆ¶å­è¿›ç¨‹éƒ½è°ƒç”¨çš„ä»£ç 
     int r = GR_OK;
 
     do {
 
-        // ³õÊ¼»¯È«¾ÖÎ¨Ò»±äÁ¿
+        // åˆå§‹åŒ–å…¨å±€å”¯ä¸€å˜é‡
         memset( & g_ghost_rocket_global, 0, sizeof(g_ghost_rocket_global) );
-        // Ä¬ÈÏ´Óinfo¿ªÊ¼´òÈÕÖ¾
+        // é»˜è®¤ä»infoå¼€å§‹æ‰“æ—¥å¿—
         g_ghost_rocket_global.log_start_level = GR_LOG_DEBUG; // GR_LOG_INFO;
         // argc, argv
         g_ghost_rocket_global.server_interface.argc = argc;
         g_ghost_rocket_global.server_interface.argv = argv;
 
-        // ³õÊ¼»¯ÏµÍ³Ïà¹ØµÄÒ»Ğ©¶«Î÷£¬±ÈÈçWindowsÏÂµÄSocket¿âÀ²
+        // åˆå§‹åŒ–ç³»ç»Ÿç›¸å…³çš„ä¸€äº›ä¸œè¥¿ï¼Œæ¯”å¦‚Windowsä¸‹çš„Socketåº“å•¦
         r = system_init();
         if ( 0 != r ) {
             gr_fatal( "[init]system_init return error %d", r );
@@ -144,7 +144,7 @@ gr_main(
             break;
         }
 
-        // ´ò¿ªÈÕÖ¾Ä£¿é
+        // æ‰“å¼€æ—¥å¿—æ¨¡å—
         r = gr_log_open();
         if ( 0 != r ) {
             gr_fatal( "[init]gr_log_open() return error %d", r );
@@ -152,7 +152,7 @@ gr_main(
             break;
         }
 
-        // ÉèÖÃµ±Ç°Ä¿Â¼£¬·½±ãÄ£¿éÈ¡µ±Ç°Ä¿Â¼ÊÇÕıÈ·µÄ
+        // è®¾ç½®å½“å‰ç›®å½•ï¼Œæ–¹ä¾¿æ¨¡å—å–å½“å‰ç›®å½•æ˜¯æ­£ç¡®çš„
         r = setup_current_directory();
         if ( 0 != r ) {
             gr_fatal( "[init]setup_current_directory return error %d", r );
@@ -160,7 +160,7 @@ gr_main(
             break;
         }
 
-        // ³õÊ¼»¯ÅäÖÃÄ£¿é
+        // åˆå§‹åŒ–é…ç½®æ¨¡å—
         r = gr_config_init( ini_content, ini_content_len );
         if ( 0 != r ) {
             gr_fatal( "[init]gr_config_init return error %d", r );
@@ -168,7 +168,7 @@ gr_main(
             break;
         }
 
-        // ³õÊ¼»¯·şÎñÆ÷º¯Êı¿â
+        // åˆå§‹åŒ–æœåŠ¡å™¨å‡½æ•°åº“
         r = gr_library_impl_init();
         if ( 0 != r ) {
             gr_fatal( "[init]gr_library_impl_init return error %d", r );
@@ -176,11 +176,11 @@ gr_main(
             break;
         }
 
-        // ´ÓÅäÖÃÎÄ¼şÀï¶ÁÈ¡ÈÕÖ¾¼¶±ğ
+        // ä»é…ç½®æ–‡ä»¶é‡Œè¯»å–æ—¥å¿—çº§åˆ«
         g_ghost_rocket_global.log_start_level = (gr_log_level_t)
             gr_config_log_level( g_ghost_rocket_global.log_start_level );
 
-        // ³õÊ¼»¯ÓÃ»§Ä£¿é
+        // åˆå§‹åŒ–ç”¨æˆ·æ¨¡å—
         r = gr_module_init(
             init, term, tcp_accept, tcp_close, chk_binary, proc_binary, proc_http );
         if ( 0 != r ) {
@@ -189,15 +189,15 @@ gr_main(
             break;
         }
 
-        // ³õÊ¼»¯·şÎñÆ÷
+        // åˆå§‹åŒ–æœåŠ¡å™¨
         r = gr_server_init( argc, argv );
         if ( 0 == r ) {
 
             if ( gr_config_is_daemon() ) {
-                // ÒÔ daemon Ä£Ê½ÔËĞĞ·şÎñÆ÷¡£
+                // ä»¥ daemon æ¨¡å¼è¿è¡ŒæœåŠ¡å™¨ã€‚
                 r = gr_server_daemon_main();
             } else {
-                // ÒÔÃüÁîĞĞÄ£Ê½ÔËĞĞ·şÎñÆ÷
+                // ä»¥å‘½ä»¤è¡Œæ¨¡å¼è¿è¡ŒæœåŠ¡å™¨
                 r = gr_server_console_main();
             }
 
@@ -208,17 +208,17 @@ gr_main(
 
     } while ( false );
 
-    // Ğ¶ÔØ·şÎñÆ÷Ä£¿é
+    // å¸è½½æœåŠ¡å™¨æ¨¡å—
     gr_server_term();
-    // Ğ¶ÔØÓÃ»§Ä£¿é
+    // å¸è½½ç”¨æˆ·æ¨¡å—
     gr_module_term();
-    // Ğ¶ÔØ»¯·şÎñÆ÷º¯Êı¿â
+    // å¸è½½åŒ–æœåŠ¡å™¨å‡½æ•°åº“
     gr_library_impl_term();
-    // Ğ¶ÔØÅäÖÃÄ£¿é
+    // å¸è½½é…ç½®æ¨¡å—
     gr_config_term();
-    // ¹Ø±ÕÈÕÖ¾Ä£¿é
+    // å…³é—­æ—¥å¿—æ¨¡å—
     gr_log_close();
-    // Ğ¶ÔØÏµÍ³Ïà¹ØµÄ³õÊ¼»¯
+    // å¸è½½ç³»ç»Ÿç›¸å…³çš„åˆå§‹åŒ–
     system_term();
 
     return r;

@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ¸ß²¢·¢ÊÂ¼þ´¦Àílinux°æ
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   é«˜å¹¶å‘äº‹ä»¶å¤„ç†linuxç‰ˆ
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -121,9 +121,9 @@ int gr_poll_add_listen_fd(
     struct epoll_event ev;
     int r;
 
-    // ½« accept ¼ÓÈë epoll
+    // å°† accept åŠ å…¥ epoll
     ev.data.ptr = data;
-    // Ê¹ÓÃ±ßÔµ´¥·¢
+    // ä½¿ç”¨è¾¹ç¼˜è§¦å‘
     ev.events   = EPOLLIN | EPOLLET;
     r = epoll_ctl( poll->epfd, EPOLL_CTL_ADD, fd, & ev );
     if ( 0 != r ) {
@@ -145,9 +145,9 @@ int gr_poll_add_tcp_recv_fd(
     struct epoll_event ev;
     int r;
 
-    // ½« fd ¼ÓÈë epoll
+    // å°† fd åŠ å…¥ epoll
     ev.data.ptr = conn;
-    // Ê¹ÓÃ±ßÔµ´¥·¢
+    // ä½¿ç”¨è¾¹ç¼˜è§¦å‘
     ev.events   = EPOLLIN | EPOLLET;
     r = epoll_ctl( poll->epfd, EPOLL_CTL_ADD, conn->fd, & ev );
     if ( 0 != r ) {
@@ -169,12 +169,12 @@ int gr_poll_add_tcp_send_fd(
     struct epoll_event ev;
     int r;
 
-    // ½« fd ¼ÓÈë epoll
+    // å°† fd åŠ å…¥ epoll
     ev.data.ptr = conn;
-    // Ê¹ÓÃ±ßÔµ´¥·¢
+    // ä½¿ç”¨è¾¹ç¼˜è§¦å‘
     ev.events = EPOLLOUT | EPOLLET;
 
-    //TODO: Õâ¸öÂß¼­ÊÇ³¤Á¬½ÓÓÅÏÈ¿¼ÂÇ£¬¶ÌÁ¬½ÓÄØ£¿
+    //TODO: è¿™ä¸ªé€»è¾‘æ˜¯é•¿è¿žæŽ¥ä¼˜å…ˆè€ƒè™‘ï¼ŒçŸ­è¿žæŽ¥å‘¢ï¼Ÿ
     r = epoll_ctl( poll->epfd, EPOLL_CTL_MOD, conn->fd, & ev );
     if ( 0 != r ) {
         if ( ENOENT == errno ) {
@@ -260,7 +260,7 @@ int gr_poll_recv(
     
     while ( true ) {
 
-        // ×¼±¸reqÊÕÊý¾Ý
+        // å‡†å¤‡reqæ”¶æ•°æ®
         req = gr_tcp_conn_prepare_recv( conn );
         if ( NULL == req ) {
             gr_fatal( "gr_tcp_conn_prepare_recv return NULL" );
@@ -270,12 +270,12 @@ int gr_poll_recv(
         r = recv(
             conn->fd,
             (char*)& req->buf[ req->buf_len ],
-            // ÎªÊ²Ã´ÓÐ¸ö - 1? °Ñ×îºóÒ»¸ö×Ö½ÚÁô¸ø\0£¬±£Ö¤×îºóÒÔ\0½áÊø£¬½âÎöhttpÐ­Òé»á·½±ãÒ»Ð©
+            // ä¸ºä»€ä¹ˆæœ‰ä¸ª - 1? æŠŠæœ€åŽä¸€ä¸ªå­—èŠ‚ç•™ç»™\0ï¼Œä¿è¯æœ€åŽä»¥\0ç»“æŸï¼Œè§£æžhttpåè®®ä¼šæ–¹ä¾¿ä¸€äº›
             (int)(req->buf_max - req->buf_len - 1),
             MSG_NOSIGNAL
         );
         if ( 0 == r ) {
-            // ¿Í»§¶Ë¹ØÁ¬½Ó
+            // å®¢æˆ·ç«¯å…³è¿žæŽ¥
             conn->close_type = GR_NEED_CLOSE;
             break;
         } else if ( r < 0 ) {
@@ -285,7 +285,7 @@ int gr_poll_recv(
                 // Connection reset by peer
                 conn->close_type = GR_NEED_CLOSE;
             } else if ( EAGAIN == errno ) {
-                // Ã»ÓÐÊý¾Ý¿É¶ÁÁË
+                // æ²¡æœ‰æ•°æ®å¯è¯»äº†
             }
             break;
         }
@@ -341,18 +341,18 @@ RETRY:
                 continue;
 
             if ( EAGAIN != errno ) {
-                // ·¢Ê§°ÜÁË
+                // å‘å¤±è´¥äº†
                 gr_error( "send failed: %d", errno );
                 return -1;
             }
 
-            // »º³åÇøÒÑÂú£¬ÒòÎª»¹ÓÐÊý¾ÝÒª·¢£¬ËùÒÔ²»ÄÜ½«µ±Ç°Á¬´Ó´Ó·¢ËÍepollÖÐÉ¾³ý
+            // ç¼“å†²åŒºå·²æ»¡ï¼Œå› ä¸ºè¿˜æœ‰æ•°æ®è¦å‘ï¼Œæ‰€ä»¥ä¸èƒ½å°†å½“å‰è¿žä»Žä»Žå‘é€epollä¸­åˆ é™¤
             return sent_bytes;
         }
 
         if ( rsp->buf_sent == rsp->buf_len ) {
 
-            // ½«·¢ÍêµÄ»Ø¸´°üµ¯³ö
+            // å°†å‘å®Œçš„å›žå¤åŒ…å¼¹å‡º
             r = gr_tcp_conn_pop_top_rsp( conn, rsp );
             if ( 0 != r ) {
                 gr_fatal( "gr_tcp_conn_pop_top_rsp return error %d", r );
@@ -361,16 +361,16 @@ RETRY:
         }
     }
 
-    // ·¢ÍêÖ®ºó£¬½«µ±Ç°Á¬½Ó´Ó·¢ËÍepollÖÐÉ¾³ý
+    // å‘å®Œä¹‹åŽï¼Œå°†å½“å‰è¿žæŽ¥ä»Žå‘é€epollä¸­åˆ é™¤
     r = del_tcp_send_fd( poll, conn );
     if ( 0 != r ) {
         gr_fatal( "del_tcp_send_fd return error %d", r );
         return -3;
     }
 
-    // ÒòÎªÃ»ÓÐËø£¬ËùÒÔÔÚ½«µ±Ç°Á¬½Ó´Ó·¢ËÍepollÖÐÉ¾³ýºó»¹ÒªÔÙ¼ì²éÒ»ÏÂÓÐÃ»ÓÐÒª·¢ËÍµÄ°ü
+    // å› ä¸ºæ²¡æœ‰é”ï¼Œæ‰€ä»¥åœ¨å°†å½“å‰è¿žæŽ¥ä»Žå‘é€epollä¸­åˆ é™¤åŽè¿˜è¦å†æ£€æŸ¥ä¸€ä¸‹æœ‰æ²¡æœ‰è¦å‘é€çš„åŒ…
     if ( conn->rsp_list_head ) {
-        // Èç¹ûÓÐ£¬ÒªÈ¥ÖØÐÂ°ÑÃ»·¢ÍêµÄ°ü·¢Íê£¬ÒòÎªÏÖÔÚÒÑ¾­Ã»ÓÐ·¢ËÍ¶¯Á¦ÁË¡£
+        // å¦‚æžœæœ‰ï¼Œè¦åŽ»é‡æ–°æŠŠæ²¡å‘å®Œçš„åŒ…å‘å®Œï¼Œå› ä¸ºçŽ°åœ¨å·²ç»æ²¡æœ‰å‘é€åŠ¨åŠ›äº†ã€‚
         goto RETRY;
     }
 
@@ -388,7 +388,7 @@ int gr_poll_recv_done(
         return 0;
     }
 
-    //TODO: Èç¹û²»OK£¬ÐèÒª¶ÏÁ¬½Ó
+    //TODO: å¦‚æžœä¸OKï¼Œéœ€è¦æ–­è¿žæŽ¥
     if ( conn->close_type >= GR_NEED_CLOSE ) {
         struct epoll_event  ev;
         int                 r;
@@ -401,7 +401,7 @@ int gr_poll_recv_done(
             ev.data.ptr = NULL;
             ev.events = 0;
 
-            //TODO: Õâ¸öÂß¼­ÊÇ³¤Á¬½ÓÓÅÏÈ¿¼ÂÇ£¬¶ÌÁ¬½ÓÄØ£¿
+            //TODO: è¿™ä¸ªé€»è¾‘æ˜¯é•¿è¿žæŽ¥ä¼˜å…ˆè€ƒè™‘ï¼ŒçŸ­è¿žæŽ¥å‘¢ï¼Ÿ
             r = epoll_ctl( poll->epfd, EPOLL_CTL_DEL, fd, & ev );
             if ( 0 != r ) {
                 gr_warning( "%s epoll_ctl EPOLL_CTL_DEL return error %d: %d,%s", poll->name, r, errno, strerror( errno ) );

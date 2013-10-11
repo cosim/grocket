@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ·þÎñÆ÷ÍâÎ§¹¤×÷
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   æœåŠ¡å™¨å¤–å›´å·¥ä½œ
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -72,12 +72,12 @@ gr_server_daemon_main()
     if ( server->argc <= 1 
         || ( 0 != strcmp( server->argv[ 1 ], "-debug" ) && 0 != strcmp( server->argv[ 1 ], "debug" ) ) )
     {
-        // ²»ÊÇµ÷ÊÔÄ£Ê½²Å°Ñ½ø³ÌÈÓµ½ºóÌ¨¡£
+        // ä¸æ˜¯è°ƒè¯•æ¨¡å¼æ‰æŠŠè¿›ç¨‹æ‰”åˆ°åŽå°ã€‚
         run_back();
     }
 
-    // ²»ÔÊÐíËæ±ã¶Ï£¬ÒòÎªmaster_process_init³õÊ¼»¯µÄ¿ÉÄÜÊÇÊý¾Ý²Ù×÷£¬
-    // »ØÍ·¸øËùÓÐ×Ó½ø³Ì¹²ÏíµÄ£¬Èç¹ûÕâ¶ù¶ÏÁË¿ÉÄÜ»áÆÆ»µÊý¾Ý¡£
+    // ä¸å…è®¸éšä¾¿æ–­ï¼Œå› ä¸ºmaster_process_initåˆå§‹åŒ–çš„å¯èƒ½æ˜¯æ•°æ®æ“ä½œï¼Œ
+    // å›žå¤´ç»™æ‰€æœ‰å­è¿›ç¨‹å…±äº«çš„ï¼Œå¦‚æžœè¿™å„¿æ–­äº†å¯èƒ½ä¼šç ´åæ•°æ®ã€‚
     signal( SIGHUP, SIG_IGN );
     signal( SIGINT, SIG_IGN );
     signal( SIGQUIT, SIG_IGN );
@@ -99,7 +99,7 @@ gr_server_daemon_main()
             pid = fork();
             if ( 0 == pid ) {
 
-                // ×Ó½ø³Ì
+                // å­è¿›ç¨‹
                 //prctl(PR_SET_NAME, "Server" );
 
                 r = gr_server_console_main();
@@ -107,7 +107,7 @@ gr_server_daemon_main()
 
             } else {
 
-                // ¸¸½ø³Ì
+                // çˆ¶è¿›ç¨‹
                 //prctl( PR_SET_NAME, "Dog" );
 
                 signal( SIGHUP, SIG_IGN );
@@ -130,7 +130,7 @@ gr_server_daemon_main()
                 if ( server->is_server_stopping )
                     break;
 
-                //sleep( 2 ); // µÈ´ýÁ½Ãë£¬·ÀÖ¹³ÌÐòbugµ¼ÖÂÆµ·±¹ÊÕÏ, Èç¹ûÊÇcore£¬¿ÉÄÜ»áË²¼äÐ´ÂúÓ²ÅÌ
+                //sleep( 2 ); // ç­‰å¾…ä¸¤ç§’ï¼Œé˜²æ­¢ç¨‹åºbugå¯¼è‡´é¢‘ç¹æ•…éšœ, å¦‚æžœæ˜¯coreï¼Œå¯èƒ½ä¼šçž¬é—´å†™æ»¡ç¡¬ç›˜
             }
         }
 

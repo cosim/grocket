@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ·şÎñÆ÷Ö÷¸É
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   æœåŠ¡å™¨ä¸»å¹²
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -31,7 +31,7 @@ typedef struct
 	SERVICE_STATUS_HANDLE   status_handle;
 	DWORD                   service_err;
 
-    // Èç¹ûÓĞ¸¸½ø³Ì£¬ÔòÕâÀï¼ÇÂ¼¸¸½ø³Ì¾ä±ú£¬·ñÔòÎªNULL
+    // å¦‚æœæœ‰çˆ¶è¿›ç¨‹ï¼Œåˆ™è¿™é‡Œè®°å½•çˆ¶è¿›ç¨‹å¥æŸ„ï¼Œå¦åˆ™ä¸ºNULL
     HANDLE                  parent_process;
 
     HINSTANCE               funcs_dll;
@@ -65,7 +65,7 @@ typedef struct
     struct Workers *        workers;
     */
 
-    // ·şÎñÆ÷Æô¶¯Ê±¼ä
+    // æœåŠ¡å™¨å¯åŠ¨æ—¶é—´
     time_t                  start_time;
 
 } gr_server_impl_t;

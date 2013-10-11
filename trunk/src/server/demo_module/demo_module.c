@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/27
  * @version $Revision$ 
- * @brief   ·þÎñÆ÷¿ò¼ÜdemoÀ©Õ¹Ä£¿é
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   æœåŠ¡å™¨æ¡†æž¶demoæ‰©å±•æ¨¡å—
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -13,58 +13,58 @@
 
 ///////////////////////////////////////////////////////////////////////
 //
-// grocket.hÒªÇóÎÒÔÚ°üº¬ËüÖ®Ç°±£Ö¤
-// uint16_t, uint32_t, socklen_t, bool, size_t, sockaddr_in, sockaddr_in6Õâ¼¸
-// ¸öÊý¾ÝÀàÐÍÓÐÐ§¡£ÎÒ±¾Ó¦¸ÃÖ±½Ó#include "gr_stdinc.h"¸ã¶¨Ò»ÇÐ£¬µ«ÎªÁË±íÊ¾grocket.hµÄ
-// ¡°´¿½à¡±£¬ÎÒÊÖ¹¤ÔÚÕâÀïÊµÏÖ¡£ËùÒÔÕâÊÇÒ»¶Î¡°µ°ÌÛ¡±µÄ´úÂë£¬Èç¹û¼ÆËãÐÐÊýµÄ»°£¬Ëüµ±È»²»
-// °üÀ¨ÔÚÄÚ¡£
+// grocket.hè¦æ±‚æˆ‘åœ¨åŒ…å«å®ƒä¹‹å‰ä¿è¯
+// uint16_t, uint32_t, socklen_t, bool, size_t, sockaddr_in, sockaddr_in6è¿™å‡ 
+// ä¸ªæ•°æ®ç±»åž‹æœ‰æ•ˆã€‚æˆ‘æœ¬åº”è¯¥ç›´æŽ¥#include "gr_stdinc.h"æžå®šä¸€åˆ‡ï¼Œä½†ä¸ºäº†è¡¨ç¤ºgrocket.hçš„
+// â€œçº¯æ´â€ï¼Œæˆ‘æ‰‹å·¥åœ¨è¿™é‡Œå®žçŽ°ã€‚æ‰€ä»¥è¿™æ˜¯ä¸€æ®µâ€œè›‹ç–¼â€çš„ä»£ç ï¼Œå¦‚æžœè®¡ç®—è¡Œæ•°çš„è¯ï¼Œå®ƒå½“ç„¶ä¸
+// åŒ…æ‹¬åœ¨å†…ã€‚
 //
-// µ°ÌÛ¿ªÊ¼
+// è›‹ç–¼å¼€å§‹
 // 
-#include <stdio.h>  // Ëæ±ã°üº¬Ò»¸öÍ·ÎÄ¼þ£¬ÕâÑù size_t ÀàÐÍ¾Í¿Ï¶¨ÓÐÁË
+#include <stdio.h>  // éšä¾¿åŒ…å«ä¸€ä¸ªå¤´æ–‡ä»¶ï¼Œè¿™æ · size_t ç±»åž‹å°±è‚¯å®šæœ‰äº†
 #include <string.h> // for strcmp
 #include <assert.h> // for assert
 
 #if defined(WIN32) || defined(WIN64)
 
-// Õâ¸öÎÄ¼þÀï°üº¬sockaddr_in
+// è¿™ä¸ªæ–‡ä»¶é‡ŒåŒ…å«sockaddr_in
     #include <WinSock2.h>
-    // Õâ¸öÎÄ¼þÀï°üº¬sockaddr_in6
+    // è¿™ä¸ªæ–‡ä»¶é‡ŒåŒ…å«sockaddr_in6
     #include <WS2tcpip.h>
     #include <Windows.h>
     #pragma comment( lib, "ws2_32.lib" )
 
-    // WindowsÏÂÃ»ÓÐsocklen_tËüÍ¨³£ÓÃÔÚÍøÂç³ÌÐòÖÐ´«µÝsockaddrµØÖ·³¤¶ÈÊ±Ê¹ÓÃ£¬intÊÇ¼æÈÝ¶¨Òå¡£
+    // Windowsä¸‹æ²¡æœ‰socklen_tå®ƒé€šå¸¸ç”¨åœ¨ç½‘ç»œç¨‹åºä¸­ä¼ é€’sockaddråœ°å€é•¿åº¦æ—¶ä½¿ç”¨ï¼Œintæ˜¯å…¼å®¹å®šä¹‰ã€‚
     typedef int                 socklen_t;
-    // Õâ¸ö²»ÓÃ½âÊÍÁË
+    // è¿™ä¸ªä¸ç”¨è§£é‡Šäº†
     typedef unsigned short      uint16_t;
-    // Õâ¸ö²»ÓÃ½âÊÍÁË
+    // è¿™ä¸ªä¸ç”¨è§£é‡Šäº†
     typedef unsigned int        uint32_t;
 
 #elif defined(__linux)
 
-    // ÔÚlinuxÏÂ£¬sockaddr_inºÍsockaddr_in6ÔÚin.hÀï
+    // åœ¨linuxä¸‹ï¼Œsockaddr_inå’Œsockaddr_in6åœ¨in.hé‡Œ
     #include <netinet/in.h>
 
 #elif defined( __APPLE__ )
 
-    // ÔÚ Mac ÏÂ£¬uint16_t Ê²Ã´µÄ¶¨ÒåÔÚÕâ¸öÎÄ¼þÀï
+    // åœ¨ Mac ä¸‹ï¼Œuint16_t ä»€ä¹ˆçš„å®šä¹‰åœ¨è¿™ä¸ªæ–‡ä»¶é‡Œ
     #include <stdint.h>
-    // ÔÚ Mac ÏÂ£¬malloc ÉùÃ÷ÔÚstdlib.hÀï
+    // åœ¨ Mac ä¸‹ï¼Œmalloc å£°æ˜Žåœ¨stdlib.hé‡Œ
     #include <stdlib.h>
-    // ÔÚ Mac ÏÂ£¬socklen_t ÉùÃ÷ÔÚnetdb.hÀï
+    // åœ¨ Mac ä¸‹ï¼Œsocklen_t å£°æ˜Žåœ¨netdb.hé‡Œ
     #include <netdb.h>
 #endif
 
 #if ! defined(__cplusplus)
-    // ÔÚÖ§³ÖC99ÒÔÇ°µÄC±àÒëÆ÷ÊÇÃ»ÓÐboolÀàÐÍµÄ£¬ÎÒ±ØÐëÒª°ÑËü¶¨Òå³ÉÒ»¸ö×Ö½Ú
+    // åœ¨æ”¯æŒC99ä»¥å‰çš„Cç¼–è¯‘å™¨æ˜¯æ²¡æœ‰boolç±»åž‹çš„ï¼Œæˆ‘å¿…é¡»è¦æŠŠå®ƒå®šä¹‰æˆä¸€ä¸ªå­—èŠ‚
     typedef unsigned char   bool;
     #define true    1
     #define false   0
 #endif
 
 #if defined(WIN32) || defined(WIN64)
-// ÎÒÏëÔÚÕâ¸ödemoÀï´ò³ö½ø³ÌID£¬ÔÚwindowsÀïÃ»ÓÐgetpidº¯Êý£¬×Ô¼ºÌá¹©Ò»¸ö
+// æˆ‘æƒ³åœ¨è¿™ä¸ªdemoé‡Œæ‰“å‡ºè¿›ç¨‹IDï¼Œåœ¨windowsé‡Œæ²¡æœ‰getpidå‡½æ•°ï¼Œè‡ªå·±æä¾›ä¸€ä¸ª
 static int getpid()
 {
     return (int)GetProcessId( GetCurrentProcess() );
@@ -72,69 +72,69 @@ static int getpid()
 #endif
 
 //
-// µ°ÌÛ½áÊø
+// è›‹ç–¼ç»“æŸ
 //
 ///////////////////////////////////////////////////////////////////////
 
-// Ð´·þÎñÆ÷Ä£¿éÎ¨Ò»ÐèÒª°üº¬µÄÎÄ¼þ£¬²»ÐèÒªÁ´½ÓÈÎºÎ¿â¡£ÕâÐÐËãÐÐÊý¡£
+// å†™æœåŠ¡å™¨æ¨¡å—å”¯ä¸€éœ€è¦åŒ…å«çš„æ–‡ä»¶ï¼Œä¸éœ€è¦é“¾æŽ¥ä»»ä½•åº“ã€‚è¿™è¡Œç®—è¡Œæ•°ã€‚
 #include "grocket.h"
 
-// ·þÎñÆ÷¿ò¼ÜÌá¹©¸øÓÃ»§Ä£¿éµÄ½Ó¿ÚÖ¸Õë¡£ÕâÐÐËãÐÐÊý¡£
+// æœåŠ¡å™¨æ¡†æž¶æä¾›ç»™ç”¨æˆ·æ¨¡å—çš„æŽ¥å£æŒ‡é’ˆã€‚è¿™è¡Œç®—è¡Œæ•°ã€‚
 gr_server_t *   g_server = NULL;
 
-// ×¢ÒâÕâ¸öº¯ÊýÊÇ¿ÉÑ¡µÄ£¬Äã¿ÉÒÔ²»ÊµÏÖËü¡£
-// ³õÊ¼»¯º¯Êý¡£
+// æ³¨æ„è¿™ä¸ªå‡½æ•°æ˜¯å¯é€‰çš„ï¼Œä½ å¯ä»¥ä¸å®žçŽ°å®ƒã€‚
+// åˆå§‹åŒ–å‡½æ•°ã€‚
 int gr_init(
     gr_process_type_t   proc_type,
     gr_server_t *       server
 )
 {
-    // Ö÷½ø³Ì³õÊ¼»¯¡¢×Ó½ø³Ì³õÊ¼»¯¡¢ËùÓÐÏß³Ì³õÊ¼»¯Ê±¶¼»áµ÷ÓÃ±¾º¯Êý¡£
-    // ÄÇÈçºÎÇø·ÖÄØ£¿´ð°¸ÊÇproc_type²ÎÊý£¬ËüµÄÈ¡Öµ»áÓÐÈçÏÂ¼¸ÖÖ£º
-    // 1¡¢GR_PROCESS_MASTER Ôò±íÊ¾ÊÇÖ÷½ø³Ì, ÊÊÓÃÓÚÖ÷½ø³Ì³õÊ¼»¯×ÊÔ´, ×Ó½ø³ÌÊ¹ÓÃ×ÊÔ´µÄ³¡¾°
-    // 2¡¢GR_PROCESS_CHILD Õý³£µÄ¹¤×÷½ø³Ì
-    // 3¡¢GR_PROCESS_THREAD_1 ±íÊ¾¹¤×÷½ø³ÌÖÐµÄµÚÒ»¸ö¹¤×÷Ïß³Ì³õÊ¼»¯
-    // 4¡¢GR_PROCESS_THREAD_1 + n ±íÊ¾¹¤×÷½ø³ÌÖÐµÄµÚ n ¸ö¹¤×÷Ïß³Ì³õÊ¼»¯
+    // ä¸»è¿›ç¨‹åˆå§‹åŒ–ã€å­è¿›ç¨‹åˆå§‹åŒ–ã€æ‰€æœ‰çº¿ç¨‹åˆå§‹åŒ–æ—¶éƒ½ä¼šè°ƒç”¨æœ¬å‡½æ•°ã€‚
+    // é‚£å¦‚ä½•åŒºåˆ†å‘¢ï¼Ÿç­”æ¡ˆæ˜¯proc_typeå‚æ•°ï¼Œå®ƒçš„å–å€¼ä¼šæœ‰å¦‚ä¸‹å‡ ç§ï¼š
+    // 1ã€GR_PROCESS_MASTER åˆ™è¡¨ç¤ºæ˜¯ä¸»è¿›ç¨‹, é€‚ç”¨äºŽä¸»è¿›ç¨‹åˆå§‹åŒ–èµ„æº, å­è¿›ç¨‹ä½¿ç”¨èµ„æºçš„åœºæ™¯
+    // 2ã€GR_PROCESS_CHILD æ­£å¸¸çš„å·¥ä½œè¿›ç¨‹
+    // 3ã€GR_PROCESS_THREAD_1 è¡¨ç¤ºå·¥ä½œè¿›ç¨‹ä¸­çš„ç¬¬ä¸€ä¸ªå·¥ä½œçº¿ç¨‹åˆå§‹åŒ–
+    // 4ã€GR_PROCESS_THREAD_1 + n è¡¨ç¤ºå·¥ä½œè¿›ç¨‹ä¸­çš„ç¬¬ n ä¸ªå·¥ä½œçº¿ç¨‹åˆå§‹åŒ–
 
-    // °æ±¾ºÅ¼ì²é£¬¿ò¼ÜµÄ×îµÍ¼æÈÝ°æ±¾ºÅ±ØÐëÐ¡ÓÚ»òµÈÓÚÄ£¿é¿ª·¢ÕßÊ¹ÓÃµÄ¿ª·¢¿ò¼ÜµÄ°æ±¾ºÅ¡£¸ÃÅÐ¶ÏËãÐÐÊý¡£
-    // Õâ¸ö¼ì²é£¬Ê¹µÃ¿ÉÒÔÖ±½ÓÉý¼¶ÉõÖÁ½µ¼¶¿ò¼ÜµÄ¶þ½øÖÆÎÄ¼þ£¬¶øÄ£¿éµÄ¼æÈÝÐÔ¼ì²éÖ»ÐèÒª¿´Ä£¿éÊÇ·ñÄÜ±»³É¹¦×°ÔØ¡£
+    // ç‰ˆæœ¬å·æ£€æŸ¥ï¼Œæ¡†æž¶çš„æœ€ä½Žå…¼å®¹ç‰ˆæœ¬å·å¿…é¡»å°äºŽæˆ–ç­‰äºŽæ¨¡å—å¼€å‘è€…ä½¿ç”¨çš„å¼€å‘æ¡†æž¶çš„ç‰ˆæœ¬å·ã€‚è¯¥åˆ¤æ–­ç®—è¡Œæ•°ã€‚
+    // è¿™ä¸ªæ£€æŸ¥ï¼Œä½¿å¾—å¯ä»¥ç›´æŽ¥å‡çº§ç”šè‡³é™çº§æ¡†æž¶çš„äºŒè¿›åˆ¶æ–‡ä»¶ï¼Œè€Œæ¨¡å—çš„å…¼å®¹æ€§æ£€æŸ¥åªéœ€è¦çœ‹æ¨¡å—æ˜¯å¦èƒ½è¢«æˆåŠŸè£…è½½ã€‚
     if ( server->low_version > GR_SERVER_VERSION ) {
-        // ·þÎñ¿ò¼Ü½Ó¿Ú¼æÈÝÐÔ¼ì²éÊ§°Ü¡£Ö±½Ó³õÊ¼»¯Ê§°Ü£¬Ê¡µÃÔÚÔËÐÐÊ±coreÔö¼Ó×·²é³É±¾
+        // æœåŠ¡æ¡†æž¶æŽ¥å£å…¼å®¹æ€§æ£€æŸ¥å¤±è´¥ã€‚ç›´æŽ¥åˆå§‹åŒ–å¤±è´¥ï¼Œçœå¾—åœ¨è¿è¡Œæ—¶coreå¢žåŠ è¿½æŸ¥æˆæœ¬
         printf( "version compatible check failed, I'm %d, Framework %d\n",
             GR_SERVER_VERSION, server->low_version );
         return -1;
     }
 
-    // Ç°ÃæËµ£º¡°Ð´·þÎñÆ÷Ä£¿éÎ¨Ò»ÐèÒª°üº¬µÄÎÄ¼þ£¬²»ÐèÒªÁ´½ÓÈÎºÎ¿â¡±£¬ÄÇ·þÎñÆ÷¿ò¼Üµ¼³öº¯ÊýµÄÊµÏÖ
-    // ÔÚÄÄÀï£¿´ð°¸ÊÇ£ºÔÚ·þÎñÆ÷¿ò¼Ü½ø³ÌÀï£¬ËüÔÚgr_initº¯ÊýÖÐÍ¨¹ýgr_server_t *½Ó¿ÚÒÔº¯ÊýÖ¸ÕëµÄ
-    // ·½Ê½±©Â¶¸øÓÃ»§Ä£¿é£¬ËùÒÔÓÃ»§Ä£¿éµ±È»Òª°ÑÕâ¸öÖ¸Õë±£´æÆðÀ´¡£ÕâÐÐËãÐÐÊý¡£
+    // å‰é¢è¯´ï¼šâ€œå†™æœåŠ¡å™¨æ¨¡å—å”¯ä¸€éœ€è¦åŒ…å«çš„æ–‡ä»¶ï¼Œä¸éœ€è¦é“¾æŽ¥ä»»ä½•åº“â€ï¼Œé‚£æœåŠ¡å™¨æ¡†æž¶å¯¼å‡ºå‡½æ•°çš„å®žçŽ°
+    // åœ¨å“ªé‡Œï¼Ÿç­”æ¡ˆæ˜¯ï¼šåœ¨æœåŠ¡å™¨æ¡†æž¶è¿›ç¨‹é‡Œï¼Œå®ƒåœ¨gr_initå‡½æ•°ä¸­é€šè¿‡gr_server_t *æŽ¥å£ä»¥å‡½æ•°æŒ‡é’ˆçš„
+    // æ–¹å¼æš´éœ²ç»™ç”¨æˆ·æ¨¡å—ï¼Œæ‰€ä»¥ç”¨æˆ·æ¨¡å—å½“ç„¶è¦æŠŠè¿™ä¸ªæŒ‡é’ˆä¿å­˜èµ·æ¥ã€‚è¿™è¡Œç®—è¡Œæ•°ã€‚
     g_server = server;
 
     {
         int n;
 
-        // Õâ¾ä»°£¬´Ó·þÎñÆ÷È¡µÃÒ»¸ö¹¦ÄÜÀàµÄ½Ó¿ÚÖ¸Õë£¬Õâ¸ö¹¦ÄÜÀàµÄIDÊÇ CLASS_SERVER
+        // è¿™å¥è¯ï¼Œä»ŽæœåŠ¡å™¨å–å¾—ä¸€ä¸ªåŠŸèƒ½ç±»çš„æŽ¥å£æŒ‡é’ˆï¼Œè¿™ä¸ªåŠŸèƒ½ç±»çš„IDæ˜¯ CLASS_SERVER
         gr_i_server_t * o =
             (gr_i_server_t *)g_server->library->classes[ CLASS_SERVER ]->singleton;
         assert( o );
 
-        // µ÷ÓÃËüµÄconfig_get_int´Ó·þÎñÆ÷ÅäÖÃÎÄ¼þ¶ÁÈ¡[server]¶ÎµÄtcp.accept.concurrentµÄÖµ
+        // è°ƒç”¨å®ƒçš„config_get_intä»ŽæœåŠ¡å™¨é…ç½®æ–‡ä»¶è¯»å–[server]æ®µçš„tcp.accept.concurrentçš„å€¼
         n = o->config_get_int( o, "server", "tcp.accept.concurrent", 0 );
         printf( "I guess, [server]tcp.accept.concurrent = %d, is it right? haha!!!!\n", n );
 
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // Õâ¾ÍÊÇÕâÌ×·þÎñÆ÷¿ò¼ÜµÄÒ»¸öÌØÉ«£¬ËüÌá¹©Àà¹¦ÄÜ¿â¸øÄãÓÃ£¬»¹²»ÒªÇóÄãÁ¬½ÓÈÎºÎ¿â¡£
-        // »¹Ö§³ÖÄãÊµÏÖ×Ô¼ºµÄ¹¦ÄÜº¯Êý¿â£¬ÒÔ¶¯Ì¬¿âµÄÐÎÊ½¹ÒÔÚ·þÎñÆ÷¿ò¼ÜÖÐ¹©ÆäËüÈËÊ¹ÓÃ£¬
-        // µ±È»Ê¹ÓÃÕßÒÀÈ»²»ÐèÒªÁ¬½ÓÈÎºÎ¿â£¡£¡
-        // µ±¹¦ÄÜÊµÏÖÐÞ¸Ä¡¢¸üÐÂ¡¢Ôö¼ÓÐÂº¯Êý¶¼²»»áÐèÒªÄãµÄ³ÌÐòÖØÐÂÁ¬½Ó¡£
+        // è¿™å°±æ˜¯è¿™å¥—æœåŠ¡å™¨æ¡†æž¶çš„ä¸€ä¸ªç‰¹è‰²ï¼Œå®ƒæä¾›ç±»åŠŸèƒ½åº“ç»™ä½ ç”¨ï¼Œè¿˜ä¸è¦æ±‚ä½ è¿žæŽ¥ä»»ä½•åº“ã€‚
+        // è¿˜æ”¯æŒä½ å®žçŽ°è‡ªå·±çš„åŠŸèƒ½å‡½æ•°åº“ï¼Œä»¥åŠ¨æ€åº“çš„å½¢å¼æŒ‚åœ¨æœåŠ¡å™¨æ¡†æž¶ä¸­ä¾›å…¶å®ƒäººä½¿ç”¨ï¼Œ
+        // å½“ç„¶ä½¿ç”¨è€…ä¾ç„¶ä¸éœ€è¦è¿žæŽ¥ä»»ä½•åº“ï¼ï¼
+        // å½“åŠŸèƒ½å®žçŽ°ä¿®æ”¹ã€æ›´æ–°ã€å¢žåŠ æ–°å‡½æ•°éƒ½ä¸ä¼šéœ€è¦ä½ çš„ç¨‹åºé‡æ–°è¿žæŽ¥ã€‚
     }
 
-    // Èç¹ûÄãºÜºÃÆæ£¬¿ÉÒÔ£º
-    // 1¡¢Í¨¹ýserver->argcºÍserver_argvÈ¡µÃÃüÁîÐÐ²ÎÊý
-    // 2¡¢Í¨¹ýserver->worker_countÈ¡µÃworkerÊýÁ¿
-    // 3¡¢Í¨¹ýserver->ports_countÈ¡µÃ¼àÌý¶Ë¿ÚÊýÁ¿
-    // 4¡¢Í¨¹ýserver->portsÈ¡µÃÃ¿Ò»¸ö¶Ë¿ÚµÄÅäÖÃ
-    // ÈçÏÂ´úÂëÊÇÊ¾Àý
+    // å¦‚æžœä½ å¾ˆå¥½å¥‡ï¼Œå¯ä»¥ï¼š
+    // 1ã€é€šè¿‡server->argcå’Œserver_argvå–å¾—å‘½ä»¤è¡Œå‚æ•°
+    // 2ã€é€šè¿‡server->worker_countå–å¾—workeræ•°é‡
+    // 3ã€é€šè¿‡server->ports_countå–å¾—ç›‘å¬ç«¯å£æ•°é‡
+    // 4ã€é€šè¿‡server->portså–å¾—æ¯ä¸€ä¸ªç«¯å£çš„é…ç½®
+    // å¦‚ä¸‹ä»£ç æ˜¯ç¤ºä¾‹
     if ( GR_PROCESS_MASTER == proc_type || GR_PROCESS_CHILD == proc_type ) {
         int i;
         char buf[ 1024 ];
@@ -174,7 +174,7 @@ int gr_init(
                     item->is_tcp ? "TCP" : "UDP",
                     item->port,
                     (int)item->addr_len,
-                    // ²»°×¿´Õâ¶ù£¬³¤¾­ÑéÄØ£¡inet_ntoaÔÚWindowsÏÂÄÜ×ª³ö0.0.0.0µÄµØÖ·£¬ÔÚlinuxÏÂ»ácore
+                    // ä¸ç™½çœ‹è¿™å„¿ï¼Œé•¿ç»éªŒå‘¢ï¼inet_ntoaåœ¨Windowsä¸‹èƒ½è½¬å‡º0.0.0.0çš„åœ°å€ï¼Œåœ¨linuxä¸‹ä¼šcore
                     ( 0 != item->addr4.sin_addr.s_addr ) ? inet_ntoa(item->addr4.sin_addr) : "(empty)",
                     (int)ntohs(item->addr4.sin_port),
                     item->fd );
@@ -183,7 +183,7 @@ int gr_init(
             printf( "%s", log );
             free( log );
         } else {
-            printf( "¸ãÊ²Ã´°¡£¿·ÖÅäÄÚ´æ»¹ÄÜ³ö´í£¿£¡\n" );
+            printf( "æžä»€ä¹ˆå•Šï¼Ÿåˆ†é…å†…å­˜è¿˜èƒ½å‡ºé”™ï¼Ÿï¼\n" );
         }
     } else if ( proc_type >= GR_PROCESS_THREAD_1 ) {
         printf( "[pid=%d] gr_init called, proc_type = %d(WORKER + %d)\n",
@@ -193,46 +193,46 @@ int gr_init(
     }
     fflush(stdout);
 
-    // Èç¹û·µ»Ø0£¬Ôò·þÎñÆ÷»á¼ÌÐø³õÊ¼»¯£¬·ñÔò·þÎñÆ÷»áÍË³ö¡£
+    // å¦‚æžœè¿”å›ž0ï¼Œåˆ™æœåŠ¡å™¨ä¼šç»§ç»­åˆå§‹åŒ–ï¼Œå¦åˆ™æœåŠ¡å™¨ä¼šé€€å‡ºã€‚
     return 0;
 }
 
-// ×¢ÒâÕâ¸öº¯ÊýÊÇ¿ÉÑ¡µÄ£¬Äã¿ÉÒÔ²»ÊµÏÖËü¡£
-// ·´³õÊ¼»¯º¯Êý¡£
+// æ³¨æ„è¿™ä¸ªå‡½æ•°æ˜¯å¯é€‰çš„ï¼Œä½ å¯ä»¥ä¸å®žçŽ°å®ƒã€‚
+// ååˆå§‹åŒ–å‡½æ•°ã€‚
 void gr_term(
     gr_process_type_t   proc_type,
     void *              must_be_zero
 )
 {
-    // ºÍgr_initÒ»Ñù£¬proc_type²ÎÊý¸æËßÎÒÃÇÊÇÄÄ¸öÏß³Ì»òÕßÄÄ¸ö½ø³ÌÔÚ·´³õÊ¼»¯
+    // å’Œgr_initä¸€æ ·ï¼Œproc_typeå‚æ•°å‘Šè¯‰æˆ‘ä»¬æ˜¯å“ªä¸ªçº¿ç¨‹æˆ–è€…å“ªä¸ªè¿›ç¨‹åœ¨ååˆå§‹åŒ–
     printf( "[pid=%d] gr_term called, proc_type = %d\n", getpid(), (int)proc_type );fflush(stdout);
 }
 
-// ×¢ÒâÕâ¸öº¯ÊýÊÇ¿ÉÑ¡µÄ£¬Äã¿ÉÒÔ²»ÊµÏÖËü¡£
-// Ò»µ«acceptÁËÒ»¸öTCPÁ¬½Ó£¬Ôò¸Ãº¯Êý»á±»µ÷ÓÃ¡£
+// æ³¨æ„è¿™ä¸ªå‡½æ•°æ˜¯å¯é€‰çš„ï¼Œä½ å¯ä»¥ä¸å®žçŽ°å®ƒã€‚
+// ä¸€ä½†acceptäº†ä¸€ä¸ªTCPè¿žæŽ¥ï¼Œåˆ™è¯¥å‡½æ•°ä¼šè¢«è°ƒç”¨ã€‚
 void gr_tcp_accept(
     int                 port,
     int                 sock,
     int *               need_disconnect
 )
 {
-    // Ä£¿é¿ÉÒÔÓÐÑ¡ÔñµÄ¾ö¶¨ÊÇ·ñÒª¹ØµôÕâ¸öTCPÁ¬½Ó£¬Èç¹ûÒª¹Øµô£¬¾Í*need_disconnect=1¼´¿É¡£
-    // Ä£¿é¿ÉÒÔ´Óport²ÎÊýµÃµ½Õâ¸öÁ¬½ÓÊÇ´Ó·þÎñÆ÷µÄÄÄ¸ö¼àÌý¶Ë¿ÚÁ¬ÉÏÀ´µÄ
+    // æ¨¡å—å¯ä»¥æœ‰é€‰æ‹©çš„å†³å®šæ˜¯å¦è¦å…³æŽ‰è¿™ä¸ªTCPè¿žæŽ¥ï¼Œå¦‚æžœè¦å…³æŽ‰ï¼Œå°±*need_disconnect=1å³å¯ã€‚
+    // æ¨¡å—å¯ä»¥ä»Žportå‚æ•°å¾—åˆ°è¿™ä¸ªè¿žæŽ¥æ˜¯ä»ŽæœåŠ¡å™¨çš„å“ªä¸ªç›‘å¬ç«¯å£è¿žä¸Šæ¥çš„
     printf( "%d port accepted socket %d\n", port, sock );
 }
 
-// ×¢ÒâÕâ¸öº¯ÊýÊÇ¿ÉÑ¡µÄ£¬Äã¿ÉÒÔ²»ÊµÏÖËü¡£
-// ÔÚ¹Ø±ÕÒ»¸öTCPÁ¬½ÓÖ®Ç°£¬¸Ãº¯Êý»á±»µ÷ÓÃ¡£
+// æ³¨æ„è¿™ä¸ªå‡½æ•°æ˜¯å¯é€‰çš„ï¼Œä½ å¯ä»¥ä¸å®žçŽ°å®ƒã€‚
+// åœ¨å…³é—­ä¸€ä¸ªTCPè¿žæŽ¥ä¹‹å‰ï¼Œè¯¥å‡½æ•°ä¼šè¢«è°ƒç”¨ã€‚
 void gr_tcp_close(
 	int                 port,
     int                 sock
 )
 {
-    // Ä£¿é¿ÉÒÔ´Óport²ÎÊýµÃµ½Õâ¸öÒª¶ÏµôµÄTCPÁ¬½ÓÊÇ´Ó·þÎñÆ÷µÄÄÄ¸ö¼àÌý¶Ë¿ÚÁ¬ÉÏÀ´µÄ
+    // æ¨¡å—å¯ä»¥ä»Žportå‚æ•°å¾—åˆ°è¿™ä¸ªè¦æ–­æŽ‰çš„TCPè¿žæŽ¥æ˜¯ä»ŽæœåŠ¡å™¨çš„å“ªä¸ªç›‘å¬ç«¯å£è¿žä¸Šæ¥çš„
     printf( "%d port will close socket %d\n", port, sock );
 }
 
-// ¸Ãº¯ÊýÓÃÓÚ¼ì²édata, lenÖ¸¶¨µÄÊý¾Ý°üÊÇ·ñÊÇ¸öÓÐÐ§µÄÊý¾Ý°ü¡£ÕâÊÇ¸öÐ­Òé¼ì²é¡£±¾º¯ÊýËãÐÐÊý¡£
+// è¯¥å‡½æ•°ç”¨äºŽæ£€æŸ¥data, lenæŒ‡å®šçš„æ•°æ®åŒ…æ˜¯å¦æ˜¯ä¸ªæœ‰æ•ˆçš„æ•°æ®åŒ…ã€‚è¿™æ˜¯ä¸ªåè®®æ£€æŸ¥ã€‚æœ¬å‡½æ•°ç®—è¡Œæ•°ã€‚
 void gr_check(
     void *              data,
     int                 len,
@@ -243,80 +243,80 @@ void gr_check(
     bool *              is_full
 )
 {
-    // ¿´×Å²ÎÊýÍ¦¶àµÄ£¬µ«ÌýÎÒ½âÊÍÒ»ÏÂ£º
-    // 1¡¢dataÓëlen¾ÍÊÇÄã»¹Ã»¾ö¶¨µÄÊý¾Ý°ü¡£¿ò¼Ü±£Ö¤data²»»áÎªNULL£¬lenÒ»¶¨>=0
-    // 2¡¢port_infoÓÃÓÚÈ¡µÃ·þÎñÕâ¸öÊý¾Ý°ü¶Ë¿ÚÐÅÏ¢£¬ËüÓÐÈçÏÂ¼¸¸ö×Ö¶Î£º
-    //    1) ·þÎñÓÚÕâ¸öÊý¾Ý°üµÄ¼àÌýµØÖ·£¬ÎªÊ²Ã´ÓÃÕâ¸ö¶ø²»ÊÇsockaddr_in? Ö§³ÖIPV6°¡ÀÏ´ó¡£
+    // çœ‹ç€å‚æ•°æŒºå¤šçš„ï¼Œä½†å¬æˆ‘è§£é‡Šä¸€ä¸‹ï¼š
+    // 1ã€dataä¸Žlenå°±æ˜¯ä½ è¿˜æ²¡å†³å®šçš„æ•°æ®åŒ…ã€‚æ¡†æž¶ä¿è¯dataä¸ä¼šä¸ºNULLï¼Œlenä¸€å®š>=0
+    // 2ã€port_infoç”¨äºŽå–å¾—æœåŠ¡è¿™ä¸ªæ•°æ®åŒ…ç«¯å£ä¿¡æ¯ï¼Œå®ƒæœ‰å¦‚ä¸‹å‡ ä¸ªå­—æ®µï¼š
+    //    1) æœåŠ¡äºŽè¿™ä¸ªæ•°æ®åŒ…çš„ç›‘å¬åœ°å€ï¼Œä¸ºä»€ä¹ˆç”¨è¿™ä¸ªè€Œä¸æ˜¯sockaddr_in? æ”¯æŒIPV6å•Šè€å¤§ã€‚
     //       struct sockaddr *           addr;
     //       socklen_t                   addr_len;
     //
-    //    2) ·þÎñÓÚÕâ¸öÊý¾Ý°üµÄ¼àÌý¶Ë¿ÚµÄSOCKETÃèÊö·û¡£×¢ÒâTCPµÄ¼àÌý¶Ë¿ÚºÍÍ¨ÐÅSOCKET²»ÊÇÒ»¸ö¡£
+    //    2) æœåŠ¡äºŽè¿™ä¸ªæ•°æ®åŒ…çš„ç›‘å¬ç«¯å£çš„SOCKETæè¿°ç¬¦ã€‚æ³¨æ„TCPçš„ç›‘å¬ç«¯å£å’Œé€šä¿¡SOCKETä¸æ˜¯ä¸€ä¸ªã€‚
     //       int                         fd;
     // 
-    //    3) ·þÎñÓÚÕâ¸öÊý¾Ý°üµÄ¼àÌý¶Ë¿ÚºÅ
+    //    3) æœåŠ¡äºŽè¿™ä¸ªæ•°æ®åŒ…çš„ç›‘å¬ç«¯å£å·
     //       uint16_t                    port;
     //
-    //    4) ·þÎñÓÚÕâ¸öÊý¾Ý°üµÄ¼àÌý¶Ë¿ÚÊÇTCP»¹ÊÇUDP¡£
-    //       ¿´µ½Õâ¶ùÁÁÁË°É£¿ÄãÖ»ÐèÒª¹ÜÐ­Òé£¬Ö§³ÖTCPºÍUDPµÄÊÂ¶ù½»¸ø·þÎñÆ÷¿ò¼Ü¡£
+    //    4) æœåŠ¡äºŽè¿™ä¸ªæ•°æ®åŒ…çš„ç›‘å¬ç«¯å£æ˜¯TCPè¿˜æ˜¯UDPã€‚
+    //       çœ‹åˆ°è¿™å„¿äº®äº†å§ï¼Ÿä½ åªéœ€è¦ç®¡åè®®ï¼Œæ”¯æŒTCPå’ŒUDPçš„äº‹å„¿äº¤ç»™æœåŠ¡å™¨æ¡†æž¶ã€‚
     //       bool                        is_tcp;
-    // 3¡¢sock¾ÍÊÇµ±Ç°Á¬½ÓµÄÃèÊö·û¡£¶ÔÓÚUDP£¬¸ÃÃèÊö·ûºÍport_info->fdÊÇÏàÍ¬µÄ¡£
-    // 4¡¢ctxt´æ´¢Ò»Ð©¶îÍâµÄÉÏÏÂÎÄÐÅÏ¢£¬ÆäÖÐ°üÀ¨ÁË¶ÔHTTPÊý¾Ý°üµÄ½âÎöÖÐ¼ä½á¹û£¬µ«ÄÇ¶¼²»ÊÇ
-    //    ·þÎñÄ£¿é±àÐ´ÕßÐèÒª¹ØÐÄµÄ¡£ÕæÕýÐèÒªÌîÐ´µÄÊÇÈçÏÂÁ½¸ö×Ö¶Î¡£
+    // 3ã€sockå°±æ˜¯å½“å‰è¿žæŽ¥çš„æè¿°ç¬¦ã€‚å¯¹äºŽUDPï¼Œè¯¥æè¿°ç¬¦å’Œport_info->fdæ˜¯ç›¸åŒçš„ã€‚
+    // 4ã€ctxtå­˜å‚¨ä¸€äº›é¢å¤–çš„ä¸Šä¸‹æ–‡ä¿¡æ¯ï¼Œå…¶ä¸­åŒ…æ‹¬äº†å¯¹HTTPæ•°æ®åŒ…çš„è§£æžä¸­é—´ç»“æžœï¼Œä½†é‚£éƒ½ä¸æ˜¯
+    //    æœåŠ¡æ¨¡å—ç¼–å†™è€…éœ€è¦å…³å¿ƒçš„ã€‚çœŸæ­£éœ€è¦å¡«å†™çš„æ˜¯å¦‚ä¸‹ä¸¤ä¸ªå­—æ®µã€‚
     //
-    //     1) Êý¾Ý°üÀàÐÍ
+    //     1) æ•°æ®åŒ…ç±»åž‹
     //        uint16_t                   cc_package_type;
     //
-    //            cc_package_type¿ÉÒÔÌîÐ´µÄÖµÈçÏÂÁÐ³ö£º
+    //            cc_package_typeå¯ä»¥å¡«å†™çš„å€¼å¦‚ä¸‹åˆ—å‡ºï¼š
     //            typedef enum
     //            {
-    //                // HTTP ÇëÇó°ü
+    //                // HTTP è¯·æ±‚åŒ…
     //                GR_PACKAGE_HTTP_REQ         = 1,
-    //                // HTTP »Ø¸´°ü
+    //                // HTTP å›žå¤åŒ…
     //                GR_PACKAGE_HTTP_REPLY       = 2,
-    //                // ÓÃ»§×Ô¶¨ÒåÊý¾Ý°ü
+    //                // ç”¨æˆ·è‡ªå®šä¹‰æ•°æ®åŒ…
     //                GR_PACKAGE_PRIVATE          = 3,
-    //                // Ê¹ÓÃ3bit´æ´¢¸ÃÊýÖµ£¬ËùÒÔ×î´ó¿ÉÓÃµÄÖµÎª7£¬
-    //                // Ò²¾ÍÊÇËµ·þÎñÆ÷¶ËÄ£¿é×î¶à¿ÉÒÔÔÚÒ»¸öÄ£¿éÖÐÖ§³Ö5ÖÖÍêÈ«²»Í¬µÄ×Ô¶¨ÒåÐ­Òé¡£
+    //                // ä½¿ç”¨3bitå­˜å‚¨è¯¥æ•°å€¼ï¼Œæ‰€ä»¥æœ€å¤§å¯ç”¨çš„å€¼ä¸º7ï¼Œ
+    //                // ä¹Ÿå°±æ˜¯è¯´æœåŠ¡å™¨ç«¯æ¨¡å—æœ€å¤šå¯ä»¥åœ¨ä¸€ä¸ªæ¨¡å—ä¸­æ”¯æŒ5ç§å®Œå…¨ä¸åŒçš„è‡ªå®šä¹‰åè®®ã€‚
     //            } gr_package_type_t;
     //
-    //            ÓÉÓÚHTTPÐ­ÒéÊÇ·þÎñÆ÷¿ò¼ÜÄÚÖÃÖ§³Ö£¬ËùÒÔÓÃ»§Ä£¿éÓÀÔ¶¶¼²»±ØÌîÐ´GR_PACKAGE_HTTP_REQºÍ
-    //            GR_PACKAGE_HTTP_REPLY¡£Ö»ÓÐ¿ÉÄÜÌîÐ´µÄ¾ÍÊÇGR_PACKAGE_PRIVATE£¬±íÊ¾ËüÊÇÒ»¸öÓÃ»§Êý¾Ý°ü£¬
-    //            Èç¹ûÔÚÒ»¸ö³ÌÐòÀïÖ§³Ö¶à¸öÐ­Òé£¬Ôò»¹¿ÉÒÔÓÃGR_PACKAGE_PRIVATE + 1 µ½ GR_PACKAGE_PRIVATE + 4¡£
+    //            ç”±äºŽHTTPåè®®æ˜¯æœåŠ¡å™¨æ¡†æž¶å†…ç½®æ”¯æŒï¼Œæ‰€ä»¥ç”¨æˆ·æ¨¡å—æ°¸è¿œéƒ½ä¸å¿…å¡«å†™GR_PACKAGE_HTTP_REQå’Œ
+    //            GR_PACKAGE_HTTP_REPLYã€‚åªæœ‰å¯èƒ½å¡«å†™çš„å°±æ˜¯GR_PACKAGE_PRIVATEï¼Œè¡¨ç¤ºå®ƒæ˜¯ä¸€ä¸ªç”¨æˆ·æ•°æ®åŒ…ï¼Œ
+    //            å¦‚æžœåœ¨ä¸€ä¸ªç¨‹åºé‡Œæ”¯æŒå¤šä¸ªåè®®ï¼Œåˆ™è¿˜å¯ä»¥ç”¨GR_PACKAGE_PRIVATE + 1 åˆ° GR_PACKAGE_PRIVATE + 4ã€‚
     //
-    //     2) Êý¾Ý°üÍêÕû³¤¶È
+    //     2) æ•°æ®åŒ…å®Œæ•´é•¿åº¦
     //        uint32_t                   cc_package_length;
-    //            Èç¹ûÔÚ½âÎöÊý¾Ý°üµÄ¹ý³ÌÖÐ·¢ÏÖËüÊÇÒ»¸öÓÐÐ§Êý¾Ý°ü£¬ÄÇ¾Í±ØÐëÔÚÕâ¸ö×Ö¶ÎÀïÌîÐ´ÍêÕûÊý¾Ý°üµÄ³¤¶È¡£
-    //            ÒòÎªTCPÊÇÁ÷Ð­Òé£¬Õâ¸ö·½·¨°ïÖú·þÎñÆ÷¿ò¼ÜÇÐ·ÖÊý¾Ý°ü¡£UDPÊý¾Ý°üÒ²»áÍ¨¹ý¸Ãº¯ÊýµÄµ÷ÓÃÀ´È·¶¨ÊÇ·ñÓÐÐ§¡£
-    // 5¡¢is_error¡£Èç¹ûÔÚ½âÎöÊý¾Ý°ü¹ý³ÌÖÐ·¢ÏÖÕâÊÇ¸öÎÞÐ§°ü£¬ÔòÖ±½Ó*is_err = true¼´¿É£¬·ñÔò²»ÓÃ¶¯Õâ¸ö×Ö¶Î¡£
-    // 6¡¢is_full¡£Èç¹ûis_errorÖµÎªfalse£¬Ò²¾ÍÊÇËµÕâÊÇ¸öÓÐÐ§°ü£¬±¾×Ö¶Î²Å»á±»·þÎñÆ÷¿ò¼ÜÅÐ¶Ï¡£Èç¹û·¢ÏÖÊý¾ÝÇø
-    //             ÖÐÖÁÉÙ°üÀ¨ÁËÒ»°üÍêÕûÊý¾Ý°ü£¬Ôò*is_full = true¡£ÕâÊ±·þÎñÆ÷¿ò¼Ü²Å»áÇÐ³öÒ»¸ö°ü°ÑËüÈÓ¸ø¹¤×÷½ø³Ì(»òÏß³Ì)¡£
+    //            å¦‚æžœåœ¨è§£æžæ•°æ®åŒ…çš„è¿‡ç¨‹ä¸­å‘çŽ°å®ƒæ˜¯ä¸€ä¸ªæœ‰æ•ˆæ•°æ®åŒ…ï¼Œé‚£å°±å¿…é¡»åœ¨è¿™ä¸ªå­—æ®µé‡Œå¡«å†™å®Œæ•´æ•°æ®åŒ…çš„é•¿åº¦ã€‚
+    //            å› ä¸ºTCPæ˜¯æµåè®®ï¼Œè¿™ä¸ªæ–¹æ³•å¸®åŠ©æœåŠ¡å™¨æ¡†æž¶åˆ‡åˆ†æ•°æ®åŒ…ã€‚UDPæ•°æ®åŒ…ä¹Ÿä¼šé€šè¿‡è¯¥å‡½æ•°çš„è°ƒç”¨æ¥ç¡®å®šæ˜¯å¦æœ‰æ•ˆã€‚
+    // 5ã€is_errorã€‚å¦‚æžœåœ¨è§£æžæ•°æ®åŒ…è¿‡ç¨‹ä¸­å‘çŽ°è¿™æ˜¯ä¸ªæ— æ•ˆåŒ…ï¼Œåˆ™ç›´æŽ¥*is_err = trueå³å¯ï¼Œå¦åˆ™ä¸ç”¨åŠ¨è¿™ä¸ªå­—æ®µã€‚
+    // 6ã€is_fullã€‚å¦‚æžœis_errorå€¼ä¸ºfalseï¼Œä¹Ÿå°±æ˜¯è¯´è¿™æ˜¯ä¸ªæœ‰æ•ˆåŒ…ï¼Œæœ¬å­—æ®µæ‰ä¼šè¢«æœåŠ¡å™¨æ¡†æž¶åˆ¤æ–­ã€‚å¦‚æžœå‘çŽ°æ•°æ®åŒº
+    //             ä¸­è‡³å°‘åŒ…æ‹¬äº†ä¸€åŒ…å®Œæ•´æ•°æ®åŒ…ï¼Œåˆ™*is_full = trueã€‚è¿™æ—¶æœåŠ¡å™¨æ¡†æž¶æ‰ä¼šåˆ‡å‡ºä¸€ä¸ªåŒ…æŠŠå®ƒæ‰”ç»™å·¥ä½œè¿›ç¨‹(æˆ–çº¿ç¨‹)ã€‚
 
-    // ÎªÁËÑÝÊ¾°üÃ»ÊÕÈ«µÄ´¦Àí£¬ÎÒÕâÀï¼ÙÉè°üÃ¿¹ýÁ½×Ö½ÚÊÕÒ»´Î¡£
+    // ä¸ºäº†æ¼”ç¤ºåŒ…æ²¡æ”¶å…¨çš„å¤„ç†ï¼Œæˆ‘è¿™é‡Œå‡è®¾åŒ…æ¯è¿‡ä¸¤å­—èŠ‚æ”¶ä¸€æ¬¡ã€‚
     if ( len < 2 ) {
-        // ³õ²½ÅÐ¶ÏÎªÓÐÐ§µÄÓÃ»§Ë½ÓÐ°ü
+        // åˆæ­¥åˆ¤æ–­ä¸ºæœ‰æ•ˆçš„ç”¨æˆ·ç§æœ‰åŒ…
         ctxt->cc_package_type = GR_PACKAGE_PRIVATE;
-        // Ã»³ö´í
+        // æ²¡å‡ºé”™
         *is_error = false;
-        // µ«²»ÊÇÍêÕû°ü£¬ÈÃ·þÎñÆ÷¿ò¼Ü¼ÌÐøÊÕ
+        // ä½†ä¸æ˜¯å®Œæ•´åŒ…ï¼Œè®©æœåŠ¡å™¨æ¡†æž¶ç»§ç»­æ”¶
         *is_full = false;
         printf( "not full\n" );
         return;
     }
 
-    // ÓÐÐ§µÄÓÃ»§Ë½ÓÐ°ü
+    // æœ‰æ•ˆçš„ç”¨æˆ·ç§æœ‰åŒ…
     ctxt->cc_package_type = GR_PACKAGE_PRIVATE;
-    // Ã»³ö´í
+    // æ²¡å‡ºé”™
     *is_error = false;
-    // ÊÇÍêÕû°ü
+    // æ˜¯å®Œæ•´åŒ…
     *is_full = true;
-    // ±ØÐëÌîÐ´ÍêÕû°ü³¤¶È
+    // å¿…é¡»å¡«å†™å®Œæ•´åŒ…é•¿åº¦
     ctxt->cc_package_length = len;
     printf( "full\n" );
-    // ¿´£¬Êµ¼ÊÉÏÎÒÃÇÖ»ÓÃÁËdataºÍlenÁ½¸ö²ÎÊýÅÐ¶ÏÊý¾Ý°ü£¬¸øÁËÄÇÃ´¶à²ÎÊý£¬
-    // Êµ¼ÊÊÇÎªÁË·½±ãÄ£¿é±àÐ´Õß¸ù¾Ý²»Í¬µÄ³¡¾°¡¢»·¾³×ö²»Í¬µÄ´¦Àí¡£
+    // çœ‹ï¼Œå®žé™…ä¸Šæˆ‘ä»¬åªç”¨äº†dataå’Œlenä¸¤ä¸ªå‚æ•°åˆ¤æ–­æ•°æ®åŒ…ï¼Œç»™äº†é‚£ä¹ˆå¤šå‚æ•°ï¼Œ
+    // å®žé™…æ˜¯ä¸ºäº†æ–¹ä¾¿æ¨¡å—ç¼–å†™è€…æ ¹æ®ä¸åŒçš„åœºæ™¯ã€çŽ¯å¢ƒåšä¸åŒçš„å¤„ç†ã€‚
 }
 
-// ·þÎñÆ÷¿ò¼Ü»áÔÚ¹¤×÷½ø³Ì(»òÏß³Ì)µ÷ÓÃ±¾º¯Êý´¦ÀíÊý¾Ý°ü¡£±¾º¯ÊýËãÐÐÊý¡£
+// æœåŠ¡å™¨æ¡†æž¶ä¼šåœ¨å·¥ä½œè¿›ç¨‹(æˆ–çº¿ç¨‹)è°ƒç”¨æœ¬å‡½æ•°å¤„ç†æ•°æ®åŒ…ã€‚æœ¬å‡½æ•°ç®—è¡Œæ•°ã€‚
 void gr_proc(
     const void *        data,
     int                 len,
@@ -324,78 +324,78 @@ void gr_proc(
     int *               processed_len
 )
 {
-    // ÎÒÃÇÕâÀï»áÓÃµ½·þÎñÆ÷ÄÚÖÃ¶ÔÏó gr_i_server_t µÄ¹¦ÄÜ£¬Èç¹û³£ÓÃ£¬¾ÍÓ¦¸Ã½«Ëü±£´æÆðÀ´
+    // æˆ‘ä»¬è¿™é‡Œä¼šç”¨åˆ°æœåŠ¡å™¨å†…ç½®å¯¹è±¡ gr_i_server_t çš„åŠŸèƒ½ï¼Œå¦‚æžœå¸¸ç”¨ï¼Œå°±åº”è¯¥å°†å®ƒä¿å­˜èµ·æ¥
     gr_i_server_t * o = (gr_i_server_t *)g_server->library->classes[ CLASS_SERVER ]->singleton;
     char *          rsp;
 
-    // data, len Á½¸ö²ÎÊý¾ÍÊÇÔÚ gr_check º¯ÊýÖÐ£¬×Ô¼ºÇÐ·ÖºÃµÄÍêÕû°ü¡£
-    // ctxtÊÇ´¦ÀíÊý¾Ý°üµÄÉÏÏÂÎÄ£¬ËüÌá¹©ÁË¸ü¶àÏà¹ØÊý¾Ý£º
-    //      1¡¢µ±Ç°Êý¾Ý°üÊÇ·ñTCP°ü
+    // data, len ä¸¤ä¸ªå‚æ•°å°±æ˜¯åœ¨ gr_check å‡½æ•°ä¸­ï¼Œè‡ªå·±åˆ‡åˆ†å¥½çš„å®Œæ•´åŒ…ã€‚
+    // ctxtæ˜¯å¤„ç†æ•°æ®åŒ…çš„ä¸Šä¸‹æ–‡ï¼Œå®ƒæä¾›äº†æ›´å¤šç›¸å…³æ•°æ®ï¼š
+    //      1ã€å½“å‰æ•°æ®åŒ…æ˜¯å¦TCPåŒ…
     //         uint16_t                 pc_is_tcp( bit field )
-    //      2¡¢ÔÚgr_checkº¯ÊýÖÐÈ·¶¨µÄÊý¾Ý°üÀàÐÍ,¸Ã»úÖÆÓÃÓÚÖ§³Ö¶àÌ×Ð­Òé
+    //      2ã€åœ¨gr_checkå‡½æ•°ä¸­ç¡®å®šçš„æ•°æ®åŒ…ç±»åž‹,è¯¥æœºåˆ¶ç”¨äºŽæ”¯æŒå¤šå¥—åè®®
     //         uint16_t                 pc_package_type( bit field )
-    //      4¡¢Ê¹ÓÃµÄ¼àÌý¶Ë¿ÚºÅ
+    //      4ã€ä½¿ç”¨çš„ç›‘å¬ç«¯å£å·
     //         int                      pc_port;
-    //      5¡¢´¦ÀíSOCKETÃèÊö·û
+    //      5ã€å¤„ç†SOCKETæè¿°ç¬¦
     //         int                      pc_fd;
-    //      6¡¢´¦ÀíÏß³ÌID, ÅäÖÃÖÐÓÐÏß³ÌÊýÁ¿. [0, n)¡£·þÎñÆ÷³ÐÅµ£¬Ò»¸ö
-    //         TCPÁ¬½ÓµÄËùÓÐÇëÇó»á·ÖÅäµ½Ò»¸ö¹Ì¶¨µÄ¹¤×÷Ïß³ÌÉÏ¡£
-    //         ÏàÍ¬¿Í»§¶ËµØÖ·µÄUDPËùÓÐÇëÇó»á·ÖÅäµ½Ò»¸ö¹Ì¶¨µÄ¹¤×÷Ïß³ÌÉÏ¡£
+    //      6ã€å¤„ç†çº¿ç¨‹ID, é…ç½®ä¸­æœ‰çº¿ç¨‹æ•°é‡. [0, n)ã€‚æœåŠ¡å™¨æ‰¿è¯ºï¼Œä¸€ä¸ª
+    //         TCPè¿žæŽ¥çš„æ‰€æœ‰è¯·æ±‚ä¼šåˆ†é…åˆ°ä¸€ä¸ªå›ºå®šçš„å·¥ä½œçº¿ç¨‹ä¸Šã€‚
+    //         ç›¸åŒå®¢æˆ·ç«¯åœ°å€çš„UDPæ‰€æœ‰è¯·æ±‚ä¼šåˆ†é…åˆ°ä¸€ä¸ªå›ºå®šçš„å·¥ä½œçº¿ç¨‹ä¸Šã€‚
     //         int                      pc_thread_id;
-    //      7¡¢·µ»Ø»º³åÇø
+    //      7ã€è¿”å›žç¼“å†²åŒº
     //         char *                   pc_result_buf;
-    //      8¡¢·µ»Ø»º³åÇø×î´ó³¤¶È
+    //      8ã€è¿”å›žç¼“å†²åŒºæœ€å¤§é•¿åº¦
     //         int                      pc_result_buf_max;
-    //      9¡¢·µ»Ø»º³åÇøÖÐµÄÊý¾Ý³¤¶È
+    //      9ã€è¿”å›žç¼“å†²åŒºä¸­çš„æ•°æ®é•¿åº¦
     //         int *                    pc_result_buf_len;
-    //     10¡¢Êµ¼Ê´¦ÀíÊäÈëÊý¾Ý°üµÄ×Ö½ÚÊý¡£
+    //     10ã€å®žé™…å¤„ç†è¾“å…¥æ•°æ®åŒ…çš„å­—èŠ‚æ•°ã€‚
     //         int *                    processed_len
-    //                     < 0£¬Êý¾Ý°üÓÐ´íÎó£¬ÐèÒª¶ÏÁ¬½Ó.
-    //                     = 0£¬Êý¾Ý°üÕýÈ·£¬µ«ÐèÒª·þÎñÆ÷¶ËÖ÷¶¯¶ÏÁ¬½Ó¡£
-    //                     > 0¡£Êý¾Ý°üÕýÈ·£¬·µ»ØÒÑ¾­´¦ÀíµÄÊý¾Ý°ü³¤¶È.
+    //                     < 0ï¼Œæ•°æ®åŒ…æœ‰é”™è¯¯ï¼Œéœ€è¦æ–­è¿žæŽ¥.
+    //                     = 0ï¼Œæ•°æ®åŒ…æ­£ç¡®ï¼Œä½†éœ€è¦æœåŠ¡å™¨ç«¯ä¸»åŠ¨æ–­è¿žæŽ¥ã€‚
+    //                     > 0ã€‚æ•°æ®åŒ…æ­£ç¡®ï¼Œè¿”å›žå·²ç»å¤„ç†çš„æ•°æ®åŒ…é•¿åº¦.
 
     printf( "process %d byte user data\n", len );
 
-    // È·ÈÏ·þÎñÆ÷¿ò¼ÜÌî³äµÄÄ¬ÈÏÖµ
+    // ç¡®è®¤æœåŠ¡å™¨æ¡†æž¶å¡«å……çš„é»˜è®¤å€¼
     assert( * processed_len == len );
 
-    // ÉèÖÃ×î´ó·µ»ØÖµ×Ö½ÚÊý¡£¸Ãº¯ÊýÄÚ²¿ÔÚ±ØÒªÊ±»á·ÖÅäÄÚ´æ£¬
-    // Ìî³äpc_result_bufºÍpc_result_buf_max×Ö¶Î£¬²¢½« * pc_result_buf_len ÖÃÎª0
+    // è®¾ç½®æœ€å¤§è¿”å›žå€¼å­—èŠ‚æ•°ã€‚è¯¥å‡½æ•°å†…éƒ¨åœ¨å¿…è¦æ—¶ä¼šåˆ†é…å†…å­˜ï¼Œ
+    // å¡«å……pc_result_bufå’Œpc_result_buf_maxå­—æ®µï¼Œå¹¶å°† * pc_result_buf_len ç½®ä¸º0
     rsp = (char *)o->set_max_response( o, ctxt, len );
     if ( NULL == rsp ) {
-        // ·þÎñÆ÷¿ò¼ÜÌá¹©ÁË¸ö´òÈÕÖ¾¹¦ÄÜ
+        // æœåŠ¡å™¨æ¡†æž¶æä¾›äº†ä¸ªæ‰“æ—¥å¿—åŠŸèƒ½
         o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
             "set_max_response %d failed", len );
         * processed_len = -1;
         return;
     }
 
-    // ¿½±´Êý¾Ý
+    // æ‹·è´æ•°æ®
     memcpy( rsp, data, len );
 
-    // ¼ÇÂ¼Êµ¼ÊÐ´ÈëµÄÊý¾Ý×Ö½ÚÊý
+    // è®°å½•å®žé™…å†™å…¥çš„æ•°æ®å­—èŠ‚æ•°
     ctxt->pc_result_buf_len = len;
 
-    // ÖÁ´ËÎÒÃÇÍê³ÉÁËÒ»¸öecho·þÎñÆ÷£¬¼òµ¥Ã´£¿
+    // è‡³æ­¤æˆ‘ä»¬å®Œæˆäº†ä¸€ä¸ªechoæœåŠ¡å™¨ï¼Œç®€å•ä¹ˆï¼Ÿ
 }
 
-// ÀÛËÀÎÒÁË£¬ÕâÌ×½âÊÍ¹»ÏêÏ¸°É£¿
+// ç´¯æ­»æˆ‘äº†ï¼Œè¿™å¥—è§£é‡Šå¤Ÿè¯¦ç»†å§ï¼Ÿ
 
-// ÒÔÉÏ¾ÍÊÇÒ»¸öÍêÕûµÄ¶þ½øÖÆÊý¾Ý°ü´¦ÀíµÄ·þÎñÆ÷£¬
-// ÕâÌ×·þÎñÆ÷Ö§³ÖTCP£¬UDP£¬ÉõÖÁÍ¨¹ýhttp¼Ð´ø¶þ½øÖÆÎÄ¼þµÄ·½Ê½´«µÝ£¬
-// µ«ÕâÐ©¶ÔÓÚ·þÎñÆ÷Ä£¿éÀ´ËµÈ«Í¸Ã÷£¬¶øÓÖÌá¹©ÁËÈÃÄ£¿éÖªÏþµÄÄÜÁ¦¡£
+// ä»¥ä¸Šå°±æ˜¯ä¸€ä¸ªå®Œæ•´çš„äºŒè¿›åˆ¶æ•°æ®åŒ…å¤„ç†çš„æœåŠ¡å™¨ï¼Œ
+// è¿™å¥—æœåŠ¡å™¨æ”¯æŒTCPï¼ŒUDPï¼Œç”šè‡³é€šè¿‡httpå¤¹å¸¦äºŒè¿›åˆ¶æ–‡ä»¶çš„æ–¹å¼ä¼ é€’ï¼Œ
+// ä½†è¿™äº›å¯¹äºŽæœåŠ¡å™¨æ¨¡å—æ¥è¯´å…¨é€æ˜Žï¼Œè€Œåˆæä¾›äº†è®©æ¨¡å—çŸ¥æ™“çš„èƒ½åŠ›ã€‚
 
-// ÊµÏÖÁËÉÏÊö¹¦ÄÜµÄ·þÎñÆ÷£¬ÓÃÁË¶àÉÙ´úÂë£¿Äã¿ÉÒÔ»ØÍ·ÕÒÒ»ÏÂ¡°ËãÐÐÊý¡±£¬¿´¿´Éæ¼°µÄ´úÂëÓÐ¼¸ÐÐ...
+// å®žçŽ°äº†ä¸Šè¿°åŠŸèƒ½çš„æœåŠ¡å™¨ï¼Œç”¨äº†å¤šå°‘ä»£ç ï¼Ÿä½ å¯ä»¥å›žå¤´æ‰¾ä¸€ä¸‹â€œç®—è¡Œæ•°â€ï¼Œçœ‹çœ‹æ¶‰åŠçš„ä»£ç æœ‰å‡ è¡Œ...
 
-// Èç¹û¾õµÃ»¹²»¹»´Ì¼¤£¬ÄÇÎÒÃÇÔÙ¼ÌÐø°É£º
+// å¦‚æžœè§‰å¾—è¿˜ä¸å¤Ÿåˆºæ¿€ï¼Œé‚£æˆ‘ä»¬å†ç»§ç»­å§ï¼š
 
 void gr_proc_http(
     gr_http_ctxt_t *    http
 )
 {
-    // ÊÇµÄ£¬ÄãÃ»²Â´í£¬µ±·þÎñÆ÷ÊÕµ½ÁËÒ»¸öHTTPÊý¾Ý°üÊ±£¬¾Í»áµ÷ÓÃ¸Ãº¯Êý¡£
-    // ÎªÁË²»±»ÀÛËÀ£¬ÎÒ¼òµ¥ÌùÒ»ÏÂgr_http_ctxt_t µÄ³ÉÔ±±äÁ¿£¬Äã¿ÉÒÔ¸ù¾Ý
-    // ±äÁ¿ÃûÀ´²Â³öËüµÄ×÷ÓÃºÍÊ¹ÓÃ·½·¨£º
+    // æ˜¯çš„ï¼Œä½ æ²¡çŒœé”™ï¼Œå½“æœåŠ¡å™¨æ”¶åˆ°äº†ä¸€ä¸ªHTTPæ•°æ®åŒ…æ—¶ï¼Œå°±ä¼šè°ƒç”¨è¯¥å‡½æ•°ã€‚
+    // ä¸ºäº†ä¸è¢«ç´¯æ­»ï¼Œæˆ‘ç®€å•è´´ä¸€ä¸‹gr_http_ctxt_t çš„æˆå‘˜å˜é‡ï¼Œä½ å¯ä»¥æ ¹æ®
+    // å˜é‡åæ¥çŒœå‡ºå®ƒçš„ä½œç”¨å’Œä½¿ç”¨æ–¹æ³•ï¼š
     /*
     // uint16_t                 hc_is_tcp( bit field )
     // uint16_t                 hc_package_type( bit field )
@@ -425,20 +425,20 @@ void gr_proc_http(
 
     typedef struct
     {
-        // ²ÎÊýÃû
+        // å‚æ•°å
         char *                      name;
-        // ²ÎÊýÖµ
+        // å‚æ•°å€¼
         char *                      value;
     } gr_http_param_t;
     */
 
-    // Í¨¹ý·þÎñÆ÷¿ò¼ÜÌá¹©µÄº¯Êý£¬Äã¿ÉÒÔ·½±ãµÄÉú³ÉÒ»¸öHTTP·µ»Ø°ü²¢Ð´Èëhttp->hc_result_bufÖÐ
-    // µ«ÎªÁË¼òµ¥£¬Õâ¸ö¹ý³ÌÔÝÊ±ºöÂÔÁË¡£
+    // é€šè¿‡æœåŠ¡å™¨æ¡†æž¶æä¾›çš„å‡½æ•°ï¼Œä½ å¯ä»¥æ–¹ä¾¿çš„ç”Ÿæˆä¸€ä¸ªHTTPè¿”å›žåŒ…å¹¶å†™å…¥http->hc_result_bufä¸­
+    // ä½†ä¸ºäº†ç®€å•ï¼Œè¿™ä¸ªè¿‡ç¨‹æš‚æ—¶å¿½ç•¥äº†ã€‚
     const char * dir;
     int i;
 
-    // ÒÔÏÂ´úÂë¼òµ¥´òÓ¡³öµ÷ÓÃ·½·ÃÎÊµÄÇëÇóÄÚÈÝ¡£
-    // ´ÓURL,QueryString,Headers,Form, HttpBody¶¼ÓÐ¡£
+    // ä»¥ä¸‹ä»£ç ç®€å•æ‰“å°å‡ºè°ƒç”¨æ–¹è®¿é—®çš„è¯·æ±‚å†…å®¹ã€‚
+    // ä»ŽURL,QueryString,Headers,Form, HttpBodyéƒ½æœ‰ã€‚
     dir = http->hc_directory;
     if ( 0 == strcmp( "/", dir ) )
         dir = "";
@@ -460,19 +460,19 @@ void gr_proc_http(
         printf( "%s : %s\n", http->hc_header[ i ].name, http->hc_header[ i ].value );
     }
     printf( "\n" );
-    // Êý¾ÝÇø
+    // æ•°æ®åŒº
     printf( "%s\n", http->hc_body );
 }
 
-// Õâ»Ø¹»´Ì¼¤ÁË°É£¿
+// è¿™å›žå¤Ÿåˆºæ¿€äº†å§ï¼Ÿ
 
-// Çë×¢Òâ£¬Õâ¸ö·þÎñÆ÷Ä£¿éÊÇ¿çÆ½Ì¨µÄ£¬Ëü¿ÉÒÔ¸úËæ·þÎñÆ÷¿ò¼Ü¿çµ½ËüËùÖ§³ÖµÄËùÓÐÆ½Ì¨¡£
+// è¯·æ³¨æ„ï¼Œè¿™ä¸ªæœåŠ¡å™¨æ¨¡å—æ˜¯è·¨å¹³å°çš„ï¼Œå®ƒå¯ä»¥è·ŸéšæœåŠ¡å™¨æ¡†æž¶è·¨åˆ°å®ƒæ‰€æ”¯æŒçš„æ‰€æœ‰å¹³å°ã€‚
 
-// ¹ØÓÚHTTP£¬ÎÒ»¹Ã»ËµÍêÄØ£º
-// 1¡¢·þÎñÆ÷¿ò¼ÜÖ§³ÖÍ¬Ê±ÔÚTCP¡¢UDPÀïÃæ´¦ÀíHTTPÐ­Òé
-// 2¡¢·þÎñÆ÷¿ò¼ÜÖ§³ÖÒ»¸öTCPÁ¬½ÓÀïÊ¹ÓÃ²»Í¬µÄÐ­Òé£¬±ÈÈçµÚÒ»¸öÇëÇóÊ¹ÓÃÓÃ»§×Ô¶¨ÒåÐ­Òé£¬
-//    µÚ¶þ¸öÇëÇóÊÇ¸öHTTPÐ­Òé£¬µÚÈý¸öÇëÇóÓÖÊÇÒ»¸öÓÃ»§×Ô¶¨ÒåÐ­Òé...·þÎñÆ÷¿ò¼Ü»áºÜHappyµÄÖ§³Ö¡£
+// å…³äºŽHTTPï¼Œæˆ‘è¿˜æ²¡è¯´å®Œå‘¢ï¼š
+// 1ã€æœåŠ¡å™¨æ¡†æž¶æ”¯æŒåŒæ—¶åœ¨TCPã€UDPé‡Œé¢å¤„ç†HTTPåè®®
+// 2ã€æœåŠ¡å™¨æ¡†æž¶æ”¯æŒä¸€ä¸ªTCPè¿žæŽ¥é‡Œä½¿ç”¨ä¸åŒçš„åè®®ï¼Œæ¯”å¦‚ç¬¬ä¸€ä¸ªè¯·æ±‚ä½¿ç”¨ç”¨æˆ·è‡ªå®šä¹‰åè®®ï¼Œ
+//    ç¬¬äºŒä¸ªè¯·æ±‚æ˜¯ä¸ªHTTPåè®®ï¼Œç¬¬ä¸‰ä¸ªè¯·æ±‚åˆæ˜¯ä¸€ä¸ªç”¨æˆ·è‡ªå®šä¹‰åè®®...æœåŠ¡å™¨æ¡†æž¶ä¼šå¾ˆHappyçš„æ”¯æŒã€‚
 
-// ËµÍêÁË£¬ºÈ¿ÚË®È¥...
+// è¯´å®Œäº†ï¼Œå–å£æ°´åŽ»...
 
 // 2013-09-28

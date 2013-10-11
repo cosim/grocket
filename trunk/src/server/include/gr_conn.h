@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   Á¬½ÓÏà¹Ø´¦Àí
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   è¿æ¥ç›¸å…³å¤„ç†
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -46,22 +46,22 @@ typedef struct gr_queue_item_compact_t  gr_queue_item_compact_t;
 
 typedef enum
 {
-    // ÒÑ¾­¹Ø±Õ
+    // å·²ç»å…³é—­
     GR_CLOSED       = 0,
 
-    // ÕıÔÚ¹Ø±ÕÁ÷³ÌÖĞ£¬tcp_in»òtcp_outÔÚ·¢ÏÖGR_NEED_CLOSE×´Ì¬ºó£¬
-    // ½«×´Ì¬¸ÄÎªGR_CLOSINGÖ®ºó£¬¿ªÊ¼¹Ø±ÕÒ»¸öÁ¬½ÓµÄÁ÷³Ì¡£
+    // æ­£åœ¨å…³é—­æµç¨‹ä¸­ï¼Œtcp_inæˆ–tcp_outåœ¨å‘ç°GR_NEED_CLOSEçŠ¶æ€åï¼Œ
+    // å°†çŠ¶æ€æ”¹ä¸ºGR_CLOSINGä¹‹åï¼Œå¼€å§‹å…³é—­ä¸€ä¸ªè¿æ¥çš„æµç¨‹ã€‚
     GR_CLOSING      = 1,
 
-    // ĞèÒª¹Ø±Õ¡£ÕâÍ¨³£ÊÇgr_poll_t·¢ÏÖµÄ´íÎó£¬½¨Òé¹ØÁ¬½Ó¡£
+    // éœ€è¦å…³é—­ã€‚è¿™é€šå¸¸æ˜¯gr_poll_tå‘ç°çš„é”™è¯¯ï¼Œå»ºè®®å…³è¿æ¥ã€‚
     GR_NEED_CLOSE   = 2,
 
-    // Á¬½ÓÊÇÕı³£ÓĞĞ§µÄ¡£
+    // è¿æ¥æ˜¯æ­£å¸¸æœ‰æ•ˆçš„ã€‚
     GR_OPENING      = 2
 
 } gr_close_type_t;
 
-// ¹ØÓÚ¸Ã½á¹¹µÄÏ¸½Ú£¬¼ûgr_queue.hÎÄ¼şÖĞµÄgr_queue_tºÍgr_queue_item_t
+// å…³äºè¯¥ç»“æ„çš„ç»†èŠ‚ï¼Œè§gr_queue.hæ–‡ä»¶ä¸­çš„gr_queue_tå’Œgr_queue_item_t
 struct gr_queue_item_compact_t
 {
     // single link table
@@ -71,39 +71,39 @@ struct gr_queue_item_compact_t
     // processed item will be delete on next SwSrQueuePush or SwSrQueueDestroy called
     volatile bool               is_processed;
 
-    // ÖÁÉÙÓĞÈı¸ö×Ö½ÚÊÇ¿ÉÓÃµÄ
+    // è‡³å°‘æœ‰ä¸‰ä¸ªå­—èŠ‚æ˜¯å¯ç”¨çš„
 
-    // ¸Ã×Ö¶Î±ê×¢ÁËÇëÇó°üµÄÀàĞÍ£¬¸ÃÖµ±ØĞëÎªtrue
+    // è¯¥å­—æ®µæ ‡æ³¨äº†è¯·æ±‚åŒ…çš„ç±»å‹ï¼Œè¯¥å€¼å¿…é¡»ä¸ºtrue
     bool                        is_tcp;
 
-    // ÒıÓÃ¼ÆÊı
+    // å¼•ç”¨è®¡æ•°
     char                        refs;
 
-    // ÊÇ·ñÇëÇó£¬²»ÊÇÇëÇó¾ÍÊÇÓ¦´ğ
+    // æ˜¯å¦è¯·æ±‚ï¼Œä¸æ˜¯è¯·æ±‚å°±æ˜¯åº”ç­”
     bool                        is_req;
 };
 
 #pragma pack( pop )
 
-// TCP ÇëÇó
+// TCP è¯·æ±‚
 struct gr_tcp_req_t
 {
-    // ¸Ã³ÉÔ±±ØĞëÔÚ×îÇ°Ãæ
-    // ±¾½á¹¹ÒªÃ´ÒÔ»Ø¸´µÄÉí·İÔÚgr_tcp_conn_item_tµÄrsp_listÀï£¬
-    // ÒªÃ´ÒÔÇëÇóµÄÉí·İÔÚworkµÄ¶ÓÁĞÀï£¬ËùÒÔÒ»¸ö¾Í¹»ÁË
+    // è¯¥æˆå‘˜å¿…é¡»åœ¨æœ€å‰é¢
+    // æœ¬ç»“æ„è¦ä¹ˆä»¥å›å¤çš„èº«ä»½åœ¨gr_tcp_conn_item_tçš„rsp_listé‡Œï¼Œ
+    // è¦ä¹ˆä»¥è¯·æ±‚çš„èº«ä»½åœ¨workçš„é˜Ÿåˆ—é‡Œï¼Œæ‰€ä»¥ä¸€ä¸ªå°±å¤Ÿäº†
     union
     {
-        // Õâ¸ö³ÉÔ±ÊÇ¸øgr_queue_tÓÃµÄ
+        // è¿™ä¸ªæˆå‘˜æ˜¯ç»™gr_queue_tç”¨çš„
         gr_queue_item_t                 entry;
-        // ÓÉÓÚgr_queue_item_tÓĞºÃ´óµÄ¿Õ¶´¿ÉÒÔÓÃÀ´´æ¶«Î÷£¬ËùÒÔÎÒÃÇÄÚ²¿¿ÉÒÔÓÃÕâ¸ö¡£
+        // ç”±äºgr_queue_item_tæœ‰å¥½å¤§çš„ç©ºæ´å¯ä»¥ç”¨æ¥å­˜ä¸œè¥¿ï¼Œæ‰€ä»¥æˆ‘ä»¬å†…éƒ¨å¯ä»¥ç”¨è¿™ä¸ªã€‚
         gr_queue_item_compact_t         entry_compact;
     };
 
-    // µ±Ç°Êı¾İ°üµÄ¼ì²éÉÏÏÂÎÄ  
+    // å½“å‰æ•°æ®åŒ…çš„æ£€æŸ¥ä¸Šä¸‹æ–‡  
     gr_check_ctxt_t                     check_ctxt;
 
 #if defined( WIN32 ) || defined( WIN64 )
-    // WindowsÊÕ, IOCPÏà¹Ø
+    // Windowsæ”¶, IOCPç›¸å…³
     OVERLAPPED                          iocp_overlapped;
     WSABUF                              iocp_wsabuf;
     union {
@@ -113,92 +113,92 @@ struct gr_tcp_req_t
     DWORD                               iocp_flags;
 #endif
 
-    // ÇëÇóÁĞ±í±íÏî
+    // è¯·æ±‚åˆ—è¡¨è¡¨é¡¹
     gr_tcp_req_t *                      entry_req_list;
 
-    // ÇëÇó»ò»Ø¸´ËùÊôµÄÁ¬½Ó¶ÔÏóÖ¸Õë¡£ÎªÊ²Ã´ĞèÒªÕâ¸öÖ¸ÕëÄØ£¿
-    // ÒòÎªÔÚgr_conn_item_tÀï²¢Ã»ÓĞ´æ´¢gr_req_tµÄÖ¸ÕëÁĞ±í¡£
-    // ËüÖ»´æÁËÒ»¸öÃ»ÊÕÍêµÄreqÖ¸Õë£¬Ò»µ«ÊÕÈ«ÁË¾ÍÈÓ¸ø¹¤×÷Ïß³ÌÈ¥ÁË¡£
+    // è¯·æ±‚æˆ–å›å¤æ‰€å±çš„è¿æ¥å¯¹è±¡æŒ‡é’ˆã€‚ä¸ºä»€ä¹ˆéœ€è¦è¿™ä¸ªæŒ‡é’ˆå‘¢ï¼Ÿ
+    // å› ä¸ºåœ¨gr_conn_item_té‡Œå¹¶æ²¡æœ‰å­˜å‚¨gr_req_tçš„æŒ‡é’ˆåˆ—è¡¨ã€‚
+    // å®ƒåªå­˜äº†ä¸€ä¸ªæ²¡æ”¶å®Œçš„reqæŒ‡é’ˆï¼Œä¸€ä½†æ”¶å…¨äº†å°±æ‰”ç»™å·¥ä½œçº¿ç¨‹å»äº†ã€‚
     gr_tcp_conn_item_t *                parent;
-    // ÇëÇó»ò»Ø¸´Êı¾İ°üÖ¸Õë
+    // è¯·æ±‚æˆ–å›å¤æ•°æ®åŒ…æŒ‡é’ˆ
     char *                              buf;
-    // ÇëÇó»ò»Ø¸´Êı¾İ°ü×î´ó³¤¶ÈÏŞÖÆ£¬°üÀ¨\0µÄ¿Õ¼ä£¬Êµ¼Ê´æ·ÅµÄÊı¾İ×î¶àÊÇbuf_max - 1×Ö½Ú£¬ºóÃæ±£Ö¤»áÓĞ\0
+    // è¯·æ±‚æˆ–å›å¤æ•°æ®åŒ…æœ€å¤§é•¿åº¦é™åˆ¶ï¼ŒåŒ…æ‹¬\0çš„ç©ºé—´ï¼Œå®é™…å­˜æ”¾çš„æ•°æ®æœ€å¤šæ˜¯buf_max - 1å­—èŠ‚ï¼Œåé¢ä¿è¯ä¼šæœ‰\0
     int                                 buf_max;
-    // ÇëÇó»ò»Ø¸´Êı¾İ°üÊµ¼ÊÊı¾İ³¤¶È
+    // è¯·æ±‚æˆ–å›å¤æ•°æ®åŒ…å®é™…æ•°æ®é•¿åº¦
     int                                 buf_len;
-    // ÒÑ¾­·¢ËÍµÄ×Ö½ÚÊı
+    // å·²ç»å‘é€çš„å­—èŠ‚æ•°
     int                                 buf_sent;
 
-    // ÔÚ·ÇWindowsµÄ64Î»ÏµÍ³ÏÂ, ÒÔÉÏ60×Ö½Ú
+    // åœ¨éWindowsçš„64ä½ç³»ç»Ÿä¸‹, ä»¥ä¸Š60å­—èŠ‚
 
 } __attribute__ ((aligned (64)));
 
-// UDP ÇëÇó
+// UDP è¯·æ±‚
 struct gr_udp_req_t
 {
-    // ¸Ã³ÉÔ±±ØĞëÔÚ×îÇ°Ãæ
+    // è¯¥æˆå‘˜å¿…é¡»åœ¨æœ€å‰é¢
     union
     {
-        // Õâ¸ö³ÉÔ±ÊÇ¸øgr_queue_tÓÃµÄ
+        // è¿™ä¸ªæˆå‘˜æ˜¯ç»™gr_queue_tç”¨çš„
         gr_queue_item_t                 entry;
-        // ÓÉÓÚgr_queue_item_tÓĞºÃ´óµÄ¿Õ¶´¿ÉÒÔÓÃÀ´´æ¶«Î÷£¬ËùÒÔÎÒÃÇÄÚ²¿Ê¹ÓÃ¿ÉÒÔÓÃÕâ¸ö¡£
+        // ç”±äºgr_queue_item_tæœ‰å¥½å¤§çš„ç©ºæ´å¯ä»¥ç”¨æ¥å­˜ä¸œè¥¿ï¼Œæ‰€ä»¥æˆ‘ä»¬å†…éƒ¨ä½¿ç”¨å¯ä»¥ç”¨è¿™ä¸ªã€‚
         gr_queue_item_compact_t         entry_compact;
     };
 
-    // µ±Ç°Êı¾İ°üµÄ¼ì²éÉÏÏÂÎÄ  
+    // å½“å‰æ•°æ®åŒ…çš„æ£€æŸ¥ä¸Šä¸‹æ–‡  
     gr_check_ctxt_t                     check_ctxt;
 
 #if defined( WIN32 ) || defined( WIN64 )
-    // WindowsÊÕ, IOCPÏà¹Ø
+    // Windowsæ”¶, IOCPç›¸å…³
     OVERLAPPED                          iocp_overlapped;
     WSABUF                              iocp_wsabuf;
     DWORD                               iocp_recved;
     DWORD                               iocp_flags;
 #endif
 
-    // ÇëÇó»ò»Ø¸´Êı¾İ°üÖ¸Õë
+    // è¯·æ±‚æˆ–å›å¤æ•°æ®åŒ…æŒ‡é’ˆ
     char *                              buf;
 
-    // ¿Í»§¶ËµØÖ·
+    // å®¢æˆ·ç«¯åœ°å€
     union
     {
         struct sockaddr                 addr;
         struct sockaddr_in              addr_v4;
-        struct sockaddr_in6             addr_v6; // 28×Ö½Ú
+        struct sockaddr_in6             addr_v6; // 28å­—èŠ‚
     };
 
-    // ÇëÇó»ò»Ø¸´Êı¾İ°ü×î´ó³¤¶ÈÏŞÖÆ£¬°üÀ¨\0µÄ¿Õ¼ä£¬Êµ¼Ê´æ·ÅµÄÊı¾İ×î¶àÊÇbuf_max - 1×Ö½Ú£¬ºóÃæ±£Ö¤»áÓĞ\0
+    // è¯·æ±‚æˆ–å›å¤æ•°æ®åŒ…æœ€å¤§é•¿åº¦é™åˆ¶ï¼ŒåŒ…æ‹¬\0çš„ç©ºé—´ï¼Œå®é™…å­˜æ”¾çš„æ•°æ®æœ€å¤šæ˜¯buf_max - 1å­—èŠ‚ï¼Œåé¢ä¿è¯ä¼šæœ‰\0
     uint16_t                            buf_max;
 
-    // ÇëÇó»ò»Ø¸´Êı¾İ°üÊµ¼ÊÊı¾İ³¤¶È
+    // è¯·æ±‚æˆ–å›å¤æ•°æ®åŒ…å®é™…æ•°æ®é•¿åº¦
     uint16_t                            buf_len;
 
-    // ÔÚ·ÇWindowsµÄ64Î»ÏµÍ³ÏÂ, ÒÔÉÏ64×Ö½Ú
+    // åœ¨éWindowsçš„64ä½ç³»ç»Ÿä¸‹, ä»¥ä¸Š64å­—èŠ‚
 
 } __attribute__ ((aligned (64)));
 
 
 struct gr_tcp_conn_item_t
 {
-    // TCPÇëÇóµ¥ÏòÁĞ±í
+    // TCPè¯·æ±‚å•å‘åˆ—è¡¨
     gr_tcp_req_t *                      req_list_head;
     gr_tcp_req_t *                      req_list_tail;
-    // TCP»Ø¸´µ¥ÏòÁĞ±í
+    // TCPå›å¤å•å‘åˆ—è¡¨
     gr_tcp_rsp_t *                      rsp_list_head;
     gr_tcp_rsp_t *                      rsp_list_tail;
 
-    // µ±Ç°ÕıÔÚ½ÓÊÕÊı¾İ¹ı³ÌÖĞµÄTCPÇëÇó¶ÔÏó£¬Ò»µ«Êı¾İ°üÊÕÍêÕûÁË£¬
-    // Ôò¸Ãreq·ÅÈëreq_list£¬Í¬Ê±±»ÈÓ¸ø¹¤×÷Ïß³Ì¡£
-    // Í¬Ê±ÔÙ´´½¨Ò»¸ötcp_reqÓÃÓÚ½ÓÊÕºóĞøÊı¾İ°ü¡£
+    // å½“å‰æ­£åœ¨æ¥æ”¶æ•°æ®è¿‡ç¨‹ä¸­çš„TCPè¯·æ±‚å¯¹è±¡ï¼Œä¸€ä½†æ•°æ®åŒ…æ”¶å®Œæ•´äº†ï¼Œ
+    // åˆ™è¯¥reqæ”¾å…¥req_listï¼ŒåŒæ—¶è¢«æ‰”ç»™å·¥ä½œçº¿ç¨‹ã€‚
+    // åŒæ—¶å†åˆ›å»ºä¸€ä¸ªtcp_reqç”¨äºæ¥æ”¶åç»­æ•°æ®åŒ…ã€‚
     gr_tcp_req_t *                      req;
 
-    // ¸ÃÁ¬½ÓµÄ¼àÌıÇé¿ö
+    // è¯¥è¿æ¥çš„ç›‘å¬æƒ…å†µ
     gr_port_item_t *                    port_item;
 
-    // ¸ÃÁ¬½ÓµÄ¾ä±ú
+    // è¯¥è¿æ¥çš„å¥æŸ„
     int                                 fd;
 
-    // ¹Ø±ÕÀàĞÍ¡£¼û gr_close_type_t
+    // å…³é—­ç±»å‹ã€‚è§ gr_close_type_t
     gr_close_type_t                     close_type;
 
 } __attribute__ ((aligned (64)));

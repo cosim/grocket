@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/03
  * @version $Revision$ 
- * @brief   UDPÊý¾Ý½ÓÊÕÏß³Ì
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   UDPæ•°æ®æŽ¥æ”¶çº¿ç¨‹
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -23,7 +23,7 @@
 #include "gr_socket.h"
 #include "gr_conn.h"
 
-// gr_tcp_accept_t ÒÑ¾­ÊÇÍâ²¿½Ó¿Ú»Øµ÷º¯ÊýÉùÃ÷ÁË, ÎÒÖ»ÄÜ»»Ò»¸öÃû×Ö gr_accept_t
+// gr_tcp_accept_t å·²ç»æ˜¯å¤–éƒ¨æŽ¥å£å›žè°ƒå‡½æ•°å£°æ˜Žäº†, æˆ‘åªèƒ½æ¢ä¸€ä¸ªåå­— gr_accept_t
 typedef struct
 {
     gr_threads_t    threads;
@@ -78,7 +78,7 @@ void udp_in_worker( gr_thread_t * thread )
             {
                 port_item = (gr_port_item_t *)e->data.ptr;
 
-                // TCPÐÂÁ¬½Ó
+                // TCPæ–°è¿žæŽ¥
                 on_udp_in( self, thread, port_item );
             } else {
                 gr_fatal( "invalid e->data.ptr %p", e->data.ptr );
@@ -163,7 +163,7 @@ void gr_udp_in_term()
 
         gr_threads_close( & p->threads );
 
-        // Ïß³ÌÍ£ÁË¾Í¿ÉÒÔ°ÑÈ«¾Ö±äÁ¿ÇåµôÁË
+        // çº¿ç¨‹åœäº†å°±å¯ä»¥æŠŠå…¨å±€å˜é‡æ¸…æŽ‰äº†
         g_ghost_rocket_global.udp_in = NULL;
 
         if ( NULL != p->poll ) {

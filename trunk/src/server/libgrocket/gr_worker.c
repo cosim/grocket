@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ¹¤×÷Ïß³Ì»ò¹¤×÷½ø³Ì
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   å·¥ä½œçº¿ç¨‹æˆ–å·¥ä½œè¿›ç¨‹
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -68,9 +68,9 @@ void process_tcp(
 {
     per_thread_t *      per_thread      = (per_thread_t *)thread->cookie;
     gr_proc_ctxt_t *    ctxt            = & per_thread->bin_ctxt;
-    // Ä¬ÈÏÒÑ´¦Àí×Ö½ÚÊýÊÇÊäÈë×Ö½ÚÊý
+    // é»˜è®¤å·²å¤„ç†å­—èŠ‚æ•°æ˜¯è¾“å…¥å­—èŠ‚æ•°
     int                 processed_len   = req->buf_len;
-    // ¼ÇÂ¼Ò»ÏÂÔ­Ê¼µÄÇëÇó°ü
+    // è®°å½•ä¸€ä¸‹åŽŸå§‹çš„è¯·æ±‚åŒ…
     char *              req_buf         = req->buf;
     int                 req_buf_max     = req->buf_max;
     int                 req_buf_len     = req->buf_len;
@@ -84,32 +84,32 @@ void process_tcp(
     gr_module_proc_tcp( req, ctxt, & processed_len );
 
     if ( ctxt->pc_result_buf_len <= 0 ) {
-        // Ã»ÓÐ»Ø¸´Êý¾Ý°ü
+        // æ²¡æœ‰å›žå¤æ•°æ®åŒ…
         return;
     }
 
-    // ÓÐ»Ø¸´Êý¾Ý°ü
+    // æœ‰å›žå¤æ•°æ®åŒ…
 
-    // Ôö¼ÓÒýÓÃ¼ÆÊý
+    // å¢žåŠ å¼•ç”¨è®¡æ•°
     r = gr_tcp_req_add_refs( req );
     if ( 0 != r ) {
         gr_fatal( "gr_tcp_req_add_refs faiiled" );
         return;
     }
 
-    // ½«·µ»Ø°üÓ¦ÓÃµ½reqÖÐ£¬Õâ¸öreq½«±»¸ÄÔì³Érsp
+    // å°†è¿”å›žåŒ…åº”ç”¨åˆ°reqä¸­ï¼Œè¿™ä¸ªreqå°†è¢«æ”¹é€ æˆrsp
     gr_tcp_req_set_buf( req, ctxt->pc_result_buf, ctxt->pc_result_buf_max, ctxt->pc_result_buf_len );
     ctxt->pc_result_buf        = NULL;
     ctxt->pc_result_buf_max    = 0;
     ctxt->pc_result_buf_len    = 0;
 
-    // ½«req±ä³Érsp
+    // å°†reqå˜æˆrsp
     gr_tcp_req_to_rsp( req );
 
-    // ½«rspÈÓµ½Á¬½ÓµÄ¶ÓÁÐÖÐ
+    // å°†rspæ‰”åˆ°è¿žæŽ¥çš„é˜Ÿåˆ—ä¸­
     gr_tcp_conn_add_rsp( req->parent, req );
 
-    // ½«rsp·ÅÈëtcp_outÖÐ·¢ËÍ
+    // å°†rspæ”¾å…¥tcp_outä¸­å‘é€
     r = gr_tcp_out_add( req );
     if ( 0 != r ) {
         gr_fatal( "gr_tcp_out_add faiiled" );
@@ -131,20 +131,20 @@ void process_udp(
 static inline
 int hash_worker_tcp( gr_tcp_req_t * req, gr_worker_t * self )
 {
-    // TCP£¬°´SOCKETÃèÊö·ûËãHASH
+    // TCPï¼ŒæŒ‰SOCKETæè¿°ç¬¦ç®—HASH
     return req->parent->fd % self->threads.thread_count;
 }
 
 static inline
 int hash_worker_udp( gr_udp_req_t * req, gr_worker_t * self )
 {
-    // UDP, °´¿Í»§¶ËIPËãHASH
+    // UDP, æŒ‰å®¢æˆ·ç«¯IPç®—HASH
     if ( AF_INET == req->addr.sa_family ) {
         // IPV4
         return req->addr_v4.sin_addr.s_addr % self->threads.thread_count;
     } else if ( AF_INET6 == req->addr.sa_family ) {
         // IPV6
-        //TODO: ÐÔÄÜÐèÒªÓÅ»¯Ò»ÏÂ
+        //TODO: æ€§èƒ½éœ€è¦ä¼˜åŒ–ä¸€ä¸‹
         const unsigned char *   p = (const unsigned char *)& req->addr_v6.sin6_addr;
         int                     n = 0;
         size_t                  i;
@@ -381,15 +381,15 @@ int gr_worker_add_tcp(
     left_len    = req->buf_len - package_len;
     if ( left_len > 0 ) {
 
-        // pipe line ÇëÇóÖ§³Ö
+        // pipe line è¯·æ±‚æ”¯æŒ
 
-        // »º³åÇøÀïÊÇ¶à°üÊý¾Ý£¬Ê£ÓàµÄÊý¾Ý²»ÄÜ·ÅÔÚµ±Ç°ÇëÇóÖÐ£¬Òª·Å»ØÁ¬½Ó¶ÔÏó
-        // ´ÓÕâ¶ù¿ÉÒÔ¿´³ö£¬Èç¹ûÄ£¿éÖ§³Ö¶à°üÊý¾ÝÍ¬Ê±·¢£¬×îºÃÊÇÔÚÅÐ¶Ï°ü³¤¶ÈÊ±ÅÐ¶Ï¶à¸ö°ü£¬
-        // ÈÃÊ£ÏÂÀ´µÄ°ë°üÊý¾Ý×îÐ¡£¬ÕâÑù¿½±´µÄ¿ªÏú²Å×îÐ¡¡£
-        // ±ØÐë½« req ÈÓ¸ø worker£¬²»ÄÜ½«ÐÂ·ÖÅäµÄ new_req ÈÓ¸ø worker ÒòÎªÀÏµÄ req ÓÐºÜ¶à×´Ì¬
-        // ÒªÊÇÐÂ·ÖÅäÔÙ¿½±´£¬Ì«²»»®Ëã¡£
+        // ç¼“å†²åŒºé‡Œæ˜¯å¤šåŒ…æ•°æ®ï¼Œå‰©ä½™çš„æ•°æ®ä¸èƒ½æ”¾åœ¨å½“å‰è¯·æ±‚ä¸­ï¼Œè¦æ”¾å›žè¿žæŽ¥å¯¹è±¡
+        // ä»Žè¿™å„¿å¯ä»¥çœ‹å‡ºï¼Œå¦‚æžœæ¨¡å—æ”¯æŒå¤šåŒ…æ•°æ®åŒæ—¶å‘ï¼Œæœ€å¥½æ˜¯åœ¨åˆ¤æ–­åŒ…é•¿åº¦æ—¶åˆ¤æ–­å¤šä¸ªåŒ…ï¼Œ
+        // è®©å‰©ä¸‹æ¥çš„åŠåŒ…æ•°æ®æœ€å°ï¼Œè¿™æ ·æ‹·è´çš„å¼€é”€æ‰æœ€å°ã€‚
+        // å¿…é¡»å°† req æ‰”ç»™ workerï¼Œä¸èƒ½å°†æ–°åˆ†é…çš„ new_req æ‰”ç»™ worker å› ä¸ºè€çš„ req æœ‰å¾ˆå¤šçŠ¶æ€
+        // è¦æ˜¯æ–°åˆ†é…å†æ‹·è´ï¼Œå¤ªä¸åˆ’ç®—ã€‚
 
-        // Ôò·ÖÅä¸öÐÂµÄÇëÇó¶ÔÏó£¬½«Ê£ÓàÊý¾Ý¿½±´µ½ÐÂ·ÖÅäµÄÇëÇó¶ÔÏóÖÐ¡£Èç¹ûÈç¹ûÊ£ÓàµÄ×Ö½ÚÊý½ÏÐ¡»á±È½Ï»®Ëã¡£
+        // åˆ™åˆ†é…ä¸ªæ–°çš„è¯·æ±‚å¯¹è±¡ï¼Œå°†å‰©ä½™æ•°æ®æ‹·è´åˆ°æ–°åˆ†é…çš„è¯·æ±‚å¯¹è±¡ä¸­ã€‚å¦‚æžœå¦‚æžœå‰©ä½™çš„å­—èŠ‚æ•°è¾ƒå°ä¼šæ¯”è¾ƒåˆ’ç®—ã€‚
         new_req = gr_tcp_req_alloc( req->parent, req->buf_max );
         if ( NULL == new_req ) {
             gr_fatal( "gr_tcp_req_alloc failed" );
@@ -399,13 +399,13 @@ int gr_worker_add_tcp(
         new_req->buf_len = left_len;
         memcpy( new_req->buf, & req->buf[ package_len ], left_len );
 
-        // ½«Ê£ÓàµÄÊý¾Ý·Å»ØconnÖÐ
+        // å°†å‰©ä½™çš„æ•°æ®æ”¾å›žconnä¸­
         req->parent->req = new_req;
 
-        // ÐÞ¸ÄÇëÇó°üÊý¾Ý³¤¶ÈºÍÊµ¼Ê°ü³¤¶ÈÒ»ÖÂ
+        // ä¿®æ”¹è¯·æ±‚åŒ…æ•°æ®é•¿åº¦å’Œå®žé™…åŒ…é•¿åº¦ä¸€è‡´
         req->buf_len = package_len;
     } else {
-        // ½«ÇëÇó¶ÔÏó´ÓconnÖÐÕª³öÀ´
+        // å°†è¯·æ±‚å¯¹è±¡ä»Žconnä¸­æ‘˜å‡ºæ¥
         req->parent->req = NULL;
     }
 
@@ -414,14 +414,14 @@ int gr_worker_add_tcp(
         return 0;
     }
 
-    // ÏòworkerÖÐÑ¹°üÊ§°Ü£¬»¹ÒªÔÙ°ÑÇëÇó¶ÔÏóÈÓ»ØÁ¬½Ó¶ÔÏó
+    // å‘workerä¸­åŽ‹åŒ…å¤±è´¥ï¼Œè¿˜è¦å†æŠŠè¯·æ±‚å¯¹è±¡æ‰”å›žè¿žæŽ¥å¯¹è±¡
     if ( NULL != new_req ) {
 
-        // ÓÐ¶à°üÊý¾Ý£¬ÒªÉ¾³ý¸Õ·ÖÅä³öµÄ´æ·ÅÊ£ÓàÊý¾ÝµÄÇëÇó
-        // »Ö¸´Ô­À´Êý¾Ý³¤¶È
+        // æœ‰å¤šåŒ…æ•°æ®ï¼Œè¦åˆ é™¤åˆšåˆ†é…å‡ºçš„å­˜æ”¾å‰©ä½™æ•°æ®çš„è¯·æ±‚
+        // æ¢å¤åŽŸæ¥æ•°æ®é•¿åº¦
         req->buf_len = package_len + left_len;
 
-        // É¾³ý¸Õ¸Õ·ÖÅäµÄÇëÇó°ü
+        // åˆ é™¤åˆšåˆšåˆ†é…çš„è¯·æ±‚åŒ…
         gr_tcp_req_free( new_req );
     }
     req->parent->req = req;

@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/01
  * @version $Revision$ 
- * @brief   µ¥½ø³ÌĞ´£¬µ¥½ø³Ì¶ÁµÄ¶ÓÁĞ
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   å•è¿›ç¨‹å†™ï¼Œå•è¿›ç¨‹è¯»çš„é˜Ÿåˆ—
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -18,59 +18,59 @@
 #include "gr_tools.h"
 #include <assert.h>
 
-// Ò»¸öÕæÕıµÄ¶ÓÁĞµÄ¶ÓÁĞÁ´±í£¬ÊÇ¸öµ¥Á´±í
+// ä¸€ä¸ªçœŸæ­£çš„é˜Ÿåˆ—çš„é˜Ÿåˆ—é“¾è¡¨ï¼Œæ˜¯ä¸ªå•é“¾è¡¨
 typedef struct queue_inner
 {
-    // ÁĞ±íÍ·£¬µ÷ÓÃÏß³ÌÎ¬»¤£¬¹¤×÷Ïß³Ì²»ÄÜ·ÃÎÊ
-    // Ò»µ«µ÷ÓÃÏß³ÌÉ¾³ıÁËÒÑ±»±ê¼ÇÎªÒÑ´¦ÀíµÄÊı¾İÏîÊ±£¬
-    // ¸ÃÖ¸Õë»á±»ĞŞ¸Ä
+    // åˆ—è¡¨å¤´ï¼Œè°ƒç”¨çº¿ç¨‹ç»´æŠ¤ï¼Œå·¥ä½œçº¿ç¨‹ä¸èƒ½è®¿é—®
+    // ä¸€ä½†è°ƒç”¨çº¿ç¨‹åˆ é™¤äº†å·²è¢«æ ‡è®°ä¸ºå·²å¤„ç†çš„æ•°æ®é¡¹æ—¶ï¼Œ
+    // è¯¥æŒ‡é’ˆä¼šè¢«ä¿®æ”¹
     volatile gr_queue_item_t *  head;
 
-    // µ±Ç°´¦ÀíÖ¸Õë£¬µ÷ÓÃÏß³Ì¸ºÔğ³õÊ¼»¯£¬¹¤×÷Ïß³Ì¸ºÔğ¸Ä±äËü×îÖÕµ½NULL¡£
-    // ¸Ã³ÉÔ±ÓÃÓÚ´¦ÀíÏß³Ì¼ÇÂ¼×Ô¼ºµ±Ç°ÕıÔÚ´¦ÀíµÄÊı¾İÏî£¬
-    // ÒòÎª´¦Àí¹ıµÄÊı¾İÏî±»´òÁËÒÑ´¦Àí±ê¼Ç£¬µ«²¢Î´É¾³ı£¬
-    // ´¦ÀíÏß³Ì²»ÄÜÃ¿´Î´¦Àí¶¼ÁÙÊ±²éÕÒÎ´´¦ÀíÏîµÄ¿ªÊ¼Î»ÖÃ
+    // å½“å‰å¤„ç†æŒ‡é’ˆï¼Œè°ƒç”¨çº¿ç¨‹è´Ÿè´£åˆå§‹åŒ–ï¼Œå·¥ä½œçº¿ç¨‹è´Ÿè´£æ”¹å˜å®ƒæœ€ç»ˆåˆ°NULLã€‚
+    // è¯¥æˆå‘˜ç”¨äºå¤„ç†çº¿ç¨‹è®°å½•è‡ªå·±å½“å‰æ­£åœ¨å¤„ç†çš„æ•°æ®é¡¹ï¼Œ
+    // å› ä¸ºå¤„ç†è¿‡çš„æ•°æ®é¡¹è¢«æ‰“äº†å·²å¤„ç†æ ‡è®°ï¼Œä½†å¹¶æœªåˆ é™¤ï¼Œ
+    // å¤„ç†çº¿ç¨‹ä¸èƒ½æ¯æ¬¡å¤„ç†éƒ½ä¸´æ—¶æŸ¥æ‰¾æœªå¤„ç†é¡¹çš„å¼€å§‹ä½ç½®
     volatile gr_queue_item_t *  curr;
 
-    // ÁĞ±íÎ²£¬µ÷ÓÃÏß³ÌÎ¬»¤£¬¹¤×÷Ïß³Ì²»ÄÜ·ÃÎÊ
-    // ¸Ã³ÉÔ±ÓÃÓÚÏò¶ÓÁĞÎ²¼ÓÈëÊı¾İÏî
+    // åˆ—è¡¨å°¾ï¼Œè°ƒç”¨çº¿ç¨‹ç»´æŠ¤ï¼Œå·¥ä½œçº¿ç¨‹ä¸èƒ½è®¿é—®
+    // è¯¥æˆå‘˜ç”¨äºå‘é˜Ÿåˆ—å°¾åŠ å…¥æ•°æ®é¡¹
     volatile gr_queue_item_t *  tail;
 
 } queue_inner;
 
 struct gr_queue_t
 {
-    // gr_queue_top µ«Ã»Êı¾İÊ±Ê¹ÓÃµÄµÈ´ıÊÂ¼ş
+    // gr_queue_top ä½†æ²¡æ•°æ®æ—¶ä½¿ç”¨çš„ç­‰å¾…äº‹ä»¶
     gr_event_t                  event;
 
-    // ÍË³öÍ¨Öª
+    // é€€å‡ºé€šçŸ¥
     gr_event_t                  exited_event;
 
-    // ½ô¼±¶ÓÁĞ
+    // ç´§æ€¥é˜Ÿåˆ—
     volatile queue_inner        emerge_queue;
-    // ³£¹æ¶ÓÁĞ
+    // å¸¸è§„é˜Ÿåˆ—
     volatile queue_inner        normal_queue;
 
-    // µ÷ÓÃ¹ıgr_queue_topºó£¬¼ÇÂ¼È¡³öµÄ¶ÔÏóËùÔÚµÄ¶ÓÁĞ£¬gr_queue_pop_topº¯ÊıÊ¹ÓÃ
+    // è°ƒç”¨è¿‡gr_queue_topåï¼Œè®°å½•å–å‡ºçš„å¯¹è±¡æ‰€åœ¨çš„é˜Ÿåˆ—ï¼Œgr_queue_pop_topå‡½æ•°ä½¿ç”¨
     volatile queue_inner *      curr_queue;
 
-    // »Øµ÷º¯ÊıµÄÒ»¸ö²ÎÊı£¬ÓÃ»§´«½øÀ´µÄ£¬ÎÒ¸øÄãÑ¾·µ»ØÈ¥
+    // å›è°ƒå‡½æ•°çš„ä¸€ä¸ªå‚æ•°ï¼Œç”¨æˆ·ä¼ è¿›æ¥çš„ï¼Œæˆ‘ç»™ä½ ä¸«è¿”å›å»
     void *                      callback_param;
 
-    // ÓÃ»§´«½øÀ´µÄ»Øµ÷º¯Êı
+    // ç”¨æˆ·ä¼ è¿›æ¥çš„å›è°ƒå‡½æ•°
     void ( * free_item )( void * param, gr_queue_item_t * p );
 
-    // µ±Ç°ÊÇ·ñÔÚTopº¯ÊıÊ¹ÓÃevent_waitº¯ÊıµÈ´ıµÄ¹ı³ÌÖĞ¡£Èç¹ûÊÇ£¬ÔòÑ¹°üÊ±»áÊ¹ÓÃevent_alaram»½ĞÑ
+    // å½“å‰æ˜¯å¦åœ¨Topå‡½æ•°ä½¿ç”¨event_waitå‡½æ•°ç­‰å¾…çš„è¿‡ç¨‹ä¸­ã€‚å¦‚æœæ˜¯ï¼Œåˆ™å‹åŒ…æ—¶ä¼šä½¿ç”¨event_alaramå”¤é†’
     volatile bool               in_event;
 
-    // µ±Ç°ÊÇ·ñĞèÒªÏß³ÌÍË³ö£¬Õâ¸öÊÇ¸øTopµÄĞÅºÅ
+    // å½“å‰æ˜¯å¦éœ€è¦çº¿ç¨‹é€€å‡ºï¼Œè¿™ä¸ªæ˜¯ç»™Topçš„ä¿¡å·
     volatile bool               need_exit;
 
-    // µ±Ç°ÊÇ·ñ´¦ÀíÏß³ÌÒÑ¾­ÍË³öÁË
+    // å½“å‰æ˜¯å¦å¤„ç†çº¿ç¨‹å·²ç»é€€å‡ºäº†
     volatile bool               is_exited;
     
 #if defined( WIN32 ) || defined( WIN64 )
-	// ¼ÇÂ¼µ÷TopºÍPopTopµÄÏß³ÌID
+	// è®°å½•è°ƒTopå’ŒPopTopçš„çº¿ç¨‹ID
 	volatile DWORD              pop_thread_id;
 #endif
 };
@@ -163,7 +163,7 @@ gr_queue_exit(
             gr_event_wait( & self->exited_event, GR_EVENT_WAIT_INFINITE );
     }
 
-        // ¹ØÍêÁË»Ö¸´Ò»ÏÂ×´Ì¬
+        // å…³å®Œäº†æ¢å¤ä¸€ä¸‹çŠ¶æ€
         self->need_exit = false;
 
 #if defined( WIN32 ) || defined( WIN64 )
@@ -204,12 +204,12 @@ gr_queue_inner_clear(
 {
     volatile gr_queue_item_t * p;
 
-    // ¹¤×÷Ïß³Ì¸É¹¤×÷Ïß³ÌµÄ£¬ÎÒ¸ÉÎÒµÄ¡£
+    // å·¥ä½œçº¿ç¨‹å¹²å·¥ä½œçº¿ç¨‹çš„ï¼Œæˆ‘å¹²æˆ‘çš„ã€‚
 
     p = inner->head;
     while( p ) {
 
-        // ½«ËùÓĞÏî´òÉÏÒÑ¾­´¦ÀíµÄ±ê¼Ç
+        // å°†æ‰€æœ‰é¡¹æ‰“ä¸Šå·²ç»å¤„ç†çš„æ ‡è®°
         if ( ! p->is_processed ) {
             p->is_processed = true;
         }
@@ -241,7 +241,7 @@ gr_queue_inner_del_processed(
 
     if ( NULL == inner->curr && inner->head ) {
 
-        // ¹¤×÷Ïß³ÌÃ»ÈÎÎñ´¦ÀíÊ±ÎÒÔÙÉ¾³ı
+        // å·¥ä½œçº¿ç¨‹æ²¡ä»»åŠ¡å¤„ç†æ—¶æˆ‘å†åˆ é™¤
 
         volatile gr_queue_item_t * p;
 
@@ -339,7 +339,7 @@ queue_inner_is_empty(
     volatile queue_inner * inner
 )
 {
-    // Ö»ÒªcurrÖ¸ÕëÓĞĞ§£¬¿Ï¶¨ÓĞÎ´´¦ÀíµÄÊı¾İ
+    // åªè¦curræŒ‡é’ˆæœ‰æ•ˆï¼Œè‚¯å®šæœ‰æœªå¤„ç†çš„æ•°æ®
     return inner->curr ? false : true;
 }
 
@@ -354,7 +354,7 @@ gr_queue_inner_top(
         return NULL;
     }
 
-    // ½«ÒÑ¾­´¦ÀíÍêµÄÈÎÎñÔ½¹ıÈ¥
+    // å°†å·²ç»å¤„ç†å®Œçš„ä»»åŠ¡è¶Šè¿‡å»
     while ( inner->curr ) {
         if ( inner->curr->is_processed ) {
             inner->curr = inner->curr->next;
@@ -452,7 +452,7 @@ gr_queue_top(
 
         if ( ! queue_inner_is_empty( self, & self->emerge_queue ) ) {
 
-            // emerge queue ÓĞÊı¾İ
+            // emerge queue æœ‰æ•°æ®
             gr_queue_item_t * r = (gr_queue_item_t *)gr_queue_inner_top(
                 self, & self->emerge_queue );
             if ( r && ! r->is_processed ) {
@@ -462,7 +462,7 @@ gr_queue_top(
             continue;
         } else if ( ! queue_inner_is_empty( self, & self->normal_queue ) ) {
         
-            // normal queue ÓĞÊı¾İ
+            // normal queue æœ‰æ•°æ®
             gr_queue_item_t * r = (gr_queue_item_t *)gr_queue_inner_top(
                 self, & self->normal_queue );
             if ( r && ! r->is_processed ) {
@@ -471,7 +471,7 @@ gr_queue_top(
             sleep_ms( 0 );
             continue;
         } else {
-            // Ã»¿ÉÄÜµ½Õâ¸ö·ÖÖ§
+            // æ²¡å¯èƒ½åˆ°è¿™ä¸ªåˆ†æ”¯
             assert( false );
             return NULL;
         }

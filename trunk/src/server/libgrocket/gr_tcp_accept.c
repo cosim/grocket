@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/03
  * @version $Revision$ 
- * @brief   TCP AcceptÏß³Ì
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   TCP Acceptçº¿ç¨‹
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -24,7 +24,7 @@
 #include "gr_conn.h"
 #include "gr_tcp_in.h"
 
-// gr_tcp_accept_t ÒÑ¾­ÊÇÍâ²¿½Ó¿Ú»Øµ÷º¯ÊıÉùÃ÷ÁË, ÎÒÖ»ÄÜ»»Ò»¸öÃû×Ö gr_accept_t
+// gr_tcp_accept_t å·²ç»æ˜¯å¤–éƒ¨æ¥å£å›è°ƒå‡½æ•°å£°æ˜äº†, æˆ‘åªèƒ½æ¢ä¸€ä¸ªåå­— gr_accept_t
 typedef struct
 {
     gr_threads_t    threads;
@@ -70,7 +70,7 @@ void on_tcp_accept(
             self->poll,
             thread,
             port_item->fd,
-            & addr.u, & addr_len );       // Õâ¸ö½×¶ÎÎÒ¸ù±¾²»ÏëÒª¶Ô·½µØÖ·£¬°®Ë­Ë­
+            & addr.u, & addr_len );       // è¿™ä¸ªé˜¶æ®µæˆ‘æ ¹æœ¬ä¸æƒ³è¦å¯¹æ–¹åœ°å€ï¼Œçˆ±è°è°
         if ( fd < 0 ) {
             if ( EAGAIN == errno ) {
                 return;
@@ -83,22 +83,22 @@ void on_tcp_accept(
         gr_debug( "tcp_in accept( %d ) return fd %d, addr=%s:%d",
             port_item->fd, fd, inet_ntoa(addr.v4.sin_addr), ntohs(addr.v4.sin_port) );
 
-        // Éè³ÉÒì²½socket
+        // è®¾æˆå¼‚æ­¥socket
         if ( ! gr_socket_set_block( fd, false ) ) {
             gr_error( "gr_socket_set_block failed: %d", get_errno() );
             gr_socket_close( fd );
             continue;
         }
 
-        // ¿´Ä£¿éÏ²²»Ï²»¶Õâ¸öÁ¬½Ó
+        // çœ‹æ¨¡å—å–œä¸å–œæ¬¢è¿™ä¸ªè¿æ¥
         if ( ! gr_module_on_tcp_accept( port_item, fd ) ) {
-            // ²»Ï²»¶£¬¹Øµô¾ÍÊÇÁË
+            // ä¸å–œæ¬¢ï¼Œå…³æ‰å°±æ˜¯äº†
             gr_error( "gr_module_on_tcp_accept reject" );
             gr_socket_close( fd );
             continue;
         }
  
-        // ·ÖÅäÁ¬½Ó¶ÔÏó
+        // åˆ†é…è¿æ¥å¯¹è±¡
         conn = gr_tcp_conn_alloc( port_item, fd );
         if ( NULL == conn ) {
             gr_error( "gr_conn_alloc_tcp failed" );
@@ -106,7 +106,7 @@ void on_tcp_accept(
             continue;
         }
 
-        // ½«¸Ãsocket¼Óµ½tcp_inÀï
+        // å°†è¯¥socketåŠ åˆ°tcp_iné‡Œ
         r = gr_tcp_in_add_conn( conn );
         if ( 0 != r ) {
             gr_fatal( "gr_tcp_accept_add_conn return %d", r );
@@ -151,11 +151,11 @@ void tcp_accept_worker( gr_thread_t * thread )
             if (   (gr_port_item_t*)e->data.ptr >= & server->ports[ 0 ]
                 && (gr_port_item_t*)e->data.ptr <= & server->ports[ server->ports_count - 1 ] )
             {
-                // TCPĞÂÁ¬½Ó
+                // TCPæ–°è¿æ¥
                 port_item = (gr_port_item_t *)e->data.ptr;
                 on_tcp_accept( self, thread, port_item );
             } else {
-                // ÆäËüÃüÁî
+                // å…¶å®ƒå‘½ä»¤
             }
         }
     };
@@ -242,7 +242,7 @@ void gr_tcp_accept_term()
 
         gr_threads_close( & p->threads );
 
-        // Ïß³ÌÍ£ÁË¾Í¿ÉÒÔ°ÑÈ«¾Ö±äÁ¿ÇåµôÁË
+        // çº¿ç¨‹åœäº†å°±å¯ä»¥æŠŠå…¨å±€å˜é‡æ¸…æ‰äº†
         g_ghost_rocket_global.tcp_accept = NULL;
 
         if ( NULL != p->poll ) {
@@ -297,7 +297,7 @@ int gr_tcp_accept_add_conn(
         return -1;
     }
 
-    // ½«¸Ãsocket¼Óµ½pollÀï
+    // å°†è¯¥socketåŠ åˆ°pollé‡Œ
     r = gr_poll_add_tcp_recv_fd(
         self->poll,
         conn,

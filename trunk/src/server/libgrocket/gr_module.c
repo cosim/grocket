@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ÓÃ»§Ä£¿é
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   ç”¨æˆ·æ¨¡å—
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -129,7 +129,7 @@ int gr_module_init(
         && NULL == module->proc_http
     )
     {
-        // Ã»Ö¸¶¨ÓÃ»§º¯Êı£¬Òª×°ÔØÄ£¿é
+        // æ²¡æŒ‡å®šç”¨æˆ·å‡½æ•°ï¼Œè¦è£…è½½æ¨¡å—
         char path[ MAX_PATH ] = "";
         bool is_absolute;
         gr_config_get_module_path( path, sizeof( path ), & is_absolute );
@@ -279,7 +279,7 @@ void gr_module_proc_tcp(
             processed_len
         );
     } else {
-        // Ã»ÊµÏÖ¶ş½øÖÆÊı¾İ°ü´¦Àí£¬ÎÒÖ»ÄÜ¶ÏÁ¬½ÓÁË
+        // æ²¡å®ç°äºŒè¿›åˆ¶æ•°æ®åŒ…å¤„ç†ï¼Œæˆ‘åªèƒ½æ–­è¿æ¥äº†
         * processed_len = -1;
     }
 }

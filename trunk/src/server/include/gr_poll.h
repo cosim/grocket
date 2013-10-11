@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ¸ß²¢·¢ÊÂ¼ş´¦Àí
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   é«˜å¹¶å‘äº‹ä»¶å¤„ç†
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -21,7 +21,7 @@
 #if defined( __linux )
     #include <sys/epoll.h>
 #else
-    // ÊÇµÄ£¬linuxÊÇÇ×µùÑøµÄ£¬ÆäËüÏµÍ³¶¼ÊÇºóµùÑøµÄ¡£
+    // æ˜¯çš„ï¼Œlinuxæ˜¯äº²çˆ¹å…»çš„ï¼Œå…¶å®ƒç³»ç»Ÿéƒ½æ˜¯åçˆ¹å…»çš„ã€‚
     #define EPOLLIN     0x001
     #define EPOLLOUT    0x004
 #endif
@@ -36,7 +36,7 @@ typedef struct gr_poll_t gr_poll_t;
 struct gr_poll_event_t;
 typedef struct gr_poll_event_t gr_poll_event_t;
 
-// ±¾enumÖµ±ØĞëºÍepollÒ»Ä£Ò»Ñù
+// æœ¬enumå€¼å¿…é¡»å’Œepollä¸€æ¨¡ä¸€æ ·
 typedef enum
 {
     GR_POLLIN   = EPOLLIN,
@@ -44,7 +44,7 @@ typedef enum
 
 } GR_POLL_EVENT;
 
-// ÔÚLinuxÏÂ£¬±¾½Ú¹¹±ØĞëºÍepollÒ»Ä£Ò»Ñù
+// åœ¨Linuxä¸‹ï¼Œæœ¬èŠ‚æ„å¿…é¡»å’Œepollä¸€æ¨¡ä¸€æ ·
 typedef union
 {
     void *                  ptr;
@@ -53,7 +53,7 @@ typedef union
     uint64_t                u64;
 } gr_poll_data_t;
 
-// ÔÚLinuxÏÂ£¬±¾½Ú¹¹±ØĞëºÍepollÒ»Ä£Ò»Ñù
+// åœ¨Linuxä¸‹ï¼Œæœ¬èŠ‚æ„å¿…é¡»å’Œepollä¸€æ¨¡ä¸€æ ·
 struct gr_poll_event_t
 {
     uint32_t                events;
@@ -134,8 +134,8 @@ int gr_poll_send(
 
 #if defined( WIN32 ) || defined( WIN64 )
 
-// windows²»ÔÊĞíÍ¬Ò»¸ösocketÍ¬Ê±¼Óµ½Á½¸öiocpÀï
-// Ìá¹©¸Ãº¯ÊıÒÔ±ãÓÚÈÃ tcp_out Ê¹ÓÃ tcp_in µÄ IOCP
+// windowsä¸å…è®¸åŒä¸€ä¸ªsocketåŒæ—¶åŠ åˆ°ä¸¤ä¸ªiocpé‡Œ
+// æä¾›è¯¥å‡½æ•°ä»¥ä¾¿äºè®© tcp_out ä½¿ç”¨ tcp_in çš„ IOCP
 int gr_pool_replace_from(
     gr_poll_t *             poll,
     gr_poll_t *             from_poll

@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   Í¨ÓÃ¹¤¾ßº¯Êı
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   é€šç”¨å·¥å…·å‡½æ•°
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -128,12 +128,12 @@ sleep_ms(
 #if defined( WIN32 ) || defined( WIN64 )
     Sleep( ms );
 #else
-    // ÒÔÃëÎªµ¥Î»µÈ
+    // ä»¥ç§’ä¸ºå•ä½ç­‰
     if ( ms >= 1000 ) {
         sleep( ms / 1000 );
         ms %= 1000;
     }
-    // ÒÔºÁÃëÎªµ¥Î»µÈ
+    // ä»¥æ¯«ç§’ä¸ºå•ä½ç­‰
     if ( ms > 0 ) {
         struct timespec interval;
         struct timespec remainder;

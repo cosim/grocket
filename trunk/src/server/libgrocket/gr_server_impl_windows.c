@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ·þÎñÆ÷ÍâÎ§Windows°æ
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   æœåŠ¡å™¨å¤–å›´Windowsç‰ˆ
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -126,7 +126,7 @@ call_service_start(
 static inline
 void do_close()
 {
-    // ×öÍË³ö¶¯×÷, Èç¹ûÖ÷³ÌÐòÔÚdeamon=1Ê±µ÷ÓÃ´Ë¹¦ÄÜ,Ôò·þÎñÆ÷»áÖØÆô
+    // åšé€€å‡ºåŠ¨ä½œ, å¦‚æžœä¸»ç¨‹åºåœ¨deamon=1æ—¶è°ƒç”¨æ­¤åŠŸèƒ½,åˆ™æœåŠ¡å™¨ä¼šé‡å¯
     gr_server_impl_t * server = g_ghost_rocket_global.server;
     if ( NULL == server ) {
         gr_error( "global.server is NULL" );
@@ -346,7 +346,7 @@ remove_service(
     return 0;
 }
 
-// WindowsµÄdaemonÄ£Ê½ÊÇÒÔ·þÎñµÄ·½Ê½Æô
+// Windowsçš„daemonæ¨¡å¼æ˜¯ä»¥æœåŠ¡çš„æ–¹å¼å¯
 int gr_server_daemon_main()
 {
     int                 r = 0;
@@ -392,26 +392,26 @@ int gr_server_daemon_main()
 		char user[ 128 ] = "";
 		DWORD user_len = 128;
 
-		// Èç¹ûÃ»¼Ó²ÎÊýÔËÐÐ£¬±ØÐëÒÔ SYSTEM ÓÃ»§ÔËÐÐ
+		// å¦‚æžœæ²¡åŠ å‚æ•°è¿è¡Œï¼Œå¿…é¡»ä»¥ SYSTEM ç”¨æˆ·è¿è¡Œ
 		if ( ! GetUserName( user, & user_len ) ) {
-			printf( "ÎÞ·¨È¡µÃµ±Ç°ÓÃ»§" );
+			printf( "æ— æ³•å–å¾—å½“å‰ç”¨æˆ·" );
 			return - __LINE__;
 		}
 
 		if ( 0 != strcmp( "SYSTEM", user ) ) {
-			//printf( "±ØÐëÒÔ·þÎñ·½Ê½ÔËÐÐ±¾³ÌÐò" );
+			//printf( "å¿…é¡»ä»¥æœåŠ¡æ–¹å¼è¿è¡Œæœ¬ç¨‹åº" );
 			return - __LINE__;
 		}
 		*/
 
 		/*
-		printf( "ÕýÊÔÍ¼ÒÔ·þÎñ·½Ê½Æô¶¯£¬Èç¹ûÒªÒÔÃüÁîÐÐ·½Ê½Æô¶¯£¬Çë¼Ó -run ²ÎÊý...\n" );
-		printf( "                      °²×°·þÎñÓÃ -install ²ÎÊý\n" );
-		printf( "                      É¾³ý·þÎñÓÃ -remove ²ÎÊý\n" );
+		printf( "æ­£è¯•å›¾ä»¥æœåŠ¡æ–¹å¼å¯åŠ¨ï¼Œå¦‚æžœè¦ä»¥å‘½ä»¤è¡Œæ–¹å¼å¯åŠ¨ï¼Œè¯·åŠ  -run å‚æ•°...\n" );
+		printf( "                      å®‰è£…æœåŠ¡ç”¨ -install å‚æ•°\n" );
+		printf( "                      åˆ é™¤æœåŠ¡ç”¨ -remove å‚æ•°\n" );
 		*/
 
 		if ( StartServiceCtrlDispatcherA( server->service_table ) ) {
-			// ·þÎñÄ£Ê½
+			// æœåŠ¡æ¨¡å¼
 			//printf( "Service Started.\n" );
             r = 0;
 		} else {
@@ -603,7 +603,7 @@ int dog_main( gr_server_impl_t *  server )
 
         /*
         if ( h ) {
-            // ÍË³öÇ°°Ñ×Ó½ø³ÌÍËÁË
+            // é€€å‡ºå‰æŠŠå­è¿›ç¨‹é€€äº†
             TerminateProcess( h, 0 );
             WaitForSingleObject( h, INFINITE );
             CloseHandle( h );
@@ -622,7 +622,7 @@ int dog_main( gr_server_impl_t *  server )
     return r;
 }
 
-// WindowsÄ¬ÈÏ¾ÍÊÇÁ½¸ö½ø³Ì,ÒòÎª²»Ö§³Öfork,ËùÒÔÖ»ºÃÕâÑù
+// Windowsé»˜è®¤å°±æ˜¯ä¸¤ä¸ªè¿›ç¨‹,å› ä¸ºä¸æ”¯æŒfork,æ‰€ä»¥åªå¥½è¿™æ ·
 int gr_server_console_main()
 {
     bool    is_dog = true;
@@ -637,7 +637,7 @@ int gr_server_console_main()
     if (   server->argc > 1
         && ( 0 == strcmp( server->argv[ 1 ], "-debug" ) || 0 == strcmp( server->argv[ 1 ], "debug" ) ) )
     {
-        // ÓÐdebug²ÎÊý£¬Ôò²»Æô¿´ÃÅ¹·½ø³Ì
+        // æœ‰debugå‚æ•°ï¼Œåˆ™ä¸å¯çœ‹é—¨ç‹—è¿›ç¨‹
         is_dog = false;
     } else {
         int i;
@@ -648,9 +648,9 @@ int gr_server_console_main()
             if (0 == strcmp(SUBPROC_SIGN, server->argv[i]))
             {
                 is_dog = false;
-                // ÇåÁË·ÀÖ¹±ðÈË¿´µ½
+                // æ¸…äº†é˜²æ­¢åˆ«äººçœ‹åˆ°
                 memset(server->argv[i], 0, sizeof(SUBPROC_SIGN)-1);
-                // °ÑWidnowsµÄÃüÁîÐÐÒ²ÇåÁË
+                // æŠŠWidnowsçš„å‘½ä»¤è¡Œä¹Ÿæ¸…äº†
                 cmdline = GetCommandLineA();
                 p = strstr(cmdline, SUBPROC_SIGN);
                 if (NULL != p)
@@ -659,7 +659,7 @@ int gr_server_console_main()
                 }
 
                 if ( server->argc > i + 1 ) {
-                    // ¼ÇÂ¼¸¸½ø³ÌID
+                    // è®°å½•çˆ¶è¿›ç¨‹ID
                     int idx = i + 1;
                     const char * sppid = server->argv[ idx ];
                     if ( * sppid > 0 && isdigit( * sppid ) ) {

@@ -4,7 +4,7 @@
  * @date 2013/10/07
  * @version $Revision$ 
  * @brief   
- * Revision History ´óÊÂ¼þ¼Ç
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -13,10 +13,10 @@
 #ifndef _tcp_io_h_
 #define _tcp_io_h_
 
-// Íò¶ñµÄWindows£¡ÈÃ±¾Ó¦¸ÃÎÞÐè¹«¿ªµÄÊý¾Ý½á¹¹ºÍ´úÂë±»¹«¿ª£¡FUCK£¡
-// windows²»ÔÊÐíÍ¬Ò»¸ösocketÍ¬Ê±¼Óµ½Á½¸öiocpÀï£¬ËùÒÔÎÒ±ØÐë
-// °Ñ tcp_in ºÍ tcp_out ÔÚWindowsÏÂºÏ²¢£¬ÆäËüÆ½Ì¨²»ÊÜÓ°Ïì¡£
-// ÊÕ·¢´¦Àí´úÂë»¹±ØÐëÊÇÒ»·Ý¡£ËùÒÔÓÐÁËÕâ¸öÎÄ¼þ
+// ä¸‡æ¶çš„Windowsï¼è®©æœ¬åº”è¯¥æ— éœ€å…¬å¼€çš„æ•°æ®ç»“æž„å’Œä»£ç è¢«å…¬å¼€ï¼FUCKï¼
+// windowsä¸å…è®¸åŒä¸€ä¸ªsocketåŒæ—¶åŠ åˆ°ä¸¤ä¸ªiocpé‡Œï¼Œæ‰€ä»¥æˆ‘å¿…é¡»
+// æŠŠ tcp_in å’Œ tcp_out åœ¨Windowsä¸‹åˆå¹¶ï¼Œå…¶å®ƒå¹³å°ä¸å—å½±å“ã€‚
+// æ”¶å‘å¤„ç†ä»£ç è¿˜å¿…é¡»æ˜¯ä¸€ä»½ã€‚æ‰€ä»¥æœ‰äº†è¿™ä¸ªæ–‡ä»¶
 
 #include "gr_thread.h"
 #include "gr_log.h"
@@ -33,7 +33,7 @@
 
 ///////////////////////////////////////////////////////////////////////
 //
-// ÎªÁËÈÝÒ×´¦Àí£¬ÎÒ°Ñgr_tcp_in_t ºÍgr_tcp_out_t ¶¨ÒåÍ³Ò»ÔÚÁËÒ»Æð
+// ä¸ºäº†å®¹æ˜“å¤„ç†ï¼Œæˆ‘æŠŠgr_tcp_in_t å’Œgr_tcp_out_t å®šä¹‰ç»Ÿä¸€åœ¨äº†ä¸€èµ·
 //
 
 typedef struct
@@ -57,7 +57,7 @@ void tcp_io_windows( gr_thread_t * thread );
 
 ///////////////////////////////////////////////////////////////////////
 //
-// Õâ±¾Ó¦¸ÃÊÇtcp_outµÄË½ÓÐ´úÂë
+// è¿™æœ¬åº”è¯¥æ˜¯tcp_outçš„ç§æœ‰ä»£ç 
 //
 
 static inline
@@ -78,10 +78,10 @@ void on_tcp_send(
 {
     int             r;
 
-    // ·¢Êý¾Ý£¬ÀïÃæÒÑ¾­×öÑ­»··¢ÁË
+    // å‘æ•°æ®ï¼Œé‡Œé¢å·²ç»åšå¾ªçŽ¯å‘äº†
     r = gr_poll_send( self->poll, thread, conn );
     if ( r < 0 ) {
-        // ÒªÃ´ÍøÂç³ö´íÒªÃ´¶Ô·½¶ÏÁ¬½ÓÁË
+        // è¦ä¹ˆç½‘ç»œå‡ºé”™è¦ä¹ˆå¯¹æ–¹æ–­è¿žæŽ¥äº†
         gr_error( "gr_poll_send return error %d", r );
         on_tcp_send_error( self, thread, conn );
         return;
@@ -92,7 +92,7 @@ void on_tcp_send(
 
 ///////////////////////////////////////////////////////////////////////
 //
-// Õâ±¾Ó¦¸ÃÊÇtcp_inµÄË½ÓÐ´úÂë
+// è¿™æœ¬åº”è¯¥æ˜¯tcp_inçš„ç§æœ‰ä»£ç 
 //
 static inline
 void on_tcp_recv_error(
@@ -103,13 +103,13 @@ void on_tcp_recv_error(
 {
     int r;
     
-    // ÏÈ°Ñµ±Ç°Á¬½ÓÔÚµ±Ç°pollÖÐÍ£µô
+    // å…ˆæŠŠå½“å‰è¿žæŽ¥åœ¨å½“å‰pollä¸­åœæŽ‰
     r = gr_poll_recv_done( self->poll, thread, conn, false );
     if ( 0 != r ) {
         gr_error( "gr_poll_recv_done return error %d", r );
     }
 
-    // È»ºóÈÃacceptÏß³Ì´¦Àí¹ØÁ¬½ÓµÄ¶¯×÷£¬ÒòÎªÁ¬½ÓÊÇËü·ÖÅäµÄ¡£
+    // ç„¶åŽè®©acceptçº¿ç¨‹å¤„ç†å…³è¿žæŽ¥çš„åŠ¨ä½œï¼Œå› ä¸ºè¿žæŽ¥æ˜¯å®ƒåˆ†é…çš„ã€‚
 }
 
 static inline
@@ -136,8 +136,8 @@ void on_tcp_full(
     gr_tcp_req_t *          req
 )
 {
-    // ½«µ±Ç°reqÈÓµ½¹¤×÷Ïß³ÌÖÐÈ¥
-    // µ±Ç°Á¬½ÓµÄ°ü¼ÌÐøÊÕ
+    // å°†å½“å‰reqæ‰”åˆ°å·¥ä½œçº¿ç¨‹ä¸­åŽ»
+    // å½“å‰è¿žæŽ¥çš„åŒ…ç»§ç»­æ”¶
     int     r;
  
     r = gr_worker_add_tcp( req, false );
@@ -147,7 +147,7 @@ void on_tcp_full(
         return;
     }
 
-    // ÊÕÍêÁË£¬ÊÂºóÍ¨Öª
+    // æ”¶å®Œäº†ï¼Œäº‹åŽé€šçŸ¥
     r = gr_poll_recv_done( self->poll, thread, conn, true );
     if ( 0 != r ) {
         gr_error( "gr_poll_recv_done return error %d", r );
@@ -168,10 +168,10 @@ void on_tcp_recv(
     bool            is_error = false;
     bool            is_full = false;
 
-    // ÊÕÊý¾Ý£¬ÀïÃæÒÑ¾­ÔÚÑ­»·ÀïÒ»Ö±ÊÕµ½Ã»Êý¾ÝÁË
+    // æ”¶æ•°æ®ï¼Œé‡Œé¢å·²ç»åœ¨å¾ªçŽ¯é‡Œä¸€ç›´æ”¶åˆ°æ²¡æ•°æ®äº†
     r = gr_poll_recv( self->poll, thread, conn, & req );
     if ( r <= 0 ) {
-        // ÒªÃ´ÍøÂç³ö´íÒªÃ´¶Ô·½¶ÏÁ¬½ÓÁË
+        // è¦ä¹ˆç½‘ç»œå‡ºé”™è¦ä¹ˆå¯¹æ–¹æ–­è¿žæŽ¥äº†
         if ( 0 == r ) {
             gr_info( "user disconnect connection" );
         } else {
@@ -181,10 +181,10 @@ void on_tcp_recv(
         return;
     }
 
-    // ±¾´ÎÊÕµ½ÁËr×Ö½ÚÊý¾Ý£¬ÅÐ¶ÏÊý¾Ý°üÊÇ·ñÍêÕû
+    // æœ¬æ¬¡æ”¶åˆ°äº†rå­—èŠ‚æ•°æ®ï¼Œåˆ¤æ–­æ•°æ®åŒ…æ˜¯å¦å®Œæ•´
     gr_module_check_tcp( req, & is_error, & is_full );
     if ( is_error ) {
-        // Ð­Òé´í
+        // åè®®é”™
         gr_error( "gr_module_check_tcp is_error is true" );
         on_tcp_recv_error( self, thread, conn );
         return;
@@ -194,7 +194,7 @@ void on_tcp_recv(
         return;
     }
 
-    // ÊÕµ½ÁËÒ»¸öÍêÕûÊý¾Ý°ü
+    // æ”¶åˆ°äº†ä¸€ä¸ªå®Œæ•´æ•°æ®åŒ…
     on_tcp_full( self, thread, conn, req );
 }
 

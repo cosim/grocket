@@ -1,18 +1,18 @@
-#ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_GR_MODULE_H_
-#define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_MODULE_H_
-
 /**
  * @file include/gr_module.h
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   用户模块
- * Revision History 大事件记
+ * @brief   鐢ㄦ埛妯″潡
+ * Revision History 澶т簨浠惰
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-05    Created.
  **/
+#ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_GR_MODULE_H_
+#define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_MODULE_H_
+
 #include "gr_stdinc.h"
 #include "grocket.h"
 #include "gr_conn.h"

@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/01
  * @version $Revision$ 
- * @brief   µ¥½ø³ÌĞ´£¬µ¥½ø³Ì¶ÁµÄ¶ÓÁĞ
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   å•è¿›ç¨‹å†™ï¼Œå•è¿›ç¨‹è¯»çš„é˜Ÿåˆ—
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -26,9 +26,9 @@ typedef struct gr_queue_item_t  gr_queue_item_t;
 
 #pragma pack( push, 4 )
 
-// ±¾½á¹¹µÄËùÓĞ×Ö¶Îµ÷ÓÃ·½¶¼±ØĞë¼Ù×°¿´²»µ½¡£
-// ÄÇÎªÊ²Ã´»¹ÈÃÄã¿´µ½ÁËÄØ£¿ÄÇÊÇÒòÎªÎÒ²»ÏëÏñSTLµÄlistÄÇÑù£¬
-// ÔÚÑ¹°üÇ°»¹ÒªÔÙÔÚÍâÃæ·ÖÅäÒ»¸ö¹ÜÀí¶ÔÏó£¬Õâ¿ªÏú²»»®Ëã¡£
+// æœ¬ç»“æ„çš„æ‰€æœ‰å­—æ®µè°ƒç”¨æ–¹éƒ½å¿…é¡»å‡è£…çœ‹ä¸åˆ°ã€‚
+// é‚£ä¸ºä»€ä¹ˆè¿˜è®©ä½ çœ‹åˆ°äº†å‘¢ï¼Ÿé‚£æ˜¯å› ä¸ºæˆ‘ä¸æƒ³åƒSTLçš„listé‚£æ ·ï¼Œ
+// åœ¨å‹åŒ…å‰è¿˜è¦å†åœ¨å¤–é¢åˆ†é…ä¸€ä¸ªç®¡ç†å¯¹è±¡ï¼Œè¿™å¼€é”€ä¸åˆ’ç®—ã€‚
 struct gr_queue_item_t
 {
     // single link table
@@ -38,18 +38,18 @@ struct gr_queue_item_t
     // processed item will be delete on next gr_queue_push or gr_queue_destroy called
     volatile bool       is_processed;
 
-    // ÖÁÉÙÈı¸ö×Ö½Ú¿ÉÓÃ¡£ÕâÈı×Ö½ÚÒÑ¾­ÔÚÍâ²¿±»ÆäËüÀàÊ¹ÓÃ£¬¾ßÌå²Î¼û gr_queue_item_compact_t
+    // è‡³å°‘ä¸‰ä¸ªå­—èŠ‚å¯ç”¨ã€‚è¿™ä¸‰å­—èŠ‚å·²ç»åœ¨å¤–éƒ¨è¢«å…¶å®ƒç±»ä½¿ç”¨ï¼Œå…·ä½“å‚è§ gr_queue_item_compact_t
     char                reserved[ 3 ];
 };
 
 #pragma pack( pop )
 
 /**
- * @brief ´´½¨Ò»¸öµ¥Ïß³ÌĞ´¡¢µ¥Ïß³Ì¶Á¶ÓÁĞÊµÀı
- *   @param[in] void * cb_inst: »Øµ÷º¯Êı½«ÒÔ²ÎÊıµÄ·½Ê½½«¸Ã²ÎÊı´«»Ø
- *   @param[in] free_item: É¾³ıº¯Êı
- * @return gr_queue_t *: ·µ»Øµ¥Ïß³ÌĞ´¡¢µ¥Ïß³Ì¶Á¶ÓÁĞÊµÀı
- * @warning ±¾º¯ÊıÎªÑ¹Êı¾İÏß³Ìµ÷ÓÃ
+ * @brief åˆ›å»ºä¸€ä¸ªå•çº¿ç¨‹å†™ã€å•çº¿ç¨‹è¯»é˜Ÿåˆ—å®ä¾‹
+ *   @param[in] void * cb_inst: å›è°ƒå‡½æ•°å°†ä»¥å‚æ•°çš„æ–¹å¼å°†è¯¥å‚æ•°ä¼ å›
+ *   @param[in] free_item: åˆ é™¤å‡½æ•°
+ * @return gr_queue_t *: è¿”å›å•çº¿ç¨‹å†™ã€å•çº¿ç¨‹è¯»é˜Ÿåˆ—å®ä¾‹
+ * @warning æœ¬å‡½æ•°ä¸ºå‹æ•°æ®çº¿ç¨‹è°ƒç”¨
  */
 gr_queue_t *
 gr_queue_create(
@@ -58,9 +58,9 @@ gr_queue_create(
 );
 
 /**
- * @brief É¾³ıÒ»¸öµ¥Ïß³ÌĞ´¡¢µ¥Ïß³Ì¶Á¶ÓÁĞÊµÀı
- *   @param[in] gr_queue_t * self: ´ıÉ¾³ı¶ÔÏóÊµÀı
- * @warning ±¾º¯ÊıÎªÑ¹Êı¾İÏß³Ìµ÷ÓÃ
+ * @brief åˆ é™¤ä¸€ä¸ªå•çº¿ç¨‹å†™ã€å•çº¿ç¨‹è¯»é˜Ÿåˆ—å®ä¾‹
+ *   @param[in] gr_queue_t * self: å¾…åˆ é™¤å¯¹è±¡å®ä¾‹
+ * @warning æœ¬å‡½æ•°ä¸ºå‹æ•°æ®çº¿ç¨‹è°ƒç”¨
  */
 void
 gr_queue_destroy(
@@ -83,12 +83,12 @@ gr_queue_is_empty(
 );
 
 /**
- * @brief Ñ¹ÈëÊı¾İ
- *   @param[in] gr_queue_t * self: µ¥Ïß³ÌĞ´¡¢µ¥Ïß³Ì¶Á¶ÓÁĞ
- *   @param[in] gr_queue_item_t * data: Ñ¹ÈëµÄÊı¾İ
- *   @param[in] bool is_emerge: ÊÇ·ñ½ô¼±Êı¾İ°ü
- * @return int: ³É¹¦£¬Ôò·µ»Ø0
- * @warning ±¾º¯ÊıÎªÑ¹Êı¾İÏß³Ìµ÷ÓÃ
+ * @brief å‹å…¥æ•°æ®
+ *   @param[in] gr_queue_t * self: å•çº¿ç¨‹å†™ã€å•çº¿ç¨‹è¯»é˜Ÿåˆ—
+ *   @param[in] gr_queue_item_t * data: å‹å…¥çš„æ•°æ®
+ *   @param[in] bool is_emerge: æ˜¯å¦ç´§æ€¥æ•°æ®åŒ…
+ * @return int: æˆåŠŸï¼Œåˆ™è¿”å›0
+ * @warning æœ¬å‡½æ•°ä¸ºå‹æ•°æ®çº¿ç¨‹è°ƒç”¨
  */
 int
 gr_queue_push(
@@ -98,11 +98,11 @@ gr_queue_push(
 );
 
 /**
- * @brief ÔÚ¶ÓÁĞÖĞÈ¡¶¥¶ËÊı¾İ£¬µ«²¢²»µ¯³öÊı¾İ
- *   @param[in] gr_queue_t * self: µ¥Ïß³ÌĞ´¡¢µ¥Ïß³Ì¶Á¶ÓÁĞ
- *   @param[in] uint32_t wait_ms: µÈ´ıÊ±¼ä
- * @return gr_queue_item_t *: È¡µÃµÄÊı¾İÖ¸Õë¡£Èç¹ûÃ»ÓĞÈÎºÎÊı¾İ£¬Ôò·µ»ØNULL
- * @warning ±¾º¯ÊıÎªµ¯Êı¾İÏß³Ìµ÷ÓÃ; if is_wait is true and return NULL, then caller thread must exit
+ * @brief åœ¨é˜Ÿåˆ—ä¸­å–é¡¶ç«¯æ•°æ®ï¼Œä½†å¹¶ä¸å¼¹å‡ºæ•°æ®
+ *   @param[in] gr_queue_t * self: å•çº¿ç¨‹å†™ã€å•çº¿ç¨‹è¯»é˜Ÿåˆ—
+ *   @param[in] uint32_t wait_ms: ç­‰å¾…æ—¶é—´
+ * @return gr_queue_item_t *: å–å¾—çš„æ•°æ®æŒ‡é’ˆã€‚å¦‚æœæ²¡æœ‰ä»»ä½•æ•°æ®ï¼Œåˆ™è¿”å›NULL
+ * @warning æœ¬å‡½æ•°ä¸ºå¼¹æ•°æ®çº¿ç¨‹è°ƒç”¨; if is_wait is true and return NULL, then caller thread must exit
  */
 gr_queue_item_t *
 gr_queue_top(
@@ -111,10 +111,10 @@ gr_queue_top(
 );
 
 /**
- * @brief ÔÚ¶ÓÁĞÖĞµ¯³ö¶¥¶ËÊı¾İ£¬Èç¹û¶ÓÁĞÎª¿Õ£¬ÔòÊ²Ã´¶¼²»×ö
- *   @param[in] gr_queue_t * self: µ¥Ïß³ÌĞ´¡¢µ¥Ïß³Ì¶Á¶ÓÁĞ
- *   @param[in] gr_queue_item_t * confirm_item: È·ÈÏÒªµ¯³öµÄ¶ÔÏó
- * @warning ±¾º¯ÊıÎªµ¯Êı¾İÏß³Ìµ÷ÓÃ
+ * @brief åœ¨é˜Ÿåˆ—ä¸­å¼¹å‡ºé¡¶ç«¯æ•°æ®ï¼Œå¦‚æœé˜Ÿåˆ—ä¸ºç©ºï¼Œåˆ™ä»€ä¹ˆéƒ½ä¸åš
+ *   @param[in] gr_queue_t * self: å•çº¿ç¨‹å†™ã€å•çº¿ç¨‹è¯»é˜Ÿåˆ—
+ *   @param[in] gr_queue_item_t * confirm_item: ç¡®è®¤è¦å¼¹å‡ºçš„å¯¹è±¡
+ * @warning æœ¬å‡½æ•°ä¸ºå¼¹æ•°æ®çº¿ç¨‹è°ƒç”¨
  */
 bool
 gr_queue_pop_top(

@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/03
  * @version $Revision$ 
- * @brief   TCP 输出线程
- * Revision History 大事件记
+ * @brief   TCP 杈撳嚭绾跨▼
+ * Revision History 澶т簨浠惰
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
