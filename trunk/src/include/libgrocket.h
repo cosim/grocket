@@ -3,11 +3,9 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/24
  * @version $Revision$ 
- * @brief 服务框架的静态库版本，调用方可以自己提供可执行程序。
- *        给服务框架编写扩展模块的方法完全相同。
- *        该接口适用于必须使用定制的可执行程序的场景。
+ * @brief server frame static lickage version
  *
- * Revision History 大事件记
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+

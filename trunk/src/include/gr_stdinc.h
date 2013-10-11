@@ -3,10 +3,9 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/24
  * @version $Revision$ 
- * @brief 按 grocket.h 的要求，本文件只需要实现 uint16_t, uint32_t, socklen_t, bool
- *        但既然整个服务器用它，就提供一个跨平台的，但模块编写者可以选择是否使用本文件。
+ * @brief standard include header
  *
- * Revision History 大事件记
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+

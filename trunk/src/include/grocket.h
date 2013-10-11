@@ -3,14 +3,11 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/24
  * @version $Revision$ 
- * @brief   服务器框架扩展模块头文件，调用方只需要这一个头文件即可编写模块
- * @warning 在包含本文件前，调用方必须保证
- *          uint16_t, uint32_t, socklen_t, bool, size_t, sockaddr_in, sockaddr_in6
- *          上述数据类型都可用（如果是C99以前的C语言，保证bool是一个字节）。
- *          如此设计的目的是防止包头文件冲突，有时这类问题非常难解决。
- *          本程序提供了一个gr_stdinc.h头文件确认了上述数据类型都可用，
- *          调用方可以选择是否使用。
- * Revision History 大事件记
+ * @brief   server frame header. caller just need this one header file
+ * @warning before including this header file, below type must ready:
+ *          uint16_t, uint32_t, socklen_t, bool, size_t, sockaddr_in, sockaddr_in6.
+ *          if C language, must define bool as one byte.
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -29,13 +26,15 @@ typedef struct gr_server_t  gr_server_t;
 
 typedef enum
 {
-    // 主进程, 适用于主进程初始化资源, 子进程使用资源的场景
+    // master process.
     GR_PROCESS_MASTER           = 1,
 
-    // 子进程
+    // sub process
     GR_PROCESS_CHILD            = 2,
 
-    // 第一个线程,第二个线程就是本值加1,以此类推
+    // first thread
+    // second thread = first thread + 1
+    // ...
     GR_PROCESS_THREAD_1         = 3
 
 } gr_process_type_t;
@@ -84,8 +83,6 @@ typedef enum
 } gr_package_type_t;
 
 #pragma pack( push, 4 )
-// 为什么将 GsCheckPackageCtxt 的字节数限制在 12 字节？
-// 因为它将被放在Connection里，Connection必须控制在64字节大小
 
 typedef struct
 {
@@ -169,10 +166,10 @@ typedef struct
 
 typedef struct
 {
-    // 参数名
+    // parameter name
     char *                      name;
 
-    // 参数值
+    // parameter value
     char *                      value;
 
 } gr_http_param_t;
@@ -245,12 +242,12 @@ typedef struct
     // HTTP
 
     // G, P, H, C
-    // '\0' 表示HTTP返回包
+    // '\0' indicate this is HTTP reply
     char                        request_type;
 
     char *                      version; // HTTP/1.1  HTTP/0.9
 
-    // 空内容同时object也为空内容表示返回包
+    // in HTTP reply, directory and object field is empty
     char *                      directory;
 
     char *                      object;
@@ -271,7 +268,7 @@ typedef struct
     char *                      body;
     size_t                      body_len;
 
-    // 只为HTTP返回包，返回错误码
+    // HTTP code, only use to HTTP reply
     int                         http_reply_code;
 
 } gr_http_ctxt_t;
@@ -284,18 +281,11 @@ typedef struct
 //
 // parameters:
 //     proc_type      : process type
-//                      主进程初始化、子进程初始化、所有线程初始化时都会调用本函数。
-//                      那如何区分呢？答案是proc_type参数，它的取值会有如下几种：
-//                      1、GR_PROCESS_MASTER 则表示是主进程, 适用于主进程初始化资源, 
-//                                           子进程使用资源的场景
-//                      2、GR_PROCESS_CHILD 正常的工作进程
-//                      3、GR_PROCESS_THREAD_1 表示工作进程中的第一个工作线程初始化
-//                      4、GR_PROCESS_THREAD_1 + n 表示工作进程中的第 n 个工作线程初始化
+//                      1、GR_PROCESS_MASTER        master process
+//                      2、GR_PROCESS_CHILD         sub process
+//                      3、GR_PROCESS_THREAD_1      first thread
+//                      4、GR_PROCESS_THREAD_1 + n  #n thread
 //     server         : pinter to gr_server_t, valid in all server lifecycle.
-//                      文档上说：“写服务器模块唯一需要包含的文件，不需要链接任何库”，
-//                      那服务器框架导出函数的实现在哪里？答案是：在服务器框架进程里，
-//                      它在gr_init函数中通过gr_server_t *接口以函数指针的方式暴露给
-//                      用户模块，所以用户模块当然要把这个指针保存起来。
 // return:
 //     int, initialize OK? 0 if successed, failed otherwise.
 // remark:
@@ -315,13 +305,6 @@ typedef int ( * gr_init_t )(
 //
 // parameters:
 //     proc_type      : process type
-//                      主进程反初始化、子进程反初始化、所有线程反初始化时都会调用本函数。
-//                      那如何区分呢？答案是proc_type参数，它的取值会有如下几种：
-//                      1、GR_PROCESS_MASTER 则表示是主进程, 适用于主进程初始化资源, 
-//                                           子进程使用资源的场景
-//                      2、GR_PROCESS_CHILD 正常的工作进程
-//                      3、GR_PROCESS_THREAD_1 表示工作进程中的第一个工作线程反初始化
-//                      4、GR_PROCESS_THREAD_1 + n 表示工作进程中的第 n 个工作线程反初始化
 //     must_be_zero   : reserved, must be 0
 // remark:
 //     optional function
@@ -339,12 +322,9 @@ typedef void ( * gr_term_t )(
 //     After accept, this function will call
 //
 // parameters:
-//     port           : 模块可以从port参数得到这个连接是从服务器的哪个监听端口连上来的
+//     port           : listen port
 //     sock           : return by accept function
 //     need_disconnect: 1 if need disconnect the connection, default 0
-//                      一但accept了一个TCP连接，则该函数会被调用。
-//                      模块可以有选择的决定是否要关掉这个TCP连接，如果要关掉，
-//                      就*need_disconnect=1即可。
 // remark:
 //     optional function
 //
@@ -362,8 +342,7 @@ typedef void ( * gr_tcp_accept_t )(
 // called before connection close
 //
 // parameters:
-//     port           : 模块可以从port参数得到这个要断掉的TCP连接是
-//                      从服务器的哪个监听端口连上来的
+//     port           : listen port
 //     sock           : SOCKET
 // remark:
 //     option functions
@@ -379,8 +358,6 @@ typedef void ( * gr_tcp_close_t )(
 // gr_check_t
 //
 // called when recved new data into a connection
-// 针对同一个TCP连接，该函数有可能在I/O线程里调用，也可能在工作线程里调用，但不会产生并发。
-// UDP，本函数只可能在I/O线程里调用。
 //
 // parameters:
 //     data           : received data
@@ -409,16 +386,14 @@ typedef void ( * gr_check_t )(
 // gr_proc_t
 //
 // called when process a full binary package( call by worker thread )
-// 服务器承诺，一个TCP连接的所有请求会分配到一个固定的工作线程上。
-//            相同客户端地址的UDP所有请求会分配到一个固定的工作线程上。
 //
 // parameters:
 //     data           : full package data
 //     len            : full package data len
 //     ctxt           : process context
-//     processed_len  : 返回值 < 0，数据包有错误，需要断连接.
-//                      返回值 = 0，数据包正确，但需要服务器端主动断连接。
-//                      返回值 > 0。数据包正确，返回已经处理的数据包长度.
+//     processed_len  : < 0，need disconnect connection
+//                      = 0，data ok, but need server disconnect
+//                      > 0。data ok, return processed request bytes
 // remark:
 //     option functions
 //
@@ -435,10 +410,6 @@ typedef void ( * gr_proc_t )(
 // gr_poc_http_t
 //
 // Http process( call by worker thread )
-// 服务器承诺，一个TCP连接的所有请求会分配到一个固定的工作线程上。
-//            相同客户端地址的UDP所有请求会分配到一个固定的工作线程上。
-// HTTP也支持UDP？是的，支持。
-//
 // parameters:
 //     http       : http context
 // remark:
@@ -481,7 +452,7 @@ typedef struct gr_library_t gr_library_t;
 
 struct gr_object_t
 {
-    // 当前对象实例所属的类
+    // class object's class
     gr_class_t *    klass;
 };
 
@@ -489,16 +460,16 @@ struct gr_class_t
 {
     gr_object_t     base;
 
-    // 如果该类是一个单件，则在这里存储单件实例
+    // if I'm a singleton, then this is singleton instance, NULL if otherwise.
     gr_object_t *   singleton;
 
-    // 删除类
+    // delete the class
     void            ( * destroy_class )( gr_class_t *    self );
 
-    // 创建类实例
+    // create the class's instance
     gr_object_t *   ( * create_object )( gr_class_t *    self );
 
-    // 删除类实例
+    // delete the class's instance
     void            ( * destroy_object )( gr_object_t *   object );
 };
 
@@ -554,19 +525,19 @@ typedef struct gr_i_server_t gr_i_server_t;
 
 typedef enum
 {
-    // 允许所有日志输出
+    // enable all log
     GR_LOG_ALL      = 0,
-    // 允许debug及更高级别的日志输出
+    // enable debug or higher log
     GR_LOG_DEBUG    = 1,
-    // 允许info及更高级别的日志输出
+    // enable info or higher log
     GR_LOG_INFO     = 2,
-    // 允许warning及更高级别的日志输出
+    // enable warning or higher log
     GR_LOG_WARNING  = 3,
-    // 允许error及更高级别的日志输出
+    // enable error or higher log
     GR_LOG_ERROR    = 4,
-    // 允许fatal及更高级别的日志输出
+    // enable fatal or higher log
     GR_LOG_FATAL    = 5,
-    // 不允许任何日志输出
+    // disable log
     GR_LOG_NONE     = 6,
 } gr_log_level_t;
 
@@ -574,30 +545,30 @@ struct gr_i_server_t
 {
     gr_class_t      base;
 
-    // 取配置文件bool类型字段
+    // get config item as bool
     bool            ( * config_get_bool )(  gr_i_server_t *     self,
                                             const char *        section,
                                             const char *        name,
                                             bool                default_value );
 
-    // 取配置文件int类型字段
+    // get config item as int
     int             ( * config_get_int )(   gr_i_server_t *     self,
                                             const char *        section,
                                             const char *        name,
                                             int                 default_value );
 
-    // 取配置文件字符串类型字段
+    // get config item as string
     const char *    ( * config_get_string )(gr_i_server_t *     self,
                                             const char *        section,
                                             const char *        name,
                                             const char *        default_value );
 
-    // 设置最大返回包长度
+    // set max responpse package bytes
     void *          ( * set_max_response )( gr_i_server_t *     self,
                                             gr_proc_ctxt_t *    ctxt,
                                             size_t              bytes );
 
-    // 输出日志
+    // log output
     void            ( * log )(  gr_i_server_t * self,
                                 const char *    file,
                                 int             line,
@@ -619,26 +590,26 @@ struct gr_i_server_t
 
 struct gr_library_t
 {
-    // 接口标记。鬼知道会不会有一天用到。GR_LIBRARY_MAGIC
+    // signature. GR_LIBRARY_MAGIC
     char            magic[ 2 ];
 
-    // 当前接口版本号。只有本结构有修改时才升级版本号。GR_LIBRARY_VERSION
+    // interface version. GR_LIBRARY_VERSION
     unsigned char   version;
 
-    // 当前接口实现可兼容的最低版本号，调用方必须大于等于该版本号才能使用。GR_LIBRARY_LOW_VERSION
+    // compatible lowest version. GR_LIBRARY_LOW_VERSION
     unsigned char   low_version;
 
-    // classes 类的最大数量
+    // classes count capacity
     uint32_t        class_max;
 
-    // classes 类
+    // classes
     gr_class_t *    classes[ 1 ];
 
 };
 
 typedef enum
 {
-    // 服务器内置类的编号
+    // server preinside class's ID
     CLASS_SERVER    = 0
 
 } gr_class_id_t;
@@ -671,13 +642,13 @@ typedef int ( * gr_library_init_t )(
 
 struct gr_server_t
 {
-    // 接口标记。鬼知道会不会有一天用到。GR_SERVER_MAGIC
+    // signature. GR_SERVER_MAGIC
     char            magic[ 2 ];
 
-    // 当前接口版本号。只有本结构有修改时才升级版本号。GR_SERVER_VERSION
+    // interface version. GR_SERVER_VERSION
     unsigned char   version;
 
-    // 当前接口实现可兼容的最低版本号，调用方必须大于等于该版本号才能使用。GR_SERVER_LOW_VERSION
+    // compatible lowest version. GR_SERVER_LOW_VERSION
     unsigned char   low_version;
 
     // worker process/thread count
@@ -691,10 +662,10 @@ struct gr_server_t
     int             ports_count;
     gr_port_item_t  ports[ GR_PORT_MAX ];
 
-    // 服务器函数库
+    // server function library
     gr_library_t *  library;
 
-    // 保留
+    // reserved must be zero fill
     char            reserved[ 256 ];
 };
 

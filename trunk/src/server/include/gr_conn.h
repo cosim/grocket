@@ -15,7 +15,6 @@
 
 #include "gr_stdinc.h"
 #include "grocket.h"
-#include "gr_list.h"
 #include "gr_queue.h"
 
 #ifdef __cplusplus

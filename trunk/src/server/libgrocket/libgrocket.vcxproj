@@ -92,7 +92,6 @@
     <ClInclude Include="..\include\gr_ini.h" />
     <ClInclude Include="..\include\gr_library_impl.h" />
     <ClInclude Include="..\include\gr_library_invoke.h" />
-    <ClInclude Include="..\include\gr_lock.h" />
     <ClInclude Include="..\include\gr_log.h" />
     <ClInclude Include="..\include\gr_mem.h" />
     <ClInclude Include="..\include\gr_module.h" />
