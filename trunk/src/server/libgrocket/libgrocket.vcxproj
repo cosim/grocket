@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\dynamic_annotations.c" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\logging.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\low_level_alloc.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\spinlock.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\spinlock_internal.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\sysinfo.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\central_freelist.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\common.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\heap-profile-table.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\internal_logging.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\malloc_extension.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\malloc_hook.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\memory_region_map.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\page_heap.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\raw_printer.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\sampler.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\span.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\stacktrace.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\stack_trace_table.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\static_vars.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\symbolize.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\thread_cache.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\ia32_modrm_map.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\ia32_opcode_map.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\mini_disassembler.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\patch_functions.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\port.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\preamble_patcher.cc" />
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\preamble_patcher_with_stub.cc" />
+    <ClCompile Include="gr_backend.c" />
+    <ClCompile Include="gr_config.c" />
+    <ClCompile Include="gr_conn.c" />
+    <ClCompile Include="gr_dll.c" />
+    <ClCompile Include="gr_event.c" />
+    <ClCompile Include="gr_http.c" />
+    <ClCompile Include="gr_http_default.c" />
+    <ClCompile Include="gr_ini.c" />
+    <ClCompile Include="gr_library_impl.c" />
+    <ClCompile Include="gr_library_invoke.c" />
+    <ClCompile Include="gr_log.c" />
+    <ClCompile Include="gr_module.c" />
+    <ClCompile Include="gr_poll_bsd.c" />
+    <ClCompile Include="gr_server_impl_posix.c" />
+    <ClCompile Include="gr_tcp_accept.c" />
+    <ClCompile Include="gr_poll_linux.c" />
+    <ClCompile Include="gr_poll_windows.c" />
+    <ClCompile Include="gr_queue.c" />
+    <ClCompile Include="gr_server_impl.c" />
+    <ClCompile Include="gr_server_impl_windows.c" />
+    <ClCompile Include="gr_socket.c" />
+    <ClCompile Include="gr_tcp_in.c" />
+    <ClCompile Include="gr_tcp_out.c" />
+    <ClCompile Include="gr_thread.c" />
+    <ClCompile Include="gr_tools.c" />
+    <ClCompile Include="gr_udp_in.c" />
+    <ClCompile Include="gr_udp_out.c" />
+    <ClCompile Include="gr_worker.c" />
+    <ClCompile Include="libgrocket.c" />
+    <ClCompile Include="server_object.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\third\gperftools-2.1\src\windows\gperftools\tcmalloc.h" />
+    <ClInclude Include="..\include\gr_backend.h" />
+    <ClInclude Include="..\include\gr_config.h" />
+    <ClInclude Include="..\include\gr_conn.h" />
+    <ClInclude Include="..\include\gr_dll.h" />
+    <ClInclude Include="..\include\gr_errno.h" />
+    <ClInclude Include="..\include\gr_event.h" />
+    <ClInclude Include="..\include\gr_global.h" />
+    <ClInclude Include="..\include\gr_http.h" />
+    <ClInclude Include="..\include\gr_ini.h" />
+    <ClInclude Include="..\include\gr_library_impl.h" />
+    <ClInclude Include="..\include\gr_library_invoke.h" />
+    <ClInclude Include="..\include\gr_lock.h" />
+    <ClInclude Include="..\include\gr_log.h" />
+    <ClInclude Include="..\include\gr_mem.h" />
+    <ClInclude Include="..\include\gr_module.h" />
+    <ClInclude Include="..\include\gr_tcp_accept.h" />
+    <ClInclude Include="..\include\gr_poll.h" />
+    <ClInclude Include="..\include\gr_queue.h" />
+    <ClInclude Include="..\include\gr_server_impl.h" />
+    <ClInclude Include="..\include\gr_socket.h" />
+    <ClInclude Include="..\include\gr_tcp_in.h" />
+    <ClInclude Include="..\include\gr_tcp_out.h" />
+    <ClInclude Include="..\include\gr_thread.h" />
+    <ClInclude Include="..\include\gr_tools.h" />
+    <ClInclude Include="..\include\gr_udp_in.h" />
+    <ClInclude Include="..\include\gr_udp_out.h" />
+    <ClInclude Include="..\include\gr_worker.h" />
+    <ClInclude Include="server_object.h" />
+    <ClInclude Include="tcp_io.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="gr_tools_mac.m" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>libgrocket</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;PERFTOOLS_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../include;../../third/gperftools-2.1/src/windows;../../third/gperftools-2.1/src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PreBuildEvent>
+      <Command>echo 编译前，解压 gperftools-2.1.tar.gz 到以下目录...
+cd $(SolutionDir)..\third
+cd
+echo 删除 gperftools-2.1...
+rd /q /s gperftools-2.1
+echo 解压 gperftools-2.1.tar.gz ...
+call tar -zxvf gperftools-2.1.tar.gz
+echo 解压完毕，继续编译 ...
+</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN64;_DEBUG;_LIB;PERFTOOLS_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../include;../../third/gperftools-2.1/src/windows;../../third/gperftools-2.1/src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PreBuildEvent>
+      <Command>echo 编译前，你必须将../third/gperftools-2.1.tar.gz原地“解压到当前目录”</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;PERFTOOLS_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../include;../../third/gperftools-2.1/src/windows;../../third/gperftools-2.1/src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PreBuildEvent>
+      <Command>echo 编译前，解压 gperftools-2.1.tar.gz 到以下目录...
+cd $(SolutionDir)..\third
+cd
+echo 删除 gperftools-2.1...
+rd /q /s gperftools-2.1
+echo 解压 gperftools-2.1.tar.gz ...
+call tar -zxvf gperftools-2.1.tar.gz
+echo 解压完毕，继续编译 ...
+</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_LIB;PERFTOOLS_DLL_DECL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../include;../../third/gperftools-2.1/src/windows;../../third/gperftools-2.1/src</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PreBuildEvent>
+      <Command>echo 编译前，你必须将../third/gperftools-2.1.tar.gz原地“解压到当前目录”</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

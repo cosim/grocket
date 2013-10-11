@@ -1,0 +1,81 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "include", "include", "{4BF53A42-DA7C-4162-97DA-FC577C71C7F8}"
+	ProjectSection(SolutionItems) = preProject
+		..\include\gr_stdinc.h = ..\include\gr_stdinc.h
+		..\include\grocket.h = ..\include\grocket.h
+		..\include\libgrocket.h = ..\include\libgrocket.h
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grocketd", "grocketd\grocketd.vcxproj", "{A9FAD743-3BA4-4976-9498-B61D32C85FAC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082} = {D3129E6B-2DA3-46B8-B45A-3DB5E905A082}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libgrocket", "libgrocket\libgrocket.vcxproj", "{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{3E76FAC0-3156-421D-81A9-D830C7B37C5D}"
+	ProjectSection(SolutionItems) = preProject
+		changelog.txt = changelog.txt
+		..\..\docs\idea.txt = ..\..\docs\idea.txt
+		..\..\docs\tree.txt = ..\..\docs\tree.txt
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "demo_module", "demo_module\demo_module.vcxproj", "{E2B1AF1F-A195-4B3B-812A-20343E56033D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "conf", "conf", "{61B7C511-0A11-48E2-ACD9-74543EB93239}"
+	ProjectSection(SolutionItems) = preProject
+		conf\grocketd.ini = conf\grocketd.ini
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "demo_server", "demo_server\demo_server.vcxproj", "{5CF4506E-AF67-4880-A872-EEAF6EBB0886}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082} = {D3129E6B-2DA3-46B8-B45A-3DB5E905A082}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Debug|Win32.Build.0 = Debug|Win32
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Debug|x64.ActiveCfg = Debug|x64
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Debug|x64.Build.0 = Debug|x64
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Release|Win32.ActiveCfg = Release|Win32
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Release|Win32.Build.0 = Release|Win32
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Release|x64.ActiveCfg = Release|x64
+		{A9FAD743-3BA4-4976-9498-B61D32C85FAC}.Release|x64.Build.0 = Release|x64
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Debug|Win32.Build.0 = Debug|Win32
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Debug|x64.ActiveCfg = Debug|x64
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Debug|x64.Build.0 = Debug|x64
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Release|Win32.ActiveCfg = Release|Win32
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Release|Win32.Build.0 = Release|Win32
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Release|x64.ActiveCfg = Release|x64
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082}.Release|x64.Build.0 = Release|x64
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Debug|Win32.Build.0 = Debug|Win32
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Debug|x64.ActiveCfg = Debug|x64
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Debug|x64.Build.0 = Debug|x64
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Release|Win32.ActiveCfg = Release|Win32
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Release|Win32.Build.0 = Release|Win32
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Release|x64.ActiveCfg = Release|x64
+		{E2B1AF1F-A195-4B3B-812A-20343E56033D}.Release|x64.Build.0 = Release|x64
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Debug|Win32.Build.0 = Debug|Win32
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Debug|x64.ActiveCfg = Debug|x64
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Debug|x64.Build.0 = Debug|x64
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Release|Win32.ActiveCfg = Release|Win32
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Release|Win32.Build.0 = Release|Win32
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Release|x64.ActiveCfg = Release|x64
+		{5CF4506E-AF67-4880-A872-EEAF6EBB0886}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
