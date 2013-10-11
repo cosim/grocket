@@ -1,0 +1,296 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="tc">
+      <UniqueIdentifier>{cbbd3a23-5f7c-4b9c-a397-5022ef3ec6eb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="libgrocket.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_server_impl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_server_impl_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_tools.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_ini.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_dll.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\central_freelist.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\common.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\dynamic_annotations.c">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\heap-profile-table.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\ia32_modrm_map.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\ia32_opcode_map.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\internal_logging.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\logging.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\low_level_alloc.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\malloc_extension.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\malloc_hook.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\memory_region_map.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\mini_disassembler.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\page_heap.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\patch_functions.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\port.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\preamble_patcher.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\raw_printer.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\sampler.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\span.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\spinlock.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\spinlock_internal.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\stack_trace_table.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\stacktrace.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\static_vars.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\symbolize.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\base\sysinfo.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\thread_cache.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third\gperftools-2.1\src\windows\preamble_patcher_with_stub.cc">
+      <Filter>tc</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_module.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_worker.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_http.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_http_default.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_conn.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_backend.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_thread.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_event.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_poll_linux.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_poll_windows.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_socket.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_queue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_tcp_accept.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_tcp_in.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_udp_in.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_tcp_out.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_udp_out.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_server_impl_posix.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_poll_bsd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_library_impl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_library_invoke.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="server_object.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\gr_errno.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_server_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_ini.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_dll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third\gperftools-2.1\src\windows\gperftools\tcmalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_module.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_worker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_http.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_conn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_backend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_poll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_socket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_lock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_tcp_accept.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_tcp_in.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_udp_in.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_tcp_out.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_udp_out.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tcp_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_library_impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_library_invoke.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="server_object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="gr_tools_mac.m">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

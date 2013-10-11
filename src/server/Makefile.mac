@@ -1,0 +1,129 @@
+OBJC_LIB	= --sysroot="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -framework Foundation
+
+CC			= gcc
+INCLUDE		=  -I../include -I./include -I../third/gperftools-2.1/src
+LIB			= -L/usr/lib -lpthread -ldl -lobjc $(OBJC_LIB)
+CFLAGS		= -g -DNDEBUG -D_FILE_OFFSET_BITS=64 -fasm-blocks
+CPPC		= g++
+MC			= gcc
+
+./bin/mac/o/grocketd_%.o: ./grocketd/%.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/mac/o/libgrocket_%.o: ./libgrocket/%.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/mac/o/libgrocket_%.o: ./libgrocket/%.m
+	$(MC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/mac/o/third_gperftools-2.1_src_%.o: ../third/gperftools-2.1/src/%.cc
+	$(CPPC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/mac/o/third_gperftools-2.1_src_base_%.o: ../third/gperftools-2.1/src/base/%.cc
+	$(CPPC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/mac/o/third_gperftools-2.1_src_base_%.o: ../third/gperftools-2.1/src/base/%.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/mac/o/demo_module_%.o: ./demo_module/%.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/mac/o/demo_server_%.o: ./demo_server/%.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+TCMALLOC= \
+	./bin/mac/o/third_gperftools-2.1_src_tcmalloc.o \
+	./bin/mac/o/third_gperftools-2.1_src_system-alloc.o \
+	./bin/mac/o/third_gperftools-2.1_src_maybe_threads.o \
+	./bin/mac/o/third_gperftools-2.1_src_malloc_extension.o \
+	./bin/mac/o/third_gperftools-2.1_src_central_freelist.o \
+	./bin/mac/o/third_gperftools-2.1_src_common.o \
+	./bin/mac/o/third_gperftools-2.1_src_heap-checker.o \
+	./bin/mac/o/third_gperftools-2.1_src_heap-checker-bcad.o \
+	./bin/mac/o/third_gperftools-2.1_src_heap-profile-table.o \
+	./bin/mac/o/third_gperftools-2.1_src_internal_logging.o \
+	./bin/mac/o/third_gperftools-2.1_src_malloc_hook.o \
+	./bin/mac/o/third_gperftools-2.1_src_memory_region_map.o \
+	./bin/mac/o/third_gperftools-2.1_src_page_heap.o \
+	./bin/mac/o/third_gperftools-2.1_src_raw_printer.o \
+	./bin/mac/o/third_gperftools-2.1_src_sampler.o \
+	./bin/mac/o/third_gperftools-2.1_src_span.o \
+	./bin/mac/o/third_gperftools-2.1_src_stack_trace_table.o \
+	./bin/mac/o/third_gperftools-2.1_src_stacktrace.o \
+	./bin/mac/o/third_gperftools-2.1_src_static_vars.o \
+	./bin/mac/o/third_gperftools-2.1_src_symbolize.o \
+	./bin/mac/o/third_gperftools-2.1_src_thread_cache.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_atomicops-internals-x86.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_dynamic_annotations.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_thread_lister.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_logging.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_low_level_alloc.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_spinlock.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_spinlock_internal.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_vdso_support.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_elf_mem_image.o \
+	./bin/mac/o/third_gperftools-2.1_src_base_sysinfo.o
+
+LIB_OBJECTS= \
+	./bin/mac/o/libgrocket_gr_backend.o 	\
+	./bin/mac/o/libgrocket_gr_config.o 	\
+	./bin/mac/o/libgrocket_gr_conn.o 	\
+	./bin/mac/o/libgrocket_gr_dll.o 	\
+	./bin/mac/o/libgrocket_gr_event.o 	\
+	./bin/mac/o/libgrocket_gr_http.o 	\
+	./bin/mac/o/libgrocket_gr_http_default.o 	\
+	./bin/mac/o/libgrocket_gr_ini.o 	\
+	./bin/mac/o/libgrocket_gr_library_impl.o 	\
+	./bin/mac/o/libgrocket_gr_library_invoke.o 	\
+	./bin/mac/o/libgrocket_gr_log.o 	\
+	./bin/mac/o/libgrocket_gr_module.o 	\
+	./bin/mac/o/libgrocket_gr_poll_bsd.o 	\
+	./bin/mac/o/libgrocket_gr_poll_linux.o 	\
+	./bin/mac/o/libgrocket_gr_poll_windows.o 	\
+	./bin/mac/o/libgrocket_gr_queue.o 	\
+	./bin/mac/o/libgrocket_gr_server_impl.o 	\
+	./bin/mac/o/libgrocket_gr_server_impl_posix.o 	\
+	./bin/mac/o/libgrocket_gr_server_impl_windows.o 	\
+	./bin/mac/o/libgrocket_gr_socket.o 	\
+	./bin/mac/o/libgrocket_gr_thread.o 	\
+	./bin/mac/o/libgrocket_gr_tcp_accept.o 	\
+	./bin/mac/o/libgrocket_gr_tcp_in.o 	\
+	./bin/mac/o/libgrocket_gr_tcp_out.o 	\
+	./bin/mac/o/libgrocket_gr_tools.o 	\
+	./bin/mac/o/libgrocket_gr_tools_mac.o 	\
+	./bin/mac/o/libgrocket_gr_udp_in.o 	\
+	./bin/mac/o/libgrocket_gr_udp_out.o 	\
+	./bin/mac/o/libgrocket_gr_worker.o 	\
+	./bin/mac/o/libgrocket_libgrocket.o 	\
+	./bin/mac/o/libgrocket_server_object.o 	\
+	$(TCMALLOC)
+
+OBJECTS= \
+	$(LIB_OBJECTS)	\
+	./bin/mac/o/grocketd_grocketd.o
+
+DEMOMODULE_OBJECTS=./bin/mac/o/demo_module_demo_module.o
+
+DEMOSERVER_OBJECTS=./bin/mac/o/demo_server_demo_server.o
+
+all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS)
+
+	$(CPPC) -rdynamic $(LIB) $(OBJECTS)	\
+			-o ./bin/mac/grocketd
+
+	ar rc ./bin/mac/libgrocket.a $(LIB_OBJECTS)
+
+	$(CC) -shared $(LIB) $(DEMOMODULE_OBJECTS)	\
+			-o ./bin/mac/libdemo_module.dylib
+
+	$(CPPC) -rdynamic $(LIB) $(DEMOSERVER_OBJECTS) $(DEMOMODULE_OBJECTS)	\
+			./bin/mac/libgrocket.a	\
+			-o ./bin/mac/demo_server
+
+	cp ./conf/grocketd.ini ./bin/mac/
+
+clean:
+	rm -fr $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS)
+	rm -fr ./bin/mac/grocketd
+	rm -fr ./bin/mac/libgrocket.a
+	rm -fr ./bin/mac/libdemo_module.dylib
