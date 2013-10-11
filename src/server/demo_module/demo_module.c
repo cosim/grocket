@@ -22,42 +22,43 @@
 // 蛋疼开始
 // 
 #include <stdio.h>  // 随便包含一个头文件，这样 size_t 类型就肯定有了
+
 #include <string.h> // for strcmp
 #include <assert.h> // for assert
 
 #if defined(WIN32) || defined(WIN64)
 
-// 这个文件里包含sockaddr_in
+    // for sockaddr_in
     #include <WinSock2.h>
-    // 这个文件里包含sockaddr_in6
+    // for sockaddr_in6
     #include <WS2tcpip.h>
     #include <Windows.h>
     #pragma comment( lib, "ws2_32.lib" )
 
-    // Windows下没有socklen_t它通常用在网络程序中传递sockaddr地址长度时使用，int是兼容定义。
+    // Windows no socklen_t, 它通常用在网络程序中传递sockaddr地址长度时使用，int是兼容定义。
+
     typedef int                 socklen_t;
-    // 这个不用解释了
     typedef unsigned short      uint16_t;
-    // 这个不用解释了
     typedef unsigned int        uint32_t;
 
 #elif defined(__linux)
 
-    // 在linux下，sockaddr_in和sockaddr_in6在in.h里
+    // 在linux下，sockaddr_in和sockaddr_in6在in.h
     #include <netinet/in.h>
 
 #elif defined( __APPLE__ )
 
-    // 在 Mac 下，uint16_t 什么的定义在这个文件里
+    // 在 Mac 下，uint16_t 什么的定义在stdint.h
     #include <stdint.h>
-    // 在 Mac 下，malloc 声明在stdlib.h里
+    // 在 Mac 下，malloc 声明在stdlib.h
     #include <stdlib.h>
-    // 在 Mac 下，socklen_t 声明在netdb.h里
+    // 在 Mac 下，socklen_t 声明在netdb.h
     #include <netdb.h>
 #endif
 
 #if ! defined(__cplusplus)
     // 在支持C99以前的C编译器是没有bool类型的，我必须要把它定义成一个字节
+
     typedef unsigned char   bool;
     #define true    1
     #define false   0
@@ -65,6 +66,7 @@
 
 #if defined(WIN32) || defined(WIN64)
 // 我想在这个demo里打出进程ID，在windows里没有getpid函数，自己提供一个
+
 static int getpid()
 {
     return (int)GetProcessId( GetCurrentProcess() );
@@ -77,13 +79,16 @@ static int getpid()
 ///////////////////////////////////////////////////////////////////////
 
 // 写服务器模块唯一需要包含的文件，不需要链接任何库。这行算行数。
+
 #include "grocket.h"
 
 // 服务器框架提供给用户模块的接口指针。这行算行数。
+
 gr_server_t *   g_server = NULL;
 
 // 注意这个函数是可选的，你可以不实现它。
 // 初始化函数。
+
 int gr_init(
     gr_process_type_t   proc_type,
     gr_server_t *       server
@@ -98,8 +103,10 @@ int gr_init(
 
     // 版本号检查，框架的最低兼容版本号必须小于或等于模块开发者使用的开发框架的版本号。该判断算行数。
     // 这个检查，使得可以直接升级甚至降级框架的二进制文件，而模块的兼容性检查只需要看模块是否能被成功装载。
+
     if ( server->low_version > GR_SERVER_VERSION ) {
         // 服务框架接口兼容性检查失败。直接初始化失败，省得在运行时core增加追查成本
+
         printf( "version compatible check failed, I'm %d, Framework %d\n",
             GR_SERVER_VERSION, server->low_version );
         return -1;
@@ -108,17 +115,18 @@ int gr_init(
     // 前面说：“写服务器模块唯一需要包含的文件，不需要链接任何库”，那服务器框架导出函数的实现
     // 在哪里？答案是：在服务器框架进程里，它在gr_init函数中通过gr_server_t *接口以函数指针的
     // 方式暴露给用户模块，所以用户模块当然要把这个指针保存起来。这行算行数。
+
     g_server = server;
 
     {
         int n;
+        gr_i_server_t * o;
 
-        // 这句话，从服务器取得一个功能类的接口指针，这个功能类的ID是 CLASS_SERVER
-        gr_i_server_t * o =
-            (gr_i_server_t *)g_server->library->classes[ CLASS_SERVER ]->singleton;
+        o = (gr_i_server_t *)g_server->library->classes[ CLASS_SERVER ]->singleton;
         assert( o );
 
         // 调用它的config_get_int从服务器配置文件读取[server]段的tcp.accept.concurrent的值
+
         n = o->config_get_int( o, "server", "tcp.accept.concurrent", 0 );
         printf( "I guess, [server]tcp.accept.concurrent = %d, is it right? haha!!!!\n", n );
 
@@ -135,6 +143,7 @@ int gr_init(
     // 3、通过server->ports_count取得监听端口数量
     // 4、通过server->ports取得每一个端口的配置
     // 如下代码是示例
+
     if ( GR_PROCESS_MASTER == proc_type || GR_PROCESS_CHILD == proc_type ) {
         int i;
         char buf[ 1024 ];
@@ -168,13 +177,15 @@ int gr_init(
             // port
             sprintf( buf, "        ports, count = %d:\n", server->ports_count );
             strcat( log, buf );
+
+            // 不白看这儿，长经验呢！inet_ntoa在Windows下能转出0.0.0.0的地址，在linux下会core
+
             for ( i = 0; i < server->ports_count; ++ i ) {
                 gr_port_item_t * item = & server->ports[ i ];
                 sprintf( buf, "            %s port = %d, addr_len = %d, addr = %s:%d, fd = %d\n",
                     item->is_tcp ? "TCP" : "UDP",
                     item->port,
                     (int)item->addr_len,
-                    // 不白看这儿，长经验呢！inet_ntoa在Windows下能转出0.0.0.0的地址，在linux下会core
                     ( 0 != item->addr4.sin_addr.s_addr ) ? inet_ntoa(item->addr4.sin_addr) : "(empty)",
                     (int)ntohs(item->addr4.sin_port),
                     item->fd );
@@ -194,22 +205,26 @@ int gr_init(
     fflush(stdout);
 
     // 如果返回0，则服务器会继续初始化，否则服务器会退出。
+
     return 0;
 }
 
 // 注意这个函数是可选的，你可以不实现它。
 // 反初始化函数。
+
 void gr_term(
     gr_process_type_t   proc_type,
     void *              must_be_zero
 )
 {
     // 和gr_init一样，proc_type参数告诉我们是哪个线程或者哪个进程在反初始化
+
     printf( "[pid=%d] gr_term called, proc_type = %d\n", getpid(), (int)proc_type );fflush(stdout);
 }
 
 // 注意这个函数是可选的，你可以不实现它。
 // 一但accept了一个TCP连接，则该函数会被调用。
+
 void gr_tcp_accept(
     int                 port,
     int                 sock,
@@ -218,21 +233,25 @@ void gr_tcp_accept(
 {
     // 模块可以有选择的决定是否要关掉这个TCP连接，如果要关掉，就*need_disconnect=1即可。
     // 模块可以从port参数得到这个连接是从服务器的哪个监听端口连上来的
+
     printf( "%d port accepted socket %d\n", port, sock );
 }
 
 // 注意这个函数是可选的，你可以不实现它。
 // 在关闭一个TCP连接之前，该函数会被调用。
+
 void gr_tcp_close(
 	int                 port,
     int                 sock
 )
 {
     // 模块可以从port参数得到这个要断掉的TCP连接是从服务器的哪个监听端口连上来的
+
     printf( "%d port will close socket %d\n", port, sock );
 }
 
 // 该函数用于检查data, len指定的数据包是否是个有效的数据包。这是个协议检查。本函数算行数。
+
 void gr_check(
     void *              data,
     int                 len,
@@ -292,31 +311,41 @@ void gr_check(
     //             中至少包括了一包完整数据包，则*is_full = true。这时服务器框架才会切出一个包把它扔给工作进程(或线程)。
 
     // 为了演示包没收全的处理，我这里假设包每过两字节收一次。
+
     if ( len < 2 ) {
         // 初步判断为有效的用户私有包
+
         ctxt->cc_package_type = GR_PACKAGE_PRIVATE;
         // 没出错
+
         *is_error = false;
         // 但不是完整包，让服务器框架继续收
+
         *is_full = false;
         printf( "not full\n" );
         return;
     }
 
     // 有效的用户私有包
+
     ctxt->cc_package_type = GR_PACKAGE_PRIVATE;
     // 没出错
+
     *is_error = false;
     // 是完整包
+
     *is_full = true;
     // 必须填写完整包长度
+
     ctxt->cc_package_length = len;
     printf( "full\n" );
     // 看，实际上我们只用了data和len两个参数判断数据包，给了那么多参数，
     // 实际是为了方便模块编写者根据不同的场景、环境做不同的处理。
+
 }
 
 // 服务器框架会在工作进程(或线程)调用本函数处理数据包。本函数算行数。
+
 void gr_proc(
     const void *        data,
     int                 len,
@@ -325,6 +354,7 @@ void gr_proc(
 )
 {
     // 我们这里会用到服务器内置对象 gr_i_server_t 的功能，如果常用，就应该将它保存起来
+
     gr_i_server_t * o = (gr_i_server_t *)g_server->library->classes[ CLASS_SERVER ]->singleton;
     char *          rsp;
 
@@ -357,10 +387,12 @@ void gr_proc(
     printf( "process %d byte user data\n", len );
 
     // 确认服务器框架填充的默认值
+
     assert( * processed_len == len );
 
     // 设置最大返回值字节数。该函数内部在必要时会分配内存，
     // 填充pc_result_buf和pc_result_buf_max字段，并将 * pc_result_buf_len 置为0
+
     rsp = (char *)o->set_max_response( o, ctxt, len );
     if ( NULL == rsp ) {
         // 服务器框架提供了个打日志功能
