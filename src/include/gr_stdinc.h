@@ -3,10 +3,10 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/24
  * @version $Revision$ 
- * @brief °´ grocket.h µÄÒªÇó£¬±¾ÎÄ¼şÖ»ĞèÒªÊµÏÖ uint16_t, uint32_t, socklen_t, bool
- *        µ«¼ÈÈ»Õû¸ö·şÎñÆ÷ÓÃËü£¬¾ÍÌá¹©Ò»¸ö¿çÆ½Ì¨µÄ£¬µ«Ä£¿é±àĞ´Õß¿ÉÒÔÑ¡ÔñÊÇ·ñÊ¹ÓÃ±¾ÎÄ¼ş¡£
+ * @brief æŒ‰ grocket.h çš„è¦æ±‚ï¼Œæœ¬æ–‡ä»¶åªéœ€è¦å®ç° uint16_t, uint32_t, socklen_t, bool
+ *        ä½†æ—¢ç„¶æ•´ä¸ªæœåŠ¡å™¨ç”¨å®ƒï¼Œå°±æä¾›ä¸€ä¸ªè·¨å¹³å°çš„ï¼Œä½†æ¨¡å—ç¼–å†™è€…å¯ä»¥é€‰æ‹©æ˜¯å¦ä½¿ç”¨æœ¬æ–‡ä»¶ã€‚
  *
- * Revision History ´óÊÂ¼ş¼Ç
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+

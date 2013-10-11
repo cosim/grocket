@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/03
  * @version $Revision$ 
- * @brief   TCP Êä³öÏß³Ì
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   TCP è¾“å‡ºçº¿ç¨‹
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -93,8 +93,8 @@ int gr_tcp_out_init()
         }
 
 #if defined( WIN32 ) || defined( WIN64 )
-        // windows²»ÔÊÐíÍ¬Ò»¸ösocketÍ¬Ê±¼Óµ½Á½¸öiocpÀï
-        // ÕâÀïÈÃtcp_outºÍtcp_in¹²ÓÃIOCP
+        // windowsä¸å…è®¸åŒä¸€ä¸ªsocketåŒæ—¶åŠ åˆ°ä¸¤ä¸ªiocpé‡Œ
+        // è¿™é‡Œè®©tcp_outå’Œtcp_inå…±ç”¨IOCP
         r = gr_pool_replace_from(
             p->poll,
             (gr_poll_t *)gr_tcp_in_get_poll()
@@ -103,7 +103,7 @@ int gr_tcp_out_init()
             r = GR_ERR_INIT_POLL_FALED;
             break;
         }
-        gr_info( "tcp.in ºÍ tcp.out ¹²ÓÃÒ»¸ö IOCP" );
+        gr_info( "tcp.in å’Œ tcp.out å…±ç”¨ä¸€ä¸ª IOCP" );
 #endif
 
         r = gr_threads_start(
@@ -182,7 +182,7 @@ int gr_tcp_out_add(
         return -1;
     }
 
-    // ½«¸Ãsocket¼Óµ½pollÀï
+    // å°†è¯¥socketåŠ åˆ°pollé‡Œ
     r = gr_poll_add_tcp_send_fd(
         self->poll,
         conn,

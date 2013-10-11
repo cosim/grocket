@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/28
  * @version $Revision$ 
- * @brief   Ïß³ÌÏà¹Ø¹¦ÄÜ
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   çº¿ç¨‹ç›¸å…³åŠŸèƒ½
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -21,7 +21,7 @@
  
 int gr_processor_count()
 {
-    // ÎÒ²»ÏàĞÅÄãÑ¾¿ÉÒÔÈÈ²å°ÎCPU
+    // æˆ‘ä¸ç›¸ä¿¡ä½ ä¸«å¯ä»¥çƒ­æ’æ‹”CPU
     static int r = 0;
     if ( 0 == r ) {
     
@@ -76,7 +76,7 @@ gr_thread_create(
         return -2;
     }
 
-    // CPUÇ×ÔµĞÔ
+    // CPUäº²ç¼˜æ€§
     if ( cpu_id >= 0 ) {
         if ( 0 == SetThreadAffinityMask( * thread, mask_map[ cpu_id ] ) ) {
             gr_fatal( "SetThreadAffinityMask failed: %d", get_errno() );
@@ -86,7 +86,7 @@ gr_thread_create(
         }
     }
 
-    // Ïß³ÌÓÅÏÈ¼¶
+    // çº¿ç¨‹ä¼˜å…ˆçº§
     switch( priority ) {
     case -3:
         priority = THREAD_PRIORITY_IDLE;
@@ -123,7 +123,7 @@ gr_thread_create(
         return -5;
     }
 
-    // »Ö¸´Ïß³ÌÔËĞĞ
+    // æ¢å¤çº¿ç¨‹è¿è¡Œ
     if ( (DWORD)-1 == ResumeThread( * thread ) ) {
         gr_fatal( "ResumeThread failed: %d", get_errno() );
         CloseHandle( * thread );
@@ -206,23 +206,23 @@ void * gr_thread_runtine( gr_thread_t * thread )
     int pid = getpid();
     int tid = gettid();
 
-    // Ïß³ÌÆô¶¯±ê¼Ç
+    // çº¿ç¨‹å¯åŠ¨æ ‡è®°
     thread->is_running = true;
-    // ³õÊ¼»¯
+    // åˆå§‹åŒ–
     if ( NULL != thread->init_routine ) {
         gr_info( "[pid=%d][tid=%d][name=%s.%d] init thread starting", pid, tid, thread->name, thread->id );
         thread->init_routine( thread );
         gr_info( "[pid=%d][tid=%d][name=%s.%d] init thread started", pid, tid, thread->name, thread->id );
     }
-    // Ïß³ÌÆô¶¯ÊÂ¼ş
+    // çº¿ç¨‹å¯åŠ¨äº‹ä»¶
     gr_event_alarm( & thread->event );
-    // Ïß³ÌÓÃ»§º¯Êı
+    // çº¿ç¨‹ç”¨æˆ·å‡½æ•°
     gr_info( "[pid=%d][tid=%d][name=%s.%d] thread routine starting", pid, tid, thread->name, thread->id );
     thread->routine( thread );
     gr_info( "[pid=%d][tid=%d][name=%s.%d] thread routine exit", pid, tid, thread->name, thread->id );
-    // Ïß³ÌÍË³ö±ê¼Ç
+    // çº¿ç¨‹é€€å‡ºæ ‡è®°
     thread->is_running = false;
-    // Ïß³Ì¹Ø±ÕÊÂ¼ş
+    // çº¿ç¨‹å…³é—­äº‹ä»¶
     gr_event_alarm( & thread->event );
     return NULL;
 }
@@ -312,11 +312,11 @@ int gr_threads_start(
             break;
         }
 
-        // µÈËùÓĞÏß³Ì¶¼Æô¶¯
+        // ç­‰æ‰€æœ‰çº¿ç¨‹éƒ½å¯åŠ¨
         if ( wait_for_all_thread_ready ) {
             for ( i = 0; i < p->thread_count; ++ i ) {
                 gr_thread_t * t = & p->threads[ i ];
-                //TODO: Ã»ÅĞ¶Ï·µ»ØÖµ
+                //TODO: æ²¡åˆ¤æ–­è¿”å›å€¼
                 gr_event_wait( & t->event, GR_EVENT_WAIT_INFINITE );
             }
         }
@@ -344,7 +344,7 @@ void gr_threads_close( gr_threads_t * threads )
         if ( threads->thread_count > 0 ) {
             int i;
 
-            // ¸øËùÓĞÏß³ÌÉèÖÃ¹Ø±Õ±ê¼Ç
+            // ç»™æ‰€æœ‰çº¿ç¨‹è®¾ç½®å…³é—­æ ‡è®°
             for ( i = 0; i < threads->thread_count; ++ i ) {
                 t = & threads->threads[ i ];
                 if ( t->is_started ) {
@@ -352,7 +352,7 @@ void gr_threads_close( gr_threads_t * threads )
                 }
             }
 
-            // µÈËùÓĞÏß³ÌÍË³ö
+            // ç­‰æ‰€æœ‰çº¿ç¨‹é€€å‡º
             while ( threads->thread_count > 0 ) {
                 t = & threads->threads[ threads->thread_count - 1 ];
                 if ( t->is_started ) {
@@ -363,7 +363,7 @@ void gr_threads_close( gr_threads_t * threads )
                 }
             }
 
-            // É¾ËùÓĞÏß³ÌµÄcookie
+            // åˆ æ‰€æœ‰çº¿ç¨‹çš„cookie
             for ( i = 0; i < threads->thread_count; ++ i ) {
                 t = & threads->threads[ i ];
                 t->cookie_len = 0;

@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/03
  * @version $Revision$ 
- * @brief   UDP Êä³öÏß³Ì
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   UDP è¾“å‡ºçº¿ç¨‹
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -64,7 +64,7 @@ void udp_out_worker( gr_thread_t * thread )
             
             if ( NULL != e->data.ptr ) {
                 rsp = (gr_udp_rsp_t *)e->data.ptr;
-                // TCPÐÂÁ¬½Ó
+                // TCPæ–°è¿žæŽ¥
                 on_udp_out( self, thread, rsp );
             } else {
                 gr_fatal( "invalid e->data.ptr %p", e->data.ptr );
@@ -151,7 +151,7 @@ void gr_udp_out_term()
 
         gr_threads_close( & p->threads );
 
-        // Ïß³ÌÍ£ÁË¾Í¿ÉÒÔ°ÑÈ«¾Ö±äÁ¿ÇåµôÁË
+        // çº¿ç¨‹åœäº†å°±å¯ä»¥æŠŠå…¨å±€å˜é‡æ¸…æŽ‰äº†
         g_ghost_rocket_global.udp_out = NULL;
 
         if ( NULL != p->poll ) {

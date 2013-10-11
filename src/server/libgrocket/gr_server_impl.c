@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ·şÎñÆ÷Ö÷¸É
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   æœåŠ¡å™¨ä¸»å¹²
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -51,9 +51,9 @@ gr_server_init(
         return GR_ERR_BAD_ALLOC;
     }
 
-    // ¼ÇÂ¼·şÎñÆ÷Æô¶¯Ê±¼ä
+    // è®°å½•æœåŠ¡å™¨å¯åŠ¨æ—¶é—´
     server->start_time = time( NULL );
-    // ¼ÇÂ¼ÃüÁîĞĞ²ÎÊı
+    // è®°å½•å‘½ä»¤è¡Œå‚æ•°
     server->argc = argc;
     server->argv = argv;
 
@@ -78,7 +78,7 @@ static inline
 void
 do_close()
 {
-    // ×öÍË³ö¶¯×÷, Èç¹ûÖ÷³ÌĞòÔÚdeamon=1Ê±µ÷ÓÃ´Ë¹¦ÄÜ,Ôò·şÎñÆ÷»áÖØÆô
+    // åšé€€å‡ºåŠ¨ä½œ, å¦‚æœä¸»ç¨‹åºåœ¨deamon=1æ—¶è°ƒç”¨æ­¤åŠŸèƒ½,åˆ™æœåŠ¡å™¨ä¼šé‡å¯
     if ( NULL != g_ghost_rocket_global.server ) {
         gr_server_impl_t *  server = g_ghost_rocket_global.server;
         gr_server_need_exit( server );
@@ -152,55 +152,55 @@ void init_signal()
 #if defined( WIN32 ) || defined( WIN64 )
     SetConsoleCtrlHandler( process_signal, TRUE );
 #else
-    // SIGHUP ±¾ĞÅºÅÔÚÓÃ»§ÖÕ¶ËÁ¬½Ó(Õı³£»ò·ÇÕı³£)½áÊøÊ±·¢³ö, Í¨³£ÊÇÔÚÖÕ¶ËµÄ¿Ø 
-    // ÖÆ½ø³Ì½áÊøÊ±, Í¨ÖªÍ¬Ò»sessionÄÚµÄ¸÷¸ö×÷Òµ, ÕâÊ±ËüÃÇÓë¿ØÖÆÖÕ¶Ë 
-    // ²»ÔÙ¹ØÁª. 
+    // SIGHUP æœ¬ä¿¡å·åœ¨ç”¨æˆ·ç»ˆç«¯è¿æ¥(æ­£å¸¸æˆ–éæ­£å¸¸)ç»“æŸæ—¶å‘å‡º, é€šå¸¸æ˜¯åœ¨ç»ˆç«¯çš„æ§ 
+    // åˆ¶è¿›ç¨‹ç»“æŸæ—¶, é€šçŸ¥åŒä¸€sessionå†…çš„å„ä¸ªä½œä¸š, è¿™æ—¶å®ƒä»¬ä¸æ§åˆ¶ç»ˆç«¯ 
+    // ä¸å†å…³è”. 
     signal( SIGHUP, SIG_IGN );
 
-    // SIGINT ³ÌĞòÖÕÖ¹(interrupt)ĞÅºÅ, ÔÚÓÃ»§¼üÈëINTR×Ö·û(Í¨³£ÊÇCtrl-C)Ê±·¢³ö
+    // SIGINT ç¨‹åºç»ˆæ­¢(interrupt)ä¿¡å·, åœ¨ç”¨æˆ·é”®å…¥INTRå­—ç¬¦(é€šå¸¸æ˜¯Ctrl-C)æ—¶å‘å‡º
     signal( SIGINT, process_signal );
 
-    // SIGQUIT ºÍSIGINTÀàËÆ, µ«ÓÉQUIT×Ö·û(Í¨³£ÊÇCtrl-)À´¿ØÖÆ. ½ø³ÌÔÚÒòÊÕµ½ 
-    // SIGQUITÍË³öÊ±»á²úÉúcoreÎÄ¼ş, ÔÚÕâ¸öÒâÒåÉÏÀàËÆÓÚÒ»¸ö³ÌĞò´íÎóĞÅ 
-    // ºÅ.
+    // SIGQUIT å’ŒSIGINTç±»ä¼¼, ä½†ç”±QUITå­—ç¬¦(é€šå¸¸æ˜¯Ctrl-)æ¥æ§åˆ¶. è¿›ç¨‹åœ¨å› æ”¶åˆ° 
+    // SIGQUITé€€å‡ºæ—¶ä¼šäº§ç”Ÿcoreæ–‡ä»¶, åœ¨è¿™ä¸ªæ„ä¹‰ä¸Šç±»ä¼¼äºä¸€ä¸ªç¨‹åºé”™è¯¯ä¿¡ 
+    // å·.
     signal( SIGQUIT, process_signal );
 
-    // SIGILL Ö´ĞĞÁË·Ç·¨Ö¸Áî. Í¨³£ÊÇÒòÎª¿ÉÖ´ĞĞÎÄ¼ş±¾Éí³öÏÖ´íÎó, »òÕßÊÔÍ¼Ö´ĞĞ 
-    // Êı¾İ¶Î. ¶ÑÕ»Òç³öÊ±Ò²ÓĞ¿ÉÄÜ²úÉúÕâ¸öĞÅºÅ. 
+    // SIGILL æ‰§è¡Œäº†éæ³•æŒ‡ä»¤. é€šå¸¸æ˜¯å› ä¸ºå¯æ‰§è¡Œæ–‡ä»¶æœ¬èº«å‡ºç°é”™è¯¯, æˆ–è€…è¯•å›¾æ‰§è¡Œ 
+    // æ•°æ®æ®µ. å †æ ˆæº¢å‡ºæ—¶ä¹Ÿæœ‰å¯èƒ½äº§ç”Ÿè¿™ä¸ªä¿¡å·. 
 
-    // SIGTRAP ÓÉ¶ÏµãÖ¸Áî»òÆäËütrapÖ¸Áî²úÉú. ÓÉdebuggerÊ¹ÓÃ. 
+    // SIGTRAP ç”±æ–­ç‚¹æŒ‡ä»¤æˆ–å…¶å®ƒtrapæŒ‡ä»¤äº§ç”Ÿ. ç”±debuggerä½¿ç”¨. 
 
-    // SIGTERM ³ÌĞò½áÊø(terminate)ĞÅºÅ, ÓëSIGKILL²»Í¬µÄÊÇ¸ÃĞÅºÅ¿ÉÒÔ±»×èÈûºÍ 
-    // ´¦Àí. Í¨³£ÓÃÀ´ÒªÇó³ÌĞò×Ô¼ºÕı³£ÍË³ö. shellÃüÁîkillÈ±Ê¡²úÉúÕâ 
-    // ¸öĞÅºÅ. 
+    // SIGTERM ç¨‹åºç»“æŸ(terminate)ä¿¡å·, ä¸SIGKILLä¸åŒçš„æ˜¯è¯¥ä¿¡å·å¯ä»¥è¢«é˜»å¡å’Œ 
+    // å¤„ç†. é€šå¸¸ç”¨æ¥è¦æ±‚ç¨‹åºè‡ªå·±æ­£å¸¸é€€å‡º. shellå‘½ä»¤killç¼ºçœäº§ç”Ÿè¿™ 
+    // ä¸ªä¿¡å·. 
     signal( SIGTERM, process_signal );
 
-    // SIGIOT ÔÚPDP-11ÉÏÓÉiotÖ¸Áî²úÉú, ÔÚÆäËü»úÆ÷ÉÏºÍSIGABRTÒ»Ñù. 
+    // SIGIOT åœ¨PDP-11ä¸Šç”±iotæŒ‡ä»¤äº§ç”Ÿ, åœ¨å…¶å®ƒæœºå™¨ä¸Šå’ŒSIGABRTä¸€æ ·. 
     signal( SIGIOT, process_signal );
 
-    // SIGBUS ·Ç·¨µØÖ·, °üÀ¨ÄÚ´æµØÖ·¶ÔÆë(alignment)³ö´í. eg: ·ÃÎÊÒ»¸öËÄ¸ö×Ö³¤ 
-    // µÄÕûÊı, µ«ÆäµØÖ·²»ÊÇ4µÄ±¶Êı. 
+    // SIGBUS éæ³•åœ°å€, åŒ…æ‹¬å†…å­˜åœ°å€å¯¹é½(alignment)å‡ºé”™. eg: è®¿é—®ä¸€ä¸ªå››ä¸ªå­—é•¿ 
+    // çš„æ•´æ•°, ä½†å…¶åœ°å€ä¸æ˜¯4çš„å€æ•°. 
 
-    // SIGFPE ÔÚ·¢ÉúÖÂÃüµÄËãÊõÔËËã´íÎóÊ±·¢³ö. ²»½ö°üÀ¨¸¡µãÔËËã´íÎó, »¹°üÀ¨Òç 
-    // ³ö¼°³ıÊıÎª0µÈÆäËüËùÓĞµÄËãÊõµÄ´íÎó. 
+    // SIGFPE åœ¨å‘ç”Ÿè‡´å‘½çš„ç®—æœ¯è¿ç®—é”™è¯¯æ—¶å‘å‡º. ä¸ä»…åŒ…æ‹¬æµ®ç‚¹è¿ç®—é”™è¯¯, è¿˜åŒ…æ‹¬æº¢ 
+    // å‡ºåŠé™¤æ•°ä¸º0ç­‰å…¶å®ƒæ‰€æœ‰çš„ç®—æœ¯çš„é”™è¯¯. 
 
-    // SIGKILL ÓÃÀ´Á¢¼´½áÊø³ÌĞòµÄÔËĞĞ. ±¾ĞÅºÅ²»ÄÜ±»×èÈû, ´¦ÀíºÍºöÂÔ. 
+    // SIGKILL ç”¨æ¥ç«‹å³ç»“æŸç¨‹åºçš„è¿è¡Œ. æœ¬ä¿¡å·ä¸èƒ½è¢«é˜»å¡, å¤„ç†å’Œå¿½ç•¥. 
 
     // SIGPIPE Broken pipe 
     signal( SIGPIPE, SIG_IGN );
 
-    // SIGTSTP Í£Ö¹½ø³ÌµÄÔËĞĞ, µ«¸ÃĞÅºÅ¿ÉÒÔ±»´¦ÀíºÍºöÂÔ. ÓÃ»§¼üÈëSUSP×Ö·ûÊ± 
-    // (Í¨³£ÊÇCtrl-Z)·¢³öÕâ¸öĞÅºÅ 
+    // SIGTSTP åœæ­¢è¿›ç¨‹çš„è¿è¡Œ, ä½†è¯¥ä¿¡å·å¯ä»¥è¢«å¤„ç†å’Œå¿½ç•¥. ç”¨æˆ·é”®å…¥SUSPå­—ç¬¦æ—¶ 
+    // (é€šå¸¸æ˜¯Ctrl-Z)å‘å‡ºè¿™ä¸ªä¿¡å· 
     signal( SIGTSTP, process_signal );
 
-    // SIGCHLD ×Ó½ø³Ì½áÊøÊ±, ¸¸½ø³Ì»áÊÕµ½Õâ¸öĞÅºÅ. 
+    // SIGCHLD å­è¿›ç¨‹ç»“æŸæ—¶, çˆ¶è¿›ç¨‹ä¼šæ”¶åˆ°è¿™ä¸ªä¿¡å·. 
     signal( SIGCHLD, SIG_IGN );
 
-    // SIGXCPU ³¬¹ıCPUÊ±¼ä×ÊÔ´ÏŞÖÆ. Õâ¸öÏŞÖÆ¿ÉÒÔÓÉgetrlimit/setrlimitÀ´¶ÁÈ¡/ 
-    // ¸Ä±ä
+    // SIGXCPU è¶…è¿‡CPUæ—¶é—´èµ„æºé™åˆ¶. è¿™ä¸ªé™åˆ¶å¯ä»¥ç”±getrlimit/setrlimitæ¥è¯»å–/ 
+    // æ”¹å˜
     signal( SIGXCPU, SIG_IGN );
 
-    // SIGXFSZ ³¬¹ıÎÄ¼ş´óĞ¡×ÊÔ´ÏŞÖÆ
+    // SIGXFSZ è¶…è¿‡æ–‡ä»¶å¤§å°èµ„æºé™åˆ¶
     signal( SIGXFSZ, SIG_IGN );
 #endif
 }
@@ -249,7 +249,7 @@ server_init(
 
         if ( has_tcp() ) {
 
-            // ³õÊ¼»¯TCP acceptÄ£¿é
+            // åˆå§‹åŒ–TCP acceptæ¨¡å—
             r = gr_tcp_accept_init();
             if ( 0 != r ) {
                 gr_fatal( "[init]gr_tcp_accept_init() return error %d", r );
@@ -257,7 +257,7 @@ server_init(
                 break;
             }
 
-            // ³õÊ¼»¯TCP¶ÁÄ£¿é
+            // åˆå§‹åŒ–TCPè¯»æ¨¡å—
             r = gr_tcp_in_init();
             if ( 0 != r ) {
                 gr_fatal( "[init]gr_tcp_in_init() return error %d", r );
@@ -265,7 +265,7 @@ server_init(
                 break;
             }
 
-            // ³õÊ¼»¯TCPĞ´Ä£¿é
+            // åˆå§‹åŒ–TCPå†™æ¨¡å—
             r = gr_tcp_out_init();
             if ( 0 != r ) {
                 gr_fatal( "[init]gr_tcp_out_init() return error %d", r );
@@ -275,7 +275,7 @@ server_init(
         }
 
         if ( has_udp() ) {
-            // ³õÊ¼»¯UDP¶ÁÄ£¿é
+            // åˆå§‹åŒ–UDPè¯»æ¨¡å—
             r = gr_udp_in_init();
             if ( 0 != r ) {
                 gr_fatal( "[init]gr_udp_in_init() return error %d", r );
@@ -283,7 +283,7 @@ server_init(
                 break;
             }
 
-            // ³õÊ¼»¯UDPĞ´Ä£¿é
+            // åˆå§‹åŒ–UDPå†™æ¨¡å—
             r = gr_udp_out_init();
             if ( 0 != r ) {
                 gr_fatal( "[init]gr_udp_out_init() return error %d", r );
@@ -292,7 +292,7 @@ server_init(
             }
         }
 
-        // ³õÊ¼»¯httpÄ£¿é
+        // åˆå§‹åŒ–httpæ¨¡å—
         r = gr_http_init();
         if ( 0 != r ) {
             gr_fatal( "[init]gr_http_init() return error %d", r );
@@ -300,7 +300,7 @@ server_init(
             break;
         }
 
-        // ³õÊ¼»¯connÄ£¿é
+        // åˆå§‹åŒ–connæ¨¡å—
         r = gr_conn_init();
         if ( 0 != r ) {
             gr_fatal( "[init]gr_conn_init() return error %d", r );
@@ -308,7 +308,7 @@ server_init(
             break;
         }
 
-        // ³õÊ¼»¯backendÄ£¿é
+        // åˆå§‹åŒ–backendæ¨¡å—
         r = gr_backend_init();
         if ( 0 != r ) {
             gr_fatal( "[init]gr_backend_init() return error %d", r );
@@ -316,7 +316,7 @@ server_init(
             break;
         }
 
-        // ³õÊ¼»¯workerÄ£¿é
+        // åˆå§‹åŒ–workeræ¨¡å—
         r = gr_worker_init();
         if ( 0 != r ) {
             gr_fatal( "[init]gr_worker_init() return error %d", r );
@@ -335,28 +335,28 @@ server_term(
     gr_server_impl_t * server
 )
 {
-    // Ğ¶ÔØworkerÄ£¿é
+    // å¸è½½workeræ¨¡å—
     gr_worker_term();
-    // Ğ¶ÔØbackendÄ£¿é
+    // å¸è½½backendæ¨¡å—
     gr_backend_term();
-    // Ğ¶ÔØconnÄ£¿é
+    // å¸è½½connæ¨¡å—
     gr_conn_term();
-    // Ğ¶ÔØhttpÄ£¿é
+    // å¸è½½httpæ¨¡å—
     gr_http_term();
 
     if ( has_udp() ) {
-        // Ğ¶ÔØUDPĞ´Ä£¿é
+        // å¸è½½UDPå†™æ¨¡å—
         gr_udp_out_term();
-        // Ğ¶ÔØUDP¶ÁÄ£¿é
+        // å¸è½½UDPè¯»æ¨¡å—
         gr_udp_in_term();
     }
 
     if ( has_tcp() ) {
-        // Ğ¶ÔØTCPPĞ´Ä£¿é
+        // å¸è½½TCPPå†™æ¨¡å—
         gr_tcp_out_term();
-        // Ğ¶ÔØTCP¶ÁÄ£¿é
+        // å¸è½½TCPè¯»æ¨¡å—
         gr_tcp_in_term();
-        // Ğ¶ÔØtcp acceptÄ£¿é
+        // å¸è½½tcp acceptæ¨¡å—
         gr_tcp_accept_term();
     }
 }
@@ -441,23 +441,23 @@ bind_tcp(
     do {
         int reuse_addr = 1;
 
-        // ·¢ËÍ»º³åÇø
+        // å‘é€ç¼“å†²åŒº
         if ( ! gr_socket_set_send_buf( item->fd, gr_config_tcp_accept_send_buf() ) ) {
             gr_warning( "gr_socket_set_send_buf failed, ignore" );
         }
 
-        // ½ÓÊÕ»º³åÇø
+        // æ¥æ”¶ç¼“å†²åŒº
         if ( ! gr_socket_set_recv_buf( item->fd, gr_config_tcp_accept_recv_buf() ) ) {
             gr_warning( "gr_socket_set_recv_buf failed, ignore" );
         }
 
-        // ·Ç×èÈû
+        // éé˜»å¡
         if ( ! gr_socket_set_block( item->fd, false ) ) {
             r = -5;
             break;
         }
 
-        // ÖØÓÃµØÖ·
+        // é‡ç”¨åœ°å€
         setsockopt( item->fd, SOL_SOCKET, SO_REUSEADDR, (const char*)& reuse_addr, sizeof( reuse_addr ) );
 
         // bind
@@ -497,25 +497,25 @@ bind_udp(
     do {
         int reuse_addr = 1;
 
-        // ·¢ËÍ»º³åÇø
+        // å‘é€ç¼“å†²åŒº
         if ( ! gr_socket_set_send_buf( item->fd, gr_config_udp_send_buf() ) ) {
             r = -3;
             break;
         }
 
-        // ½ÓÊÕ»º³åÇø
+        // æ¥æ”¶ç¼“å†²åŒº
         if ( ! gr_socket_set_recv_buf( item->fd, gr_config_udp_recv_buf() ) ) {
             r = -4;
             break;
         }
 
-        // ·Ç×èÈû
+        // éé˜»å¡
         if ( ! gr_socket_set_block( item->fd, false ) ) {
             r = -5;
             break;
         }
 
-        // ÖØÓÃµØÖ·
+        // é‡ç”¨åœ°å€
         setsockopt( item->fd, SOL_SOCKET, SO_REUSEADDR, (const char*)& reuse_addr, sizeof( reuse_addr ) );
 
         // bind
@@ -581,14 +581,14 @@ server_run(
 
     do {
 
-        // °Ñ¶Ë¿Ú°óÁË
+        // æŠŠç«¯å£ç»‘äº†
         r = server_bind_port( server );
         if ( 0 != r ) {
             gr_fatal( "[init]server_bind_port return error %d", r );
             break;
         }
 
-        // µ÷ÓÃÄ£¿é×Ó½ø³Ì³õÊ¼»¯º¯Êı
+        // è°ƒç”¨æ¨¡å—å­è¿›ç¨‹åˆå§‹åŒ–å‡½æ•°
         r = gr_module_child_process_init();
         if ( 0 != r ) {
             gr_fatal( "[init]gr_module_child_process_init return error %d", r );
@@ -596,7 +596,7 @@ server_run(
         }
         child_process_init_ok = true;
 
-        // ³õÊ¼»¯·şÎñÆ÷£¬ÕâÆäÖĞ°üÀ¨Ã¿¸öworker³õÊ¼»¯µÄº¯Êı
+        // åˆå§‹åŒ–æœåŠ¡å™¨ï¼Œè¿™å…¶ä¸­åŒ…æ‹¬æ¯ä¸ªworkeråˆå§‹åŒ–çš„å‡½æ•°
         server_init_called = true;
         r = server_init( server );
         if ( 0 != r ) {
@@ -604,18 +604,18 @@ server_run(
             break;
         }
 
-        // ·şÎñÆ÷Ö÷Ñ­»·
+        // æœåŠ¡å™¨ä¸»å¾ªç¯
         r = server_loop( server );
         gr_info( "[init]server_loop return %d", r );
 
     } while ( false );
 
     if ( server_init_called ) {
-        // ·´³õÊ¼»¯·şÎñÆ÷£¬ÕâÆäÖĞ°üÀ¨Ã¿¸öworker·´³õÊ¼»¯µÄº¯Êı
+        // ååˆå§‹åŒ–æœåŠ¡å™¨ï¼Œè¿™å…¶ä¸­åŒ…æ‹¬æ¯ä¸ªworkerååˆå§‹åŒ–çš„å‡½æ•°
         server_term( server );
     }
 
-    // µ÷ÓÃÄ£¿éÁË½ø³Ì·´³õÊ¼»¯º¯Êı
+    // è°ƒç”¨æ¨¡å—äº†è¿›ç¨‹ååˆå§‹åŒ–å‡½æ•°
     if ( child_process_init_ok ) {
         gr_module_child_process_term();
     }
@@ -625,7 +625,7 @@ server_run(
 
 int gr_server_main()
 {
-    // ×¢Òâ£ºÕâ¸öº¯ÊıÊÇ×Ó½ø³Ìµ÷ÓÃµÄ´úÂë
+    // æ³¨æ„ï¼šè¿™ä¸ªå‡½æ•°æ˜¯å­è¿›ç¨‹è°ƒç”¨çš„ä»£ç 
     int r;
     time_t start;
     time_t stop;

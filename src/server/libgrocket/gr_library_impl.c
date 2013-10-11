@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/08
  * @version $Revision$ 
- * @brief   ·þÎñÆ÷¹¦ÄÜº¯Êý¿â
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   æœåŠ¡å™¨åŠŸèƒ½å‡½æ•°åº“
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -26,7 +26,7 @@ typedef struct
     gr_dll_t            core_dll;
     gr_library_init_t   core_init;
 
-    // ½«singletonµÄ·þÎñÆ÷¶ÔÏó±£´æÔÚÈ«¾Ö½á¹¹Àï£¬Ïàµ±ÓÚÒ»¸öÈ«¾Ö±äÁ¿
+    // å°†singletonçš„æœåŠ¡å™¨å¯¹è±¡ä¿å­˜åœ¨å…¨å±€ç»“æž„é‡Œï¼Œç›¸å½“äºŽä¸€ä¸ªå…¨å±€å˜é‡
     GR_CLASS_DECLARE_SINGLETON( server )
 
 } gr_library_impl_t;
@@ -111,7 +111,7 @@ int gr_library_impl_init()
         gr_server.library->low_version  = GR_LIBRARY_LOW_VERSION;
         gr_server.library->class_max    = class_max;
 
-        // ×°ÔØËùÓÐÄÚÖÃ¶ÔÏó
+        // è£…è½½æ‰€æœ‰å†…ç½®å¯¹è±¡
         g_ghost_rocket_global.library = p;
         ret = buildin_library_init( gr_server.library );
         if ( 0 != ret ) {
@@ -119,7 +119,7 @@ int gr_library_impl_init()
             break;
         }
 
-        // ÊÔÍ¼×°ÔØËùÓÐÍâÖÃ¶ÔÏó
+        // è¯•å›¾è£…è½½æ‰€æœ‰å¤–ç½®å¯¹è±¡
         if ( NULL != library_core && '\0' != * library_core && is_exists( library_core ) ) {
             p->core_dll = gr_dll_open( library_core );
             if ( NULL != p->core_dll ) {
@@ -172,12 +172,12 @@ int buildin_library_init(
     gr_library_impl_t * parent  = (gr_library_impl_t *)g_ghost_rocket_global.library;
 
     if ( NULL != gr_server.library->classes[ CLASS_SERVER ] ) {
-        // ÄãÑ¾°ÑÎÒµØ·½Õ¼ÁË£¡
+        // ä½ ä¸«æŠŠæˆ‘åœ°æ–¹å äº†ï¼
         gr_fatal( "CLASS_SERVER slot must be NULL!" );
         return -1;
     }
 
-    // °²×° server singleton ¶ÔÏóµ½ library ÖÐ
+    // å®‰è£… server singleton å¯¹è±¡åˆ° library ä¸­
     GR_CLASS_INSTALL_SINGLETON( library, parent, server, CLASS_SERVER );
 
     if ( NULL == gr_server.library->classes[ CLASS_SERVER ] ) {

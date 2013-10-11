@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/29
  * @version $Revision$ 
- * @brief   SOCKET相关功能
- * Revision History 大事件记
+ * @brief   SOCKET鐩稿叧鍔熻兘
+ * Revision History 澶т簨浠惰
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+

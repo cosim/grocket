@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/29
  * @version $Revision$ 
- * @brief   SOCKETÏà¹Ø¹¦ÄÜ
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   SOCKETç›¸å…³åŠŸèƒ½
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -258,10 +258,10 @@ gr_socket_set_linger(
 {
     struct linger lingerValue;
 
-    // ²»ÔÊÐí l_onoff == 1 && l_linger > 0 µÄÇé¿ö
+    // ä¸å…è®¸ l_onoff == 1 && l_linger > 0 çš„æƒ…å†µ
     if ( 0 == lv ) {
         lingerValue.l_onoff = 0;
-        // Õâ¸öÖµ±»ºöÂÔ
+        // è¿™ä¸ªå€¼è¢«å¿½ç•¥
         lingerValue.l_linger = 0;
     } else {
         lingerValue.l_onoff = 1;
@@ -558,8 +558,8 @@ gr_socket_addr_v4(
 #endif
 
         if(entry == 0) {
-            // DNS ´í
-            gr_error( "DNS´í %d", get_errno() );
+            // DNS é”™
+            gr_error( "DNSé”™ %d", get_errno() );
             return false;
         }
         memcpy( & addr->sin_addr, entry->h_addr, entry->h_length);

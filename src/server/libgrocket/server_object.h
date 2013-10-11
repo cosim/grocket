@@ -4,7 +4,7 @@
  * @date 2013/10/09
  * @version $Revision$ 
  * @brief   
- * Revision History ´óÊÂ¼ş¼Ç
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -16,11 +16,11 @@
 #include "gr_stdinc.h"
 #include "grocket.h"
 
-// ·şÎñÆ÷¶ÔÏó
+// æœåŠ¡å™¨å¯¹è±¡
 
 GR_CLASS_DECLARE_BEGIN( server, gr_i_server_t )
 
-    // class ÉùÃ÷
+    // class å£°æ˜
 
 GR_CLASS_DECLARE_END( server )
 

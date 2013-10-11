@@ -3,9 +3,9 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/24
  * @version $Revision$ 
- * @brief ·şÎñ¿ò¼Ü×Ô¼ºÌá¹©µÄ¿ÉÖ´ĞĞÖ÷³ÌĞò¡£
+ * @brief æœåŠ¡æ¡†æ¶è‡ªå·±æä¾›çš„å¯æ‰§è¡Œä¸»ç¨‹åºã€‚
  *
- * Revision History ´óÊÂ¼ş¼Ç
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -16,7 +16,7 @@
 #include "grocket.h"
 #include "libgrocket.h"
 
-// WindowsÏÂµÄ¾²Ì¬¿âÒÀÀµ
+// Windowsä¸‹çš„é™æ€åº“ä¾èµ–
 #if defined(WIN32)
     #if defined(_DEBUG)
         #pragma comment( lib, "../bin/Win32/Debug/libgrocket.lib" )
@@ -33,11 +33,11 @@
 
 int main( int argc, char ** argv )
 {
-    // Ä¬ÈÏ·şÎñÆ÷¿ò¼Ü×Ô¼ºÌá¹©¿ÉÖ´ĞĞ³ÌĞò£¬
-    // ËùÓĞµÄÅäÖÃÏîºÍ»Øµ÷º¯Êı¶¼Í¨¹ıÅäÖÃÎÄ¼şÌá¹©£¬
-    // ËùÒÔgr_mainº¯ÊıÖ»ÓÃÁËÇ°Á½¸ö²ÎÊı¡£
-    // Èç¹ûgsocketÊ¹ÓÃÕßÏë×Ô¼ºÌá¹©¿ÉÖ´ĞĞ³ÌĞò£¬Í¬Ê±²»ĞèÒªÅäÖÃÎÄ¼ş£¬ÔòºóÃæµÄ²ÎÊı²ÅĞèÒª×Ô¼ºÖ¸¶¨¡£
-    // Ê¹ÓÃ¾ÙÀı¼û demo_server.c
+    // é»˜è®¤æœåŠ¡å™¨æ¡†æ¶è‡ªå·±æä¾›å¯æ‰§è¡Œç¨‹åºï¼Œ
+    // æ‰€æœ‰çš„é…ç½®é¡¹å’Œå›è°ƒå‡½æ•°éƒ½é€šè¿‡é…ç½®æ–‡ä»¶æä¾›ï¼Œ
+    // æ‰€ä»¥gr_mainå‡½æ•°åªç”¨äº†å‰ä¸¤ä¸ªå‚æ•°ã€‚
+    // å¦‚æœgsocketä½¿ç”¨è€…æƒ³è‡ªå·±æä¾›å¯æ‰§è¡Œç¨‹åºï¼ŒåŒæ—¶ä¸éœ€è¦é…ç½®æ–‡ä»¶ï¼Œåˆ™åé¢çš„å‚æ•°æ‰éœ€è¦è‡ªå·±æŒ‡å®šã€‚
+    // ä½¿ç”¨ä¸¾ä¾‹è§ demo_server.c
     return gr_main(
         argc, argv,
         NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL

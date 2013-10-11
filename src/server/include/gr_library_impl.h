@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/08
  * @version $Revision$ 
- * @brief   服务器功能函数库
- * Revision History 大事件记
+ * @brief   鏈嶅姟鍣ㄥ姛鑳藉嚱鏁板簱
+ * Revision History 澶т簨浠惰
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+

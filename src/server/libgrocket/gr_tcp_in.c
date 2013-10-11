@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/03
  * @version $Revision$ 
- * @brief   TCPÊı¾İ½ÓÊÕÏß³Ì
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   TCPæ•°æ®æ¥æ”¶çº¿ç¨‹
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -47,7 +47,7 @@ void tcp_in_worker( gr_thread_t * thread )
         for ( i = 0; i < count; ++ i ) {
             e = & events[ i ];
 
-            // TCPÊı¾İÁ÷
+            // TCPæ•°æ®æµ
             conn = (gr_tcp_conn_item_t *)e->data.ptr;
             on_tcp_recv( self, thread, conn );
         }
@@ -162,7 +162,7 @@ int gr_tcp_in_add_conn(
         return -1;
     }
 
-    // ½«¸Ãsocket¼Óµ½pollÀï
+    // å°†è¯¥socketåŠ åˆ°pollé‡Œ
     r = gr_poll_add_tcp_recv_fd(
         self->poll,
         conn,

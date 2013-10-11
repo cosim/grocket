@@ -4,7 +4,7 @@
  * @date 2013/10/08
  * @version $Revision$ 
  * @brief   
- * Revision History ´óÊÂ¼ş¼Ç
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-// Ê¾Àı´úÂë¼ûgr_invoke_test
+// ç¤ºä¾‹ä»£ç è§gr_invoke_test
 
 int gr_invoke_test();
 
@@ -66,7 +66,7 @@ void gr_invoke_void(
     size_t          stack_bytes
 );
 
-// fmtËµÃ÷£º
+// fmtè¯´æ˜ï¼š
 // p, s    : pointer
 // f       : double
 // i, d, 4 : 4 byte integer

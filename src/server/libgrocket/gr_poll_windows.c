@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ¸ß²¢·¢ÊÂ¼ş´¦ÀíWindows°æ
- * Revision History ´óÊÂ¼ş¼Ç
+ * @brief   é«˜å¹¶å‘äº‹ä»¶å¤„ç†Windowsç‰ˆ
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -28,7 +28,7 @@
 
 #if defined(WIN32) || defined(WIN64)
 
-// 2013-10-06 13:05 windows²»ÔÊĞíÍ¬Ò»¸ösocketÍ¬Ê±¼Óµ½Á½¸öiocpÀï
+// 2013-10-06 13:05 windowsä¸å…è®¸åŒä¸€ä¸ªsocketåŒæ—¶åŠ åˆ°ä¸¤ä¸ªiocpé‡Œ
 
 #include <MSWSock.h>
 #pragma comment( lib, "mswsock.lib" )
@@ -39,7 +39,7 @@ struct gr_poll_t
     HANDLE          iocp;
 
     int             thread_count;
-    // windowsÏÂAcceptºÍrecv»¹²»Ò»Ñù£¬Õæ¶ñĞÄ£¡
+    // windowsä¸‹Acceptå’Œrecvè¿˜ä¸ä¸€æ ·ï¼ŒçœŸæ¶å¿ƒï¼
     bool            is_accept_thread;
 };
 
@@ -159,7 +159,7 @@ bool accept_ex_with_thread( gr_poll_t * poll, int fd, gr_thread_t * thread )
 
     b = AcceptEx(
         fd, p->accept_fd,
-        p + 1,  // ×¢Òâ per_worker_accept_t ºóÃæÊÇ¸ø AcceptEx µÄ»º³åÇø
+        p + 1,  // æ³¨æ„ per_worker_accept_t åé¢æ˜¯ç»™ AcceptEx çš„ç¼“å†²åŒº
         0,
         sizeof( struct sockaddr_in6 ) + 16,
         sizeof( struct sockaddr_in6 ) + 16,
@@ -199,14 +199,14 @@ int gr_poll_add_listen_fd(
     void * data,
     gr_threads_t * threads )
 {
-    // ¼Óµ½IOCPÀï
+    // åŠ åˆ°IOCPé‡Œ
     if ( ! CreateIoCompletionPort( (HANDLE)(SOCKET)fd, poll->iocp, (ULONG_PTR)data, 0 ) ) {
         gr_fatal( "add sock to iocp failed: %d", get_errno() );
         return -1;
     }
 
     if ( is_tcp ) {
-        // Òì²½×öAcceptEx
+        // å¼‚æ­¥åšAcceptEx
 
         if ( ! poll->is_accept_thread ) {
             poll->is_accept_thread = true;
@@ -232,7 +232,7 @@ bool recv_with_thread(
     int                 r;
     per_worker_io_t *   p   = (per_worker_io_t *)thread->cookie;
 
-    // ×¼±¸reqÊÕÊı¾İ
+    // å‡†å¤‡reqæ”¶æ•°æ®
     req = gr_tcp_conn_prepare_recv( conn );
     if ( NULL == req ) {
         gr_fatal( "gr_tcp_conn_prepare_recv return NULL" );
@@ -245,7 +245,7 @@ bool recv_with_thread(
     req->iocp_flags         = 0;
     req->iocp_recved        = 0;
     req->iocp_wsabuf.buf    = & req->buf[ req->buf_len ];
-    // ÎªÊ²Ã´ÓĞ¸ö - 1? °Ñ×îºóÒ»¸ö×Ö½ÚÁô¸ø\0£¬±£Ö¤×îºóÒÔ\0½áÊø£¬½âÎöhttpĞ­Òé»á·½±ãÒ»Ğ©
+    // ä¸ºä»€ä¹ˆæœ‰ä¸ª - 1? æŠŠæœ€åä¸€ä¸ªå­—èŠ‚ç•™ç»™\0ï¼Œä¿è¯æœ€åä»¥\0ç»“æŸï¼Œè§£æhttpåè®®ä¼šæ–¹ä¾¿ä¸€äº›
     req->iocp_wsabuf.len    = (u_long)(req->buf_max - req->buf_len - 1);
 
     r = WSARecv( conn->fd,
@@ -287,13 +287,13 @@ int gr_poll_add_tcp_recv_fd(
     gr_threads_t *          threads
 )
 {
-    // ¼Óµ½IOCPÀï
+    // åŠ åˆ°IOCPé‡Œ
     if ( ! CreateIoCompletionPort( (HANDLE)(SOCKET)conn->fd, poll->iocp, (ULONG_PTR)conn, 0 ) ) {
         gr_fatal( "add sock to iocp failed: %d", get_errno() );
         return -1;
     }
 
-    // Òì²½×öWSARecv
+    // å¼‚æ­¥åšWSARecv
     if ( ! recv_with_threads( poll, conn, threads ) ) {
         gr_fatal( "recv_with_threads failed" );
         return -2;
@@ -366,15 +366,15 @@ int gr_poll_add_tcp_send_fd(
     gr_threads_t *          threads
 )
 {
-    // ÒòÎªtcp_inºÍtcp_outÊÇÍ¬Ò»¸öIOCP£¬ËùÒÔ²»ÓÃ¼Ó
+    // å› ä¸ºtcp_inå’Œtcp_outæ˜¯åŒä¸€ä¸ªIOCPï¼Œæ‰€ä»¥ä¸ç”¨åŠ 
     /*
-    // ¼Óµ½IOCPÀï
+    // åŠ åˆ°IOCPé‡Œ
     if ( ! CreateIoCompletionPort( (HANDLE)(SOCKET)conn->fd, poll->iocp, (ULONG_PTR)conn, 0 ) ) {
         gr_fatal( "add sock to iocp failed: %d", get_errno() );
         return -1;
     } */
 
-    // Òì²½×öWSASend
+    // å¼‚æ­¥åšWSASend
     if ( ! send_with_threads( poll, conn, threads ) ) {
         gr_fatal( "send_with_threads failed" );
         return -2;
@@ -415,7 +415,7 @@ int gr_poll_wait(
         return 0;
     }
 
-    // ÓÃ»§ÊÂ¼ş
+    // ç”¨æˆ·äº‹ä»¶
     if ( event_count < 1 ) {
         gr_fatal( "invalid event_count %d", event_count );
         return -1;
@@ -484,7 +484,7 @@ int gr_poll_accept(
         LPSOCKADDR local_addr   = NULL;
         LPSOCKADDR remote_addr  = NULL;
         GetAcceptExSockaddrs(
-            p + 1,  // ×¢Òâ per_worker_accept_t ºóÃæÊÇ¸ø AcceptEx µÄ»º³åÇø
+            p + 1,  // æ³¨æ„ per_worker_accept_t åé¢æ˜¯ç»™ AcceptEx çš„ç¼“å†²åŒº
             0,
             sizeof( struct sockaddr_in6 ) + 16,
             sizeof( struct sockaddr_in6 ) + 16,
@@ -512,7 +512,7 @@ int gr_poll_accept(
     p->in_accept_ex     = false;
     p->accept_fd        = -1;
 
-    // Òì²½×öAcceptEx
+    // å¼‚æ­¥åšAcceptEx
     if ( ! accept_ex_with_thread( poll, listen_fd, thread ) ) {
         gr_fatal( "accept_ex_with_thread failed" );
         closesocket( accept_fd );
@@ -564,7 +564,7 @@ int gr_poll_send(
     p->is_result_ok     = false;
 
     if ( NULL == rsp || ! is_result_ok ) {
-        // Ã»Ê²Ã´¿É·¢µÄ
+        // æ²¡ä»€ä¹ˆå¯å‘çš„
         errno = EAGAIN;
         return -1;
     }
@@ -575,10 +575,10 @@ int gr_poll_send(
 
         rsp->buf_sent += sent;
         if ( rsp->buf_sent == rsp->buf_len ) {
-            // ·¢ÍêÁË
+            // å‘å®Œäº†
             int     r;
 
-            // ½«·¢ÍêµÄ»Ø¸´°üµ¯³ö
+            // å°†å‘å®Œçš„å›å¤åŒ…å¼¹å‡º
             r = gr_tcp_conn_pop_top_rsp( conn, rsp );
             if ( 0 != r ) {
                 gr_fatal( "gr_tcp_conn_pop_top_rsp return error %d", r );
@@ -668,7 +668,7 @@ int gr_poll_recv_done(
 )
 {
     if ( is_ok ) {
-        // Òì²½×öWSARecv
+        // å¼‚æ­¥åšWSARecv
         if ( ! recv_with_thread( poll, conn, thread ) ) {
             gr_fatal( "recv_with_thread failed" );
             return -1;
@@ -677,7 +677,7 @@ int gr_poll_recv_done(
         return 0;
     }
 
-    //TODO: Èç¹û²»OK£¬ĞèÒª¶ÏÁ¬½Ó
+    //TODO: å¦‚æœä¸OKï¼Œéœ€è¦æ–­è¿æ¥
     if ( conn->close_type >= GR_NEED_CLOSE ) {
         conn->close_type >= GR_CLOSING;
     }

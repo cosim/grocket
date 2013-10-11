@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   �¼���ز���
- * Revision History ���¼���
+ * @brief   事件相关操作
+ * Revision History 大事件记
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -45,14 +45,14 @@ typedef struct
 	pthread_cond_t		cond;
 #elif defined( __linux )
     #if defined( USE_EVENT_FD )
-    // eventfd ���ں˰汾��2.6.22�Ժ���Ч
+    // eventfd 在内核版本，2.6.22以后有效
     int                 cond;
     #else
     sem_t               cond;
     #endif
 #endif
 
-    /// ���¼��������Ƿ��Ѿ����ù�event_create
+    /// 该事件对象上是否已经调用过event_create
     bool                is_inited;
 
 } gr_event_t;
@@ -63,8 +63,8 @@ gr_event_create(
 );
 
 /**
- * @brief �����¼�����
- * @param[in] event_t * o �¼�����ʵ��
+ * @brief 销毁事件对象
+ * @param[in] event_t * o 事件对象实例
  */
 void
 gr_event_destroy(
@@ -72,9 +72,9 @@ gr_event_destroy(
 );
 
 /**
- * @brief ����һ���¼�
- * @param[in] event_t * o �¼�����ʵ��
- * @return bool �ɹ����
+ * @brief 触发一个事件
+ * @param[in] event_t * o 事件对象实例
+ * @return bool 成功与否
  */
 bool
 gr_event_alarm(
@@ -82,11 +82,11 @@ gr_event_alarm(
 );
 
 /**
- * @brief �߳��������ȴ�һ���¼��ķ���
- * @param[in] event_t * o �¼�����ʵ��
- * @param[in] unsigned long ms �ȴ��ĳ�ʱʱ�䣬��λ�Ǻ���(ms)�����ms>0,��ô�ȴ�ms������̷߳��أ�
- *        ���ms == (unsigned long)0�����߳̽���Զ�ȴ���
- * @return int ���¼�����1����ʱ����0�����󷵻�-1��������ж��˳����򷵻�-2
+ * @brief 线程阻塞，等待一个事件的发生
+ * @param[in] event_t * o 事件对象实例
+ * @param[in] unsigned long ms 等待的超时时间，单位是毫秒(ms)。如果ms>0,那么等待ms毫秒后线程返回，
+ *        如果ms == (unsigned long)0，则线程将永远等待。
+ * @return int 有事件返回1，超时返回0，错误返回-1，如果因中断退出，则返回-2
  */
 #define GR_EVENT_WAIT_INFINITE  0xFFFFFFFF
 

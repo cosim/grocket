@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   Á¬½ÓÏà¹Ø´¦Àí
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   è¿žæŽ¥ç›¸å…³å¤„ç†
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -104,7 +104,7 @@ gr_tcp_conn_alloc(
 
     assert( port_item && -1 != fd );
 
-    //TODO: ÒÔºóÐèÒªÔÚ·ÖÅäÉÏÓÅ»¯
+    //TODO: ä»¥åŽéœ€è¦åœ¨åˆ†é…ä¸Šä¼˜åŒ–
 
     conn = (gr_tcp_conn_item_t *)gr_calloc( 1, sizeof( gr_tcp_conn_item_t ) );
     if ( NULL == conn ) {
@@ -133,7 +133,7 @@ void gr_tcp_conn_free(
 {
     if ( NULL != conn ) {
 
-        // ¹Øsocket
+        // å…³socket
         if ( -1 != conn->fd ) {
             gr_socket_close( conn->fd );
             conn->fd = -1;
@@ -165,14 +165,14 @@ gr_tcp_req_t * gr_tcp_conn_prepare_recv(
     }
 
     if ( NULL == conn->req ) {
-        // Ã»·ÖÅäreq
+        // æ²¡åˆ†é…req
         conn->req = gr_tcp_req_alloc( conn, self->tcp_recv_buf_init );
         if ( NULL == conn->req ) {
             gr_fatal( "gr_tcp_req_alloc with buf %d failed", self->tcp_recv_buf_init );
             return NULL;
         }
     } else if ( 0 == conn->req->buf_max ) {
-        // ·ÖÅäreqÁË£¬»º³åÇø³¤¶ÈÎª0
+        // åˆ†é…reqäº†ï¼Œç¼“å†²åŒºé•¿åº¦ä¸º0
         conn->req->buf = (char *)gr_malloc( self->tcp_recv_buf_init );
         if ( NULL == conn->req->buf ) {
             gr_fatal( "malloc %d bytes failed: %d", self->tcp_recv_buf_init, get_errno() );
@@ -182,8 +182,8 @@ gr_tcp_req_t * gr_tcp_conn_prepare_recv(
         conn->req->buf_max = self->tcp_recv_buf_init;    
 
     } else if ( conn->req->buf_len + 1 == conn->req->buf_max ) {
-        // Ã»ÓÐ¿ÉÓÃµÄ¿Õ¼ä£¬ÐèÒªÀ©, Õû±¶À©
-        // ÎªÊ²Ã´ÓÐ¸ö + 1? °Ñ×îºóÒ»¸ö×Ö½ÚÁô¸ø\0£¬±£Ö¤×îºóÒÔ\0½áÊø£¬½âÎöhttpÐ­Òé»á·½±ãÒ»Ð©
+        // æ²¡æœ‰å¯ç”¨çš„ç©ºé—´ï¼Œéœ€è¦æ‰©, æ•´å€æ‰©
+        // ä¸ºä»€ä¹ˆæœ‰ä¸ª + 1? æŠŠæœ€åŽä¸€ä¸ªå­—èŠ‚ç•™ç»™\0ï¼Œä¿è¯æœ€åŽä»¥\0ç»“æŸï¼Œè§£æžhttpåè®®ä¼šæ–¹ä¾¿ä¸€äº›
         int     new_len;
         char *  new_buf;
 
@@ -273,11 +273,11 @@ gr_tcp_req_t * gr_tcp_req_alloc(
         return NULL;
     }
 
-    // ±ê¼Ç×Ö¶Î£¬±ØÐëÎª1
+    // æ ‡è®°å­—æ®µï¼Œå¿…é¡»ä¸º1
     req->entry_compact.is_tcp   = true;
-    // ÒýÓÃ¼ÆÊýÎª1
+    // å¼•ç”¨è®¡æ•°ä¸º1
     req->entry_compact.refs     = 1;
-    // ´ò¸öÇëÇó±ê¼Ç
+    // æ‰“ä¸ªè¯·æ±‚æ ‡è®°
     req->entry_compact.is_req   = true;
 
     req->parent = parent;
@@ -336,7 +336,7 @@ void gr_tcp_req_to_rsp(
     gr_tcp_req_t *          req
 )
 {
-    // ½«Ëü¸Ä³Éfalse£¬¾ÍÊÇ»Ø¸´ÁË
+    // å°†å®ƒæ”¹æˆfalseï¼Œå°±æ˜¯å›žå¤äº†
     req->entry_compact.is_req = false;
 }
 
@@ -374,9 +374,9 @@ gr_udp_req_t * gr_udp_req_alloc(
         return NULL;
     }
 
-    // ±ê¼Ç×Ö¶Î£¬±ØÐëÎª0
+    // æ ‡è®°å­—æ®µï¼Œå¿…é¡»ä¸º0
     req->entry_compact.is_tcp   = false;
-    // ÒýÓÃ¼ÆÊýÎª1
+    // å¼•ç”¨è®¡æ•°ä¸º1
     req->entry_compact.refs     = 1;
 
     req->buf_max = buf_max;

@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ÊÂ¼þÏà¹Ø²Ù×÷
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   äº‹ä»¶ç›¸å…³æ“ä½œ
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -142,7 +142,7 @@ gr_event_alarm(
         return 0 == pthread_cond_signal( & o->cond ) ? true : false;
 #elif defined( __linux )
     #if defined( USE_EVENT_FD )
-        //TODO: Òì²½£¬·µ»ØÖµÒªºÍÎÄµµÈ·ÈÏÒ»ÏÂ
+        //TODO: å¼‚æ­¥ï¼Œè¿”å›žå€¼è¦å’Œæ–‡æ¡£ç¡®è®¤ä¸€ä¸‹
         uint64_t n = 0;
         write( o->cond, & n, sizeof( n ) );
         return true;
@@ -241,9 +241,9 @@ gr_event_wait(
         return -1;
     }
 
-    // ¹¹Ôìtimeout¶ÔÏó£¬Èç¹ûµÈµÄÊ±¼äÎª0£¬Ò²Ö§³Ö
+    // æž„é€ timeoutå¯¹è±¡ï¼Œå¦‚æžœç­‰çš„æ—¶é—´ä¸º0ï¼Œä¹Ÿæ”¯æŒ
     if ( GR_EVENT_WAIT_INFINITE == ms ) {
-        //TODO: ÕâµØ·½µÈÒ»Äê
+        //TODO: è¿™åœ°æ–¹ç­‰ä¸€å¹´
         ms = 1000 * 60 * 60 * 24 * 365;
     }
     timeout.tv_sec = ms / 1000;
@@ -254,12 +254,12 @@ gr_event_wait(
 
     r = select( o->cond + 1, & rdset, NULL, NULL, & timeout );
     if ( r < 0 ) {
-        // ³ö´íÁË
+        // å‡ºé”™äº†
         gr_error( "select return %d, %d", r, get_errno() );
         return -1;
     }
     if ( 0 == r ) {
-        // Ã»ÓÐÊý¾ÝÊÂ¼þ
+        // æ²¡æœ‰æ•°æ®äº‹ä»¶
         return 0;
     }
 

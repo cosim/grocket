@@ -3,8 +3,8 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   ÅäÖÃÎÄ¼þ£¬ËÙ¶ÈºÜÂý£¬Èç¹ûÒªÆµ·±È¡ÅäÖÃÏî£¬×Ô¼ºcacheµ½×Ô¼ºÄÇÀï
- * Revision History ´óÊÂ¼þ¼Ç
+ * @brief   é…ç½®æ–‡ä»¶ï¼Œé€Ÿåº¦å¾ˆæ…¢ï¼Œå¦‚æžœè¦é¢‘ç¹å–é…ç½®é¡¹ï¼Œè‡ªå·±cacheåˆ°è‡ªå·±é‚£é‡Œ
+ * Revision History å¤§äº‹ä»¶è®°
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
@@ -319,7 +319,7 @@ int gr_config_init(
 
         if ( ini_content && * ini_content && ini_content_len ) {
 
-            // ´ÓÄÚ´æÀï×°ÔØÅäÖÃÎÄ¼þ
+            // ä»Žå†…å­˜é‡Œè£…è½½é…ç½®æ–‡ä»¶
 
             r = gr_ini_open_memory( ini, ini_content, ini_content_len );
             if ( 0 != r ) {
@@ -339,14 +339,14 @@ int gr_config_init(
 
             if ( '\0' == path[ 0 ] ) {
 
-                // ÅäÖÃÎÄ¼þ²»´æÔÚ
-                // ÊÔÍ¼´ÓÄ£¿é×°ÔØ
+                // é…ç½®æ–‡ä»¶ä¸å­˜åœ¨
+                // è¯•å›¾ä»Žæ¨¡å—è£…è½½
 
                 char *          buf;
                 int             buf_len = 0;
                 gr_dll_t           h = NULL;
                 gr_config_t     f;
-                const int       buf_max = 2048; //TODO: 2K¹»Âð£¿
+                const int       buf_max = 2048; //TODO: 2Kå¤Ÿå—ï¼Ÿ
 
                 buf = (char *)gr_malloc( buf_max );
                 if ( NULL == buf ) {
@@ -407,7 +407,7 @@ int gr_config_init(
 
             } else {
 
-                // ÅäÖÃÎÄ¼þ´æÔÚ
+                // é…ç½®æ–‡ä»¶å­˜åœ¨
 
                 r = gr_ini_open( ini, path );
                 if ( 0 != r ) {
@@ -426,7 +426,7 @@ int gr_config_init(
         return r;
     }
 
-    // ×°ÔØÅäÖÃÖÐµÄ¶Ë¿ÚÐÅÏ¢
+    // è£…è½½é…ç½®ä¸­çš„ç«¯å£ä¿¡æ¯
     r = load_listen_info( ini );
     if ( 0 != r ) {
         gr_fatal( "[init]load_listen_info() return %d", r );
@@ -438,7 +438,7 @@ int gr_config_init(
 
     g_ghost_rocket_global.config = ini;
 
-    // ·µ»ØÊý¾Ý°ü¶ÔÆë×Ö½ÚÊý
+    // è¿”å›žæ•°æ®åŒ…å¯¹é½å­—èŠ‚æ•°
     g_ghost_rocket_global.rsp_buf_align = gr_config_rsp_buff_align();
 
     // worker count
@@ -507,7 +507,7 @@ bool gr_config_is_daemon()
 bool gr_config_is_tcp_disabled()
 {
     /*
-    // Ä¬ÈÏTCPÆô¶¯¾Í¿ÉÓÃ
+    // é»˜è®¤TCPå¯åŠ¨å°±å¯ç”¨
     server->is_tcp_disabled = gr_config_is_tcp_disabled();
     if ( server->is_tcp_disabled ) {
         gr_info( "[init]Manual listen TCP, now TCP disabled" );
