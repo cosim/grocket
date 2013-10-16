@@ -162,9 +162,6 @@
     <ClCompile Include="gr_socket.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gr_queue.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="gr_tcp_accept.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -193,6 +190,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="server_object.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gr_tcp_close.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -282,6 +282,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="server_object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_tcp_close.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\gr_atomic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -27,6 +27,12 @@ CPPC		= g++
 ./bin/linux/o/demo_server_%.o: ./demo_server/%.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
+./bin/linux/o/test_module_%.o: ./test_module/%.cpp
+	$(CPPC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/linux/o/test_server_%.o: ./test_server/%.cpp
+	$(CPPC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
 TCMALLOC= \
 	./bin/linux/o/third_gperftools-2.1_src_tcmalloc.o \
 	./bin/linux/o/third_gperftools-2.1_src_system-alloc.o \
@@ -76,13 +82,13 @@ LIB_OBJECTS= \
 	./bin/linux/o/libgrocket_gr_poll_bsd.o 	\
 	./bin/linux/o/libgrocket_gr_poll_linux.o 	\
 	./bin/linux/o/libgrocket_gr_poll_windows.o 	\
-	./bin/linux/o/libgrocket_gr_queue.o 	\
 	./bin/linux/o/libgrocket_gr_server_impl.o 	\
 	./bin/linux/o/libgrocket_gr_server_impl_posix.o 	\
 	./bin/linux/o/libgrocket_gr_server_impl_windows.o 	\
 	./bin/linux/o/libgrocket_gr_socket.o 	\
 	./bin/linux/o/libgrocket_gr_thread.o 	\
 	./bin/linux/o/libgrocket_gr_tcp_accept.o 	\
+	./bin/linux/o/libgrocket_gr_tcp_close.o 	\
 	./bin/linux/o/libgrocket_gr_tcp_in.o 	\
 	./bin/linux/o/libgrocket_gr_tcp_out.o 	\
 	./bin/linux/o/libgrocket_gr_tools.o 	\
@@ -97,16 +103,25 @@ OBJECTS= \
 	$(LIB_OBJECTS)	\
 	./bin/linux/o/grocketd_grocketd.o
 
+DEMOSERVER_OBJECTS=./bin/linux/o/demo_server_demo_server.o
 DEMOMODULE_OBJECTS=./bin/linux/o/demo_module_demo_module.o
 
-DEMOSERVER_OBJECTS=./bin/linux/o/demo_server_demo_server.o
+TESTSERVER_OBJECTS=./bin/linux/o/test_server_test_server.o
+TESTMODULE_OBJECTS=./bin/linux/o/test_module_test_module.o
 
-all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS)
+all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS)
 
 	$(CPPC) -rdynamic $(LIB) $(OBJECTS)	\
 			-o ./bin/linux/grocketd
 
 	ar rc ./bin/linux/libgrocket.a $(LIB_OBJECTS)
+
+	$(CPPC) -shared $(LIB) $(TESTMODULE_OBJECTS)	\
+			-o ./bin/linux/libtest_module.so
+
+	$(CPPC) -rdynamic $(LIB) $(TESTSERVER_OBJECTS) $(TESTMODULE_OBJECTS)	\
+			./bin/linux/libgrocket.a	\
+			-o ./bin/linux/test_server
 
 	$(CC) -shared $(LIB) $(DEMOMODULE_OBJECTS)	\
 			-o ./bin/linux/libdemo_module.so
@@ -118,7 +133,10 @@ all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS)
 	cp ./conf/grocketd.ini ./bin/linux/
 
 clean:
-	rm -fr $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS)
+	rm -fr $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS)
 	rm -fr ./bin/linux/grocketd
 	rm -fr ./bin/linux/libgrocket.a
 	rm -fr ./bin/linux/libdemo_module.so
+	rm -fr ./bin/linux/demo_server
+	rm -fr ./bin/linux/libtest_module.so
+	rm -fr ./bin/linux/test_server

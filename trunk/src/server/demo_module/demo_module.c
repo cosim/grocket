@@ -3,13 +3,39 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/27
  * @version $Revision$ 
- * @brief   服务器框架demo扩展模块
- * Revision History 大事件记
+ * @brief   server framework demo server module
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-09-27    Created.
  **/
+/* 
+ *
+ * Copyright (C) 2013-now da_ming at hotmail.com
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -25,6 +51,7 @@
 
 #include <string.h> // for strcmp
 #include <assert.h> // for assert
+#include <stdlib.h> // for malloc. cross windows, linux, OS X(bsd)
 
 #if defined(WIN32) || defined(WIN64)
 
@@ -50,8 +77,6 @@
 
     // 在 Mac 下，uint16_t 什么的定义在stdint.h
     #include <stdint.h>
-    // 在 Mac 下，malloc 声明在stdlib.h
-    #include <stdlib.h>
     // 在 Mac 下，socklen_t 声明在netdb.h
     #include <netdb.h>
 #endif
@@ -79,11 +104,9 @@ static int getpid()
 ///////////////////////////////////////////////////////////////////////
 
 // 写服务器模块唯一需要包含的文件，不需要链接任何库。这行算行数。
-
 #include "grocket.h"
 
 // 服务器框架提供给用户模块的接口指针。这行算行数。
-
 gr_server_t *   g_server = NULL;
 
 // 注意这个函数是可选的，你可以不实现它。
@@ -103,10 +126,8 @@ int gr_init(
 
     // 版本号检查，框架的最低兼容版本号必须小于或等于模块开发者使用的开发框架的版本号。该判断算行数。
     // 这个检查，使得可以直接升级甚至降级框架的二进制文件，而模块的兼容性检查只需要看模块是否能被成功装载。
-
     if ( server->low_version > GR_SERVER_VERSION ) {
         // 服务框架接口兼容性检查失败。直接初始化失败，省得在运行时core增加追查成本
-
         printf( "version compatible check failed, I'm %d, Framework %d\n",
             GR_SERVER_VERSION, server->low_version );
         return -1;
@@ -115,18 +136,13 @@ int gr_init(
     // 前面说：“写服务器模块唯一需要包含的文件，不需要链接任何库”，那服务器框架导出函数的实现
     // 在哪里？答案是：在服务器框架进程里，它在gr_init函数中通过gr_server_t *接口以函数指针的
     // 方式暴露给用户模块，所以用户模块当然要把这个指针保存起来。这行算行数。
-
     g_server = server;
 
     {
         int n;
-        gr_i_server_t * o;
-
-        o = (gr_i_server_t *)g_server->library->classes[ CLASS_SERVER ]->singleton;
-        assert( o );
+        gr_i_server_t * o = g_server->library->buildin;
 
         // 调用它的config_get_int从服务器配置文件读取[server]段的tcp.accept.concurrent的值
-
         n = o->config_get_int( o, "server", "tcp.accept.concurrent", 0 );
         printf( "I guess, [server]tcp.accept.concurrent = %d, is it right? haha!!!!\n", n );
 
@@ -179,14 +195,13 @@ int gr_init(
             strcat( log, buf );
 
             // 不白看这儿，长经验呢！inet_ntoa在Windows下能转出0.0.0.0的地址，在linux下会core
-
             for ( i = 0; i < server->ports_count; ++ i ) {
                 gr_port_item_t * item = & server->ports[ i ];
                 sprintf( buf, "            %s port = %d, addr_len = %d, addr = %s:%d, fd = %d\n",
                     item->is_tcp ? "TCP" : "UDP",
                     item->port,
                     (int)item->addr_len,
-                    ( 0 != item->addr4.sin_addr.s_addr ) ? inet_ntoa(item->addr4.sin_addr) : "(empty)",
+                    (const char*)(( 0 != item->addr4.sin_addr.s_addr ) ? inet_ntoa(item->addr4.sin_addr) : "(empty)"),
                     (int)ntohs(item->addr4.sin_port),
                     item->fd );
                 strcat( log, buf );
@@ -228,10 +243,10 @@ void gr_term(
 void gr_tcp_accept(
     int                 port,
     int                 sock,
-    int *               need_disconnect
+    bool *              need_disconnect
 )
 {
-    // 模块可以有选择的决定是否要关掉这个TCP连接，如果要关掉，就*need_disconnect=1即可。
+    // 模块可以有选择的决定是否要关掉这个TCP连接，如果要关掉，就*need_disconnect=true即可。
     // 模块可以从port参数得到这个连接是从服务器的哪个监听端口连上来的
 
     printf( "%d port accepted socket %d\n", port, sock );
@@ -314,26 +329,20 @@ void gr_check(
 
     if ( len < 2 ) {
         // 初步判断为有效的用户私有包
-
         ctxt->cc_package_type = GR_PACKAGE_PRIVATE;
         // 没出错
-
         *is_error = false;
         // 但不是完整包，让服务器框架继续收
-
         *is_full = false;
         printf( "not full\n" );
         return;
     }
 
     // 有效的用户私有包
-
     ctxt->cc_package_type = GR_PACKAGE_PRIVATE;
     // 没出错
-
     *is_error = false;
     // 是完整包
-
     *is_full = true;
     // 必须填写完整包长度
 
@@ -355,7 +364,7 @@ void gr_proc(
 {
     // 我们这里会用到服务器内置对象 gr_i_server_t 的功能，如果常用，就应该将它保存起来
 
-    gr_i_server_t * o = (gr_i_server_t *)g_server->library->classes[ CLASS_SERVER ]->singleton;
+    gr_i_server_t * o = g_server->library->buildin;
     char *          rsp;
 
     // data, len 两个参数就是在 gr_check 函数中，自己切分好的完整包。
@@ -387,12 +396,10 @@ void gr_proc(
     printf( "process %d byte user data\n", len );
 
     // 确认服务器框架填充的默认值
-
     assert( * processed_len == len );
 
     // 设置最大返回值字节数。该函数内部在必要时会分配内存，
     // 填充pc_result_buf和pc_result_buf_max字段，并将 * pc_result_buf_len 置为0
-
     rsp = (char *)o->set_max_response( o, ctxt, len );
     if ( NULL == rsp ) {
         // 服务器框架提供了个打日志功能

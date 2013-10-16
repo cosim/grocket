@@ -3,13 +3,42 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   工作线程或工作进程
- * Revision History 大事件记
+ * @brief   worker
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-05    Created.
  **/
+/* 
+ *
+ * Copyright (C) 2013-now da_ming at hotmail.com
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
+// 别忘了worker的队列只能一个线程push
+
 #include "gr_worker.h"
 #include "gr_thread.h"
 #include "gr_log.h"
@@ -19,14 +48,14 @@
 #include "gr_mem.h"
 #include "gr_config.h"
 #include "gr_module.h"
-#include "gr_queue.h"
 #include "gr_conn.h"
 #include "gr_tcp_out.h"
 #include "gr_udp_out.h"
+#include "gr_event.h"
 
-struct gr_worker_t;
+        struct gr_worker_t;
 typedef struct gr_worker_t      gr_worker_t;
-struct gr_worker_item_t;
+        struct gr_worker_item_t;
 typedef struct gr_worker_item_t gr_worker_item_t;
 
 typedef struct
@@ -44,18 +73,175 @@ struct gr_worker_t
 
 struct gr_worker_item_t
 {
-    gr_queue_t *        queue;
+    gr_queue_item_compact_t *   head;
+    gr_queue_item_compact_t *   tail;
+    gr_queue_item_compact_t *   curr;
+
+    gr_event_t                  event;
+    volatile bool               in_event;
 };
 
-static
-void worker_free_queue_item( void * param, gr_queue_item_t * p )
-{
-    gr_queue_item_compact_t *   queue_item = (gr_queue_item_compact_t *)p;
 
-    if ( queue_item->is_tcp ) {
-        gr_tcp_req_free( (gr_tcp_req_t *)queue_item );
+static
+void free_tcp_req( gr_tcp_req_t * req )
+{
+    gr_tcp_conn_item_t * conn = req->parent;
+
+    // 调用真正的释放TCP请求的函数
+    gr_tcp_req_free( req );
+
+    // 将当前req已经处理完并弹出的消息告诉conn，该函数之后有可能连接对象就被删掉了
+    gr_tcp_conn_pop_top_req( conn );
+}
+
+static inline
+void worker_free_queue_item( gr_queue_item_compact_t * queue_item )
+{
+    static gr_func_req_free_t  free_queue_item_funcs[ 2 ] =
+    {
+        (gr_func_req_free_t)gr_udp_req_free,
+        (gr_func_req_free_t)free_tcp_req
+    };
+
+    // avoid if statment
+    assert( 1 == queue_item->is_tcp || 0 == queue_item->is_tcp );
+    free_queue_item_funcs[ queue_item->is_tcp ]( queue_item );
+}
+
+#define QUEUE_ALL_DONE  ((gr_queue_item_compact_t *)1)
+
+static inline
+void alarm_event_if_need(
+    gr_worker_item_t *          worker
+)
+{
+    if ( worker->in_event ) {
+        worker->in_event = false;
+        gr_event_alarm( & worker->event );
+    }
+}
+
+static inline
+void worker_queue_push(
+    gr_worker_item_t *          worker,
+    gr_queue_item_compact_t *   item
+)
+{
+    gr_queue_item_compact_t * will_del = NULL;
+    gr_queue_item_compact_t * t;
+    gr_queue_item_compact_t * curr;
+    
+    curr = worker->curr;
+    if ( QUEUE_ALL_DONE == curr ) {
+        curr = NULL;
+    }
+
+    // worker->curr 为空说明没有任何表项被处理
+    if ( NULL != worker->curr ) {
+        // 从队列头找到要删除的所有数据项,摘成一个子链表 will_del
+        t = NULL;
+        will_del = worker->head;
+        while ( NULL != worker->head && worker->head != curr ) {
+            t = worker->head;
+            worker->head = worker->head->next;
+        }
+        if ( NULL != t ) {
+            t->next = NULL;
+        }
+        // 注意,如果worker->head为NULL,则此时worker->tail还非NULL呢
+    }
+
+    // 将节点插入队列
+    item->next = NULL;
+    if ( NULL == worker->head ) {
+        worker->head = worker->tail = item;
     } else {
-        gr_udp_req_free( (gr_udp_req_t *)queue_item );
+        worker->tail = item;
+        worker->tail->next = item;
+    }
+
+    if ( QUEUE_ALL_DONE == worker->curr ) {
+        worker->curr = worker->head;
+
+        // 只有在工作线程确实没事儿干时才需要判断是否在事件里
+        alarm_event_if_need( worker );
+    }
+
+    // 到现在工作线程已经接着干活了, 我可以安心的删除节点了
+    while ( NULL != will_del ) {
+        t = will_del;
+        will_del = will_del->next;
+        worker_free_queue_item( t );
+    }
+}
+
+static inline
+void worker_queue_destroy(
+    gr_worker_item_t *          worker
+)
+{
+    gr_queue_item_compact_t *   item;
+
+    worker->tail = NULL;
+    while ( NULL != ( item = worker->head ) ) {
+        worker->head = item->next;
+        worker_free_queue_item( item );
+    }
+
+    gr_event_destroy( & worker->event );
+
+}
+
+static inline
+gr_queue_item_compact_t * worker_queue_top_inner(
+    gr_worker_item_t *      worker
+)
+{
+    if ( NULL == worker->curr ) {
+        worker->curr = worker->head;
+    } else if ( QUEUE_ALL_DONE == worker->curr ) {
+        return NULL;
+    }
+
+    return worker->curr;
+}
+
+static inline
+gr_queue_item_compact_t * worker_queue_top(
+    gr_worker_item_t *      worker
+)
+{
+    size_t i;
+    size_t j;
+    gr_queue_item_compact_t * p = NULL;
+
+    // 高并发时,用类似自旋锁的思想,尽量不进内核事件
+    for ( j = 0; j < 4; ++ j ) {
+
+        for ( i = 0; i < 3; ++ i ) {
+            p = worker_queue_top_inner( worker );
+            if ( NULL != p ) {
+                return p;
+            }
+        }
+
+        gr_yield();
+    }
+
+    return NULL;
+}
+
+static inline
+void worker_queue_pop_top(
+    gr_worker_item_t *          worker,
+    gr_queue_item_compact_t *   item
+)
+{
+    assert( worker->curr == item );
+    worker->curr = worker->curr->next;
+
+    if ( NULL == worker->curr ) {
+        worker->curr = QUEUE_ALL_DONE;
     }
 }
 
@@ -81,7 +267,25 @@ void process_tcp(
     ctxt->fd            = req->parent->fd;
     ctxt->thread_id     = thread->id;
 
+gr_info( "================= proc_tcp %p, refs=%d", req, (int)req->entry_compact.refs );
+
+    // 调用模块处理函数处理TCP请求
     gr_module_proc_tcp( req, ctxt, & processed_len );
+
+    // 检查模块处理函数处理结果
+    if ( processed_len < 0 ) {
+        // processed_len 小于0表示需要服务器断掉连接，返回数据包也不要发
+        ctxt->pc_result_buf_len    = 0;
+
+        if ( req->parent->close_type > GR_NEED_CLOSE ) {
+            req->parent->close_type = GR_NEED_CLOSE;
+        }
+    } else if ( 0 == processed_len ) {
+        // processed_len 等于0表示需要服务器断掉连接,但当前返回数据包继续发
+        if ( req->parent->close_type > GR_NEED_CLOSE ) {
+            req->parent->close_type = GR_NEED_CLOSE;
+        }
+    }
 
     if ( ctxt->pc_result_buf_len <= 0 ) {
         // 没有回复数据包
@@ -90,15 +294,21 @@ void process_tcp(
 
     // 有回复数据包
 
-    // 增加引用计数
-    r = gr_tcp_req_add_refs( req );
-    if ( 0 != r ) {
-        gr_fatal( "gr_tcp_req_add_refs faiiled" );
+    // 检查网络是否异常
+    if ( req->parent->close_type < GR_NEED_CLOSE || req->parent->is_network_error ) {
+        // 如果状态已经进行到GR_NEED_CLOSE的下一步，则说明模块已经确认连接关闭，不需要再发数据包了。
+        // 如果网络异常，则不需要发送数据
+        // 把数据长度清0即可，等下次用。
+        ctxt->pc_result_buf_len    = 0;
         return;
     }
 
+    // 增加引用计数。因为 worker 在调用完本函数后会删除它，而在本函数中会直接将req转变成rsp扔到conn->rsp_list中
+    gr_tcp_req_add_refs( req );
+
     // 将返回包应用到req中，这个req将被改造成rsp
     gr_tcp_req_set_buf( req, ctxt->pc_result_buf, ctxt->pc_result_buf_max, ctxt->pc_result_buf_len );
+    // 由于用户模块的返回数据已经从ctxt移动到返回包里了，所以要将ctxt中记录的返回数据信息清掉。
     ctxt->pc_result_buf        = NULL;
     ctxt->pc_result_buf_max    = 0;
     ctxt->pc_result_buf_len    = 0;
@@ -113,6 +323,8 @@ void process_tcp(
     r = gr_tcp_out_add( req );
     if ( 0 != r ) {
         gr_fatal( "gr_tcp_out_add faiiled" );
+        //TODO: 按理说，这个地方出错了应该断连接了。但这儿应该是机制出错了，不是断连接这么简单，可能需要重启服务器才能解决。
+        // 所以干脆不处理了。理论上这种可能性出现的概率为0
         return;
     }
 }
@@ -164,7 +376,6 @@ int gr_worker_add(
 )
 {
     int             hash_id;
-    int             r;
     gr_worker_t *   self;
     
     self = (gr_worker_t *)g_ghost_rocket_global.worker;
@@ -175,34 +386,16 @@ int gr_worker_add(
     if ( queue_item->is_tcp ) {
         gr_tcp_req_t *  req     = (gr_tcp_req_t *)queue_item;
         hash_id = hash_worker_tcp( req, self );
+        // 该标记表示连接已经在工作线程里
+        req->parent->worker_open = true;
     } else {
         gr_udp_req_t *  req = (gr_udp_req_t *)queue_item;
         hash_id = hash_worker_udp( req, self );
     }
 
-    r = gr_queue_push( self->items[ hash_id ].queue, (gr_queue_item_t *)queue_item, is_emerge );
-    if ( 0 != r ) {
-        gr_fatal( "gr_queue_push return %d", r );
-        return -2;
-    }
+    worker_queue_push( & self->items[ hash_id ], queue_item );
 
     return 0;
-}
-
-static inline
-void process_item(
-    gr_worker_t *       self,
-    gr_thread_t *       thread,
-    gr_queue_item_t *   queue_item
-)
-{
-    gr_queue_item_compact_t *   queue_item2 = (gr_queue_item_compact_t *)queue_item;
-
-    if ( queue_item2->is_tcp ) {
-        process_tcp( self, thread, (gr_tcp_req_t *)queue_item2 );
-    } else {
-        process_udp( self, thread, (gr_udp_req_t *)queue_item2 );
-    }
 }
 
 static
@@ -214,26 +407,36 @@ void worker_init_routine( gr_thread_t * thread )
 static
 void worker_routine( gr_thread_t * thread )
 {
-#define     WORK_WAIT_TIMEOUT    100
-    gr_worker_t *       self        = (gr_worker_t *)thread->param;
-    gr_worker_item_t *  item        = & self->items[ thread->id ];
-    gr_queue_t *        queue       = item->queue;
-    gr_queue_item_t *   queue_item;
-    bool                b;
+#define     WORK_WAIT_TIMEOUT   100
+    gr_worker_t *               self        = (gr_worker_t *)thread->param;
+    gr_worker_item_t *          item        = & self->items[ thread->id ];
+    gr_queue_item_compact_t *   queue_item;
+
+    typedef int ( * func_proc_item_t )( gr_worker_t * self, gr_thread_t * thread, void * req );
+    static func_proc_item_t  proc_item_funcs[ 2 ] =
+    {
+        (func_proc_item_t)process_udp,
+        (func_proc_item_t)process_tcp
+    };
 
     while ( ! thread->is_need_exit ) {
 
-        queue_item = gr_queue_top( queue, WORK_WAIT_TIMEOUT );
-        if ( NULL == queue_item ) {
-            continue;
-        }
+        // 取包
+        queue_item = worker_queue_top( item );
+        if ( NULL != queue_item ) {
 
-        process_item( self, thread, queue_item );
+            // 处理
+            assert( 1 == queue_item->is_tcp || 0 == queue_item->is_tcp );
+            proc_item_funcs[ queue_item->is_tcp ]( self, thread, queue_item );
 
-        b = gr_queue_pop_top( queue, queue_item );
-        if ( ! b ) {
-            gr_fatal( "gr_queue_pop_top failed!" );
-            break;
+            // 弹包
+            worker_queue_pop_top( item, queue_item );
+
+        } else {
+            // 用事件等
+            item->in_event = true;
+            gr_event_wait( & item->event, 1 );
+            item->in_event = false;
         }
     };
 
@@ -280,16 +483,9 @@ int gr_worker_init()
             break;
         }
 
+        // 初始化事件对象
         for ( i = 0; i < thread_count; ++ i ) {
-            p->items[ i ].queue = gr_queue_create( worker_free_queue_item, & p->items[ i ] );
-            if ( NULL == p->items[ i ].queue ) {
-                gr_fatal( "gr_queue_create failed" );
-                break;
-            }
-        }
-        if ( i < thread_count ) {
-            gr_fatal( "i %d < thread_count %d", i, thread_count );
-            break;
+            gr_event_create( & p->items[ i ].event );
         }
 
         r = gr_threads_start(
@@ -316,10 +512,7 @@ int gr_worker_init()
         gr_threads_close( & p->threads );
 
         for ( i = 0; i < thread_count; ++ i ) {
-            if ( NULL != p->items[ i ].queue ) {
-                gr_queue_destroy( p->items[ i ].queue );
-                p->items[ i ].queue = NULL;
-            }
+            worker_queue_destroy( & p->items[ i ] );
         }
 
         if ( NULL != p->items ) {
@@ -345,10 +538,7 @@ void gr_worker_term()
         gr_threads_close( & p->threads );
 
         for ( i = 0; i < p->threads.thread_count; ++ i ) {
-            if ( NULL != p->items[ i ].queue ) {
-                gr_queue_destroy( p->items[ i ].queue );
-                p->items[ i ].queue = NULL;
-            }
+            worker_queue_destroy( & p->items[ i ] );
         }
 
         if ( NULL != p->items ) {
@@ -370,32 +560,35 @@ int gr_worker_add_tcp(
     int                         package_len;
     int                         left_len;
     gr_queue_item_compact_t *   queue_item;
-    gr_tcp_req_t *              new_req         = NULL;
+    gr_tcp_req_t *              new_req;
     
-    queue_item = (gr_queue_item_compact_t *)req;
-    if ( true != queue_item->is_tcp ) {
-        return -1;
-    }
+    new_req = NULL;
 
+    queue_item = (gr_queue_item_compact_t *)req;
+    assert( queue_item->is_tcp );
+
+    // 取得完整数据包长度
     package_len = gr_tcp_req_package_length( req );
+    // 计算请求对象里还剩多少字节数据
     left_len    = req->buf_len - package_len;
     if ( left_len > 0 ) {
 
         // pipe line 请求支持
 
-        // 缓冲区里是多包数据，剩余的数据不能放在当前请求中，要放回连接对象
-        // 从这儿可以看出，如果模块支持多包数据同时发，最好是在判断包长度时判断多个包，
+        // 缓冲区里是多包数据，剩余的数据不能放在当前请求中，要放回连接对象。
+        // 从这儿可以看出，如果模块支持多包数据同时接收，最好是在判断包长度时判断多个包，
         // 让剩下来的半包数据最小，这样拷贝的开销才最小。
         // 必须将 req 扔给 worker，不能将新分配的 new_req 扔给 worker 因为老的 req 有很多状态
         // 要是新分配再拷贝，太不划算。
 
-        // 则分配个新的请求对象，将剩余数据拷贝到新分配的请求对象中。如果如果剩余的字节数较小会比较划算。
+        // 分配个新的请求对象，将剩余数据拷贝到新分配的请求对象中。如果如果剩余的字节数较小会比较划算。
         new_req = gr_tcp_req_alloc( req->parent, req->buf_max );
         if ( NULL == new_req ) {
             gr_fatal( "gr_tcp_req_alloc failed" );
             return -2;
         }
 
+        // 将完整包以外的剩余数据拷贝到新分配的请求对象中
         new_req->buf_len = left_len;
         memcpy( new_req->buf, & req->buf[ package_len ], left_len );
 
@@ -405,16 +598,26 @@ int gr_worker_add_tcp(
         // 修改请求包数据长度和实际包长度一致
         req->buf_len = package_len;
     } else {
+        // 这说明请求中存放的是单包数据
         // 将请求对象从conn中摘出来
         req->parent->req = NULL;
     }
 
+    // 将请求放到连接的请求列表尾
+    gr_tcp_conn_add_req( req->parent );
+
+    // 试图将请求加入worker
     r = gr_worker_add( queue_item, is_emerge );
     if ( 0 == r ) {
         return 0;
     }
 
-    // 向worker中压包失败，还要再把请求对象扔回连接对象
+    // 向worker中压包失败
+
+    // 要将请求从请求列表尾重新摘出来
+    gr_tcp_conn_pop_tail_req( req->parent );
+
+    // 还要再把请求对象扔回连接对象
     if ( NULL != new_req ) {
 
         // 有多包数据，要删除刚分配出的存放剩余数据的请求

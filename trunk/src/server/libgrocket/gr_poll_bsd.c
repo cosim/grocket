@@ -3,13 +3,40 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/07
  * @version $Revision$ 
- * @brief   高并发事件处理bsd & Mac版
- * Revision History 大事件记
+ * @brief   high performance network event. BSD & Mac OS X
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-07    Created.
  **/
+/* 
+ *
+ * Copyright (C) 2013-now da_ming at hotmail.com
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #include "gr_poll.h"
 #include "gr_log.h"
 #include "gr_global.h"
@@ -229,6 +256,38 @@ int del_tcp_send_fd(
     return 0;
 }
 
+static inline
+void del_tcp_recv_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn
+)
+{
+    struct kevent   ev;
+    struct timespec ts;
+    int             r;
+    int             fd;
+
+    fd = conn->fd;
+
+    if ( -1 != fd ) {
+        ts.tv_sec = 0;
+        ts.tv_nsec = 0;
+        EV_SET( & ev,
+            fd,                 // ident
+            EVFILT_READ,        // filter
+            EV_DELETE,          // flags
+            0,                  // fflags
+            0,                  // data
+            conn );             // udata
+        r = kevent( poll->kqfd, & ev, 1, NULL, 0, & ts );
+        if ( 0 != r ) {
+            gr_warning( "%s kevent EV_DELETE return error %d: %d,%s", poll->name, r, errno, strerror( errno ) );
+        } else {
+            gr_info( "%s kevent EV_DELETE for EVFILT_READ ok", poll->name );
+        }
+    }
+}
+
 int gr_poll_wait(
     gr_poll_t *         poll,
     gr_poll_event_t *   events,
@@ -320,14 +379,16 @@ int gr_poll_recv(
         );
         if ( 0 == r ) {
             // 客户端关连接
-            conn->close_type = GR_NEED_CLOSE;
+            conn->close_type        = GR_NEED_CLOSE;
+            conn->is_network_error  = true;
             break;
         } else if ( r < 0 ) {
             if ( EINTR == errno ) {
                 continue;
             } else if ( ECONNRESET == errno ) {
                 // Connection reset by peer
-                conn->close_type = GR_NEED_CLOSE;
+                conn->close_type        = GR_NEED_CLOSE;
+                conn->is_network_error  = true;
             } else if ( EAGAIN == errno ) {
                 // 没有数据可读了
             }
@@ -396,8 +457,8 @@ RETRY:
 
         if ( rsp->buf_sent == rsp->buf_len ) {
 
-            // 将发完的回复包弹出
-            r = gr_tcp_conn_pop_top_rsp( conn, rsp );
+            // 将发完的回复包弹出，同时把包删了
+            r = gr_tcp_conn_pop_top_rsp( conn, rsp, true );
             if ( 0 != r ) {
                 gr_error( "gr_tcp_conn_pop_top_rsp return error %d", r );
                 return -2;
@@ -421,6 +482,7 @@ RETRY:
     return sent_bytes;
 }
 
+
 int gr_poll_recv_done(
     gr_poll_t *             poll,
     gr_thread_t *           thread,
@@ -432,37 +494,17 @@ int gr_poll_recv_done(
         return 0;
     }
 
-    //TODO: 如果不OK，需要断连接
-
-    if ( conn->close_type >= GR_NEED_CLOSE ) {
-        struct kevent   ev;
-        struct timespec ts;
-        int             r;
-        int             fd;
-
-        fd = conn->fd;
-        conn->close_type >= GR_CLOSING;
-
-        if ( -1 != fd ) {
-            ts.tv_sec = 0;
-            ts.tv_nsec = 0;
-            EV_SET( & ev,
-                fd,                 // ident
-                EVFILT_READ,        // filter
-                EV_DELETE,          // flags
-                0,                  // fflags
-                0,                  // data
-                conn );             // udata
-            r = kevent( poll->kqfd, & ev, 1, NULL, 0, & ts );
-            if ( 0 != r ) {
-                gr_warning( "%s kevent EV_DELETE return error %d: %d,%s", poll->name, r, errno, strerror( errno ) );
-            } else {
-                gr_info( "%s kevent EV_DELETE for EVFILT_READ ok", poll->name );
-            }
-        }
-    }
-
+    del_tcp_recv_fd( poll, conn );
     return 0;
+}
+
+int gr_poll_send_failed(
+    gr_poll_t *             poll,
+    gr_thread_t *           thread,
+    gr_tcp_conn_item_t *    conn
+)
+{
+    del_tcp_send_fd( poll, conn );
 }
 
 #endif // #if defined( __APPLE__ )
