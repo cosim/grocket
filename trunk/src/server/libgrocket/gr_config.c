@@ -842,5 +842,12 @@ bool gr_config_log_enable_tid()
     if ( NULL == g_ghost_rocket_global.config ) {
         return true;
     }
-    return config_get_bool( g_ghost_rocket_global.config, "server", "log.enable_tid", false );
+
+    return config_get_bool( g_ghost_rocket_global.config, "server", "log.enable_tid",
+#ifdef _DEBUG
+        true
+#else
+        false
+#endif
+    );
 }

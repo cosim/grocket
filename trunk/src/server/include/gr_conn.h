@@ -104,7 +104,7 @@ struct gr_queue_item_compact_t
     bool                        is_tcp;
 
     // 引用计数。
-    char                        refs;
+    //char                        refs;
 
     // 是否请求，不是请求就是应答
     bool                        is_req;
@@ -292,13 +292,13 @@ void gr_tcp_req_free(
     gr_tcp_req_t *          req
 );
 
-int gr_tcp_req_add_refs(
+/*int gr_tcp_req_add_refs(
     gr_tcp_req_t *          req
 );
 
 void gr_tcp_req_to_rsp(
     gr_tcp_req_t *          req
-);
+);*/
 
 void gr_tcp_req_set_buf(
     gr_tcp_req_t *          req,
@@ -325,10 +325,17 @@ gr_tcp_req_package_length(
 
 ///////////////////////////////////////////////////////////////////////
 
-#define gr_tcp_rsp_free     gr_tcp_req_free
-#define gr_tcp_rsp_alloc    gr_tcp_req_alloc
-#define gr_tcp_rsp_add_refs gr_tcp_req_add_refs
+gr_tcp_rsp_t * gr_tcp_rsp_alloc(
+    gr_tcp_conn_item_t *    parent,
+    int                     buf_max
+);
 
+void gr_tcp_rsp_free(
+    gr_tcp_rsp_t *          rsp
+);
+
+#define gr_tcp_rsp_add_refs gr_tcp_req_add_refs
+#define gr_tcp_rsp_set_buf  gr_tcp_req_set_buf
 ///////////////////////////////////////////////////////////////////////
 
 gr_udp_req_t * gr_udp_req_alloc(

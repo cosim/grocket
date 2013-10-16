@@ -615,7 +615,6 @@ int gr_poll_send(
     assert( sizeof( per_worker_io_t ) == thread->cookie_len );
 
     if ( rsp && sent > 0 ) {
-
         rsp->buf_sent += sent;
         if ( rsp->buf_sent == rsp->buf_len ) {
             // 发完了

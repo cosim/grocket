@@ -53,6 +53,8 @@ int gr_log_open()
     gr_log_t *  p;
     int r;
 
+    remove( "log.txt" );
+
     if ( NULL != g_ghost_rocket_global.log ) {
         gr_fatal( "[init]gr_log_open already called" );
         return GR_ERR_WRONG_CALL_ORDER;

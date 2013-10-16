@@ -136,15 +136,18 @@ void worker_queue_push(
         curr = NULL;
     }
 
-    // worker->curr 为空说明没有任何表项被处理
+    // worker->curr 为空说明没有任何表项被处理, 所以必须 worker->curr 非空才进循环
     if ( NULL != worker->curr ) {
-        // 从队列头找到要删除的所有数据项,摘成一个子链表 will_del
-        t = NULL;
+        // 从队列头找到要删除的所有数据项,摘成一个子链表: will_del
         will_del = worker->head;
+        t = NULL;
         while ( NULL != worker->head && worker->head != curr ) {
+            // 记录最后访问过的表项,因为要把最后一个表项的next设为NULL
             t = worker->head;
+            // 向后移动worker->head指针
             worker->head = worker->head->next;
         }
+        // 把最后一个表项的next设为NULL, 这样 will_del 就是一个要删除的单链表了
         if ( NULL != t ) {
             t->next = NULL;
         }
@@ -161,9 +164,12 @@ void worker_queue_push(
     }
 
     if ( QUEUE_ALL_DONE == worker->curr ) {
+        // 如果发现工作线程已经处理完了, 则重置 worker->curr 指针
         worker->curr = worker->head;
+        // 如果 in_event 为 false, 这儿就可能已经在处理刚压进去的节点了
 
         // 只有在工作线程确实没事儿干时才需要判断是否在事件里
+        // 如果 in_event 为 true, 这儿唤醒工作线程
         alarm_event_if_need( worker );
     }
 
@@ -254,6 +260,7 @@ void process_tcp(
 {
     per_thread_t *      per_thread      = (per_thread_t *)thread->cookie;
     gr_proc_ctxt_t *    ctxt            = & per_thread->bin_ctxt;
+    gr_tcp_req_t *      rsp             = NULL;
     // 默认已处理字节数是输入字节数
     int                 processed_len   = req->buf_len;
     // 记录一下原始的请求包
@@ -266,8 +273,6 @@ void process_tcp(
     ctxt->port          = req->parent->port_item->port;
     ctxt->fd            = req->parent->fd;
     ctxt->thread_id     = thread->id;
-
-gr_info( "================= proc_tcp %p, refs=%d", req, (int)req->entry_compact.refs );
 
     // 调用模块处理函数处理TCP请求
     gr_module_proc_tcp( req, ctxt, & processed_len );
@@ -304,23 +309,29 @@ gr_info( "================= proc_tcp %p, refs=%d", req, (int)req->entry_compact.
     }
 
     // 增加引用计数。因为 worker 在调用完本函数后会删除它，而在本函数中会直接将req转变成rsp扔到conn->rsp_list中
-    gr_tcp_req_add_refs( req );
+    //gr_tcp_req_add_refs( req );
+
+    rsp = gr_tcp_rsp_alloc( req->parent, 0 );
+    if ( NULL == rsp ) {
+        // 把数据长度清0即可，等下次用。
+        gr_error( "gr_tcp_rsp_alloc failed" );
+        ctxt->pc_result_buf_len     = 0;
+        req->parent->close_type     = GR_NEED_CLOSE;
+        return;
+    }
 
     // 将返回包应用到req中，这个req将被改造成rsp
-    gr_tcp_req_set_buf( req, ctxt->pc_result_buf, ctxt->pc_result_buf_max, ctxt->pc_result_buf_len );
+    gr_tcp_rsp_set_buf( rsp, ctxt->pc_result_buf, ctxt->pc_result_buf_max, ctxt->pc_result_buf_len );
     // 由于用户模块的返回数据已经从ctxt移动到返回包里了，所以要将ctxt中记录的返回数据信息清掉。
     ctxt->pc_result_buf        = NULL;
     ctxt->pc_result_buf_max    = 0;
     ctxt->pc_result_buf_len    = 0;
 
-    // 将req变成rsp
-    gr_tcp_req_to_rsp( req );
-
     // 将rsp扔到连接的队列中
-    gr_tcp_conn_add_rsp( req->parent, req );
+    gr_tcp_conn_add_rsp( rsp->parent, rsp );
 
     // 将rsp放入tcp_out中发送
-    r = gr_tcp_out_add( req );
+    r = gr_tcp_out_add( rsp );
     if ( 0 != r ) {
         gr_fatal( "gr_tcp_out_add faiiled" );
         //TODO: 按理说，这个地方出错了应该断连接了。但这儿应该是机制出错了，不是断连接这么简单，可能需要重启服务器才能解决。
