@@ -254,9 +254,6 @@
     <ClInclude Include="..\include\gr_socket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\gr_queue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\gr_tcp_accept.h">
       <Filter>Header Files</Filter>
     </ClInclude>

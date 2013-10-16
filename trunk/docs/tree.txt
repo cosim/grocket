@@ -50,7 +50,6 @@
     │  │      gr_mem.h                     [tool]内存分配与释放功能
     │  │      gr_module.h                  用户模块
     │  │      gr_poll.h                    网络高并发操作系统机制封装
-    │  │      gr_queue.h                   [tool]单线程写，单线程读队列
     │  │      gr_server_impl.h             服务器模块
     │  │      gr_socket.h                  [tool]SOCKET工具
     │  │      gr_tcp_accept.h              TCP accept
