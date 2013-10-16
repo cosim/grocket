@@ -98,7 +98,6 @@
     <ClInclude Include="..\include\gr_module.h" />
     <ClInclude Include="..\include\gr_tcp_accept.h" />
     <ClInclude Include="..\include\gr_poll.h" />
-    <ClInclude Include="..\include\gr_queue.h" />
     <ClInclude Include="..\include\gr_server_impl.h" />
     <ClInclude Include="..\include\gr_socket.h" />
     <ClInclude Include="..\include\gr_tcp_close.h" />
