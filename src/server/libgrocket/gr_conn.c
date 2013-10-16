@@ -297,9 +297,6 @@ int gr_tcp_conn_pop_top_rsp(
         conn->rsp_list_tail = NULL;
     }
 
-gr_info( "================= will kill rsp %p, %d, refs=%d",
-    confirm_rsp, (int)and_destroy_it, (int)confirm_rsp->entry_compact.refs );
-
     if( and_destroy_it ) {
         gr_tcp_rsp_free( confirm_rsp );
     }
@@ -375,7 +372,7 @@ gr_tcp_req_t * gr_tcp_req_alloc(
     // 标记字段，必须为1
     req->entry_compact.is_tcp   = true;
     // 引用计数为1
-    req->entry_compact.refs     = 1;
+    //req->entry_compact.refs     = 1;
     // 打个请求标记
     req->entry_compact.is_req   = true;
 
@@ -389,8 +386,6 @@ gr_tcp_req_t * gr_tcp_req_alloc(
             return NULL;
         }
     }
-
-gr_info( "================ new req %p", req );
     return req;
 }
 
@@ -398,26 +393,20 @@ void gr_tcp_req_free(
     gr_tcp_req_t *      req
 )
 {
-    assert( NULL != req && NULL != req->parent && req->entry_compact.refs > 0 );
+    assert( NULL != req && NULL != req->parent );
 
-    -- req->entry_compact.refs;
-
-    if ( 0 == req->entry_compact.refs ) {
-
-        req->buf_len = 0;
-        req->buf_max = 0;
-        if ( NULL != req->buf ) {
-            gr_free( req->buf );
-            req->buf = NULL;
-        }
-
-        gr_free( req );
-
-gr_info( "================= real free req %p", req );
+    req->buf_len = 0;
+    req->buf_max = 0;
+    if ( NULL != req->buf ) {
+        gr_free( req->buf );
+        req->buf = NULL;
     }
+
+    gr_free( req );
+
 }
 
-int gr_tcp_req_add_refs(
+/*int gr_tcp_req_add_refs(
     gr_tcp_req_t *          req
 )
 {
@@ -428,15 +417,15 @@ int gr_tcp_req_add_refs(
 
     ++ req->entry_compact.refs;
     return 0;
-}
+}*/
 
-void gr_tcp_req_to_rsp(
+/*void gr_tcp_req_to_rsp(
     gr_tcp_req_t *          req
 )
 {
     // 将它改成false，就是回复了
     req->entry_compact.is_req = false;
-}
+}*/
 
 void gr_tcp_req_set_buf(
     gr_tcp_req_t *          req,
@@ -445,7 +434,7 @@ void gr_tcp_req_set_buf(
     int                     buf_len
 )
 {
-    if ( req->buf ) {
+    if ( req->buf && req->buf != buf ) {
         gr_free( req->buf );
     }
 
@@ -453,6 +442,62 @@ void gr_tcp_req_set_buf(
     req->buf_max   = buf_max;
     req->buf_len   = buf_len;
     req->buf_sent  = 0;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+gr_tcp_rsp_t * gr_tcp_rsp_alloc(
+    gr_tcp_conn_item_t *    parent,
+    int                     buf_max
+)
+{
+    gr_tcp_rsp_t *  rsp;
+
+    if ( NULL == parent || buf_max < 0 ) {
+        return NULL;
+    }
+
+    rsp = (gr_tcp_rsp_t *)gr_calloc( 1, sizeof( gr_tcp_rsp_t ) );
+    if ( NULL == rsp ) {
+        gr_fatal( "gr_calloc %d failed: %d", (int)sizeof( gr_tcp_rsp_t ), get_errno() );
+        return NULL;
+    }
+
+    // 标记字段，必须为1
+    rsp->entry_compact.is_tcp   = true;
+    // 引用计数为1
+    //rsp->entry_compact.refs     = 1;
+    // 打个返回标记
+    rsp->entry_compact.is_req   = false;
+
+    rsp->parent = parent;
+    rsp->buf_max = buf_max;
+    if ( rsp->buf_max > 0 ) {
+        rsp->buf = (char *)gr_malloc( rsp->buf_max );
+        if ( NULL == rsp->buf ) {
+            gr_fatal( "gr_malloc %d failed: %d", rsp->buf_max, get_errno() );
+            gr_free( rsp );
+            return NULL;
+        }
+    }
+    return rsp;
+}
+
+
+void gr_tcp_rsp_free(
+    gr_tcp_rsp_t *      rsp
+)
+{
+    assert( NULL != rsp && NULL != rsp->parent );
+
+    rsp->buf_len = 0;
+    rsp->buf_max = 0;
+    if ( NULL != rsp->buf ) {
+        gr_free( rsp->buf );
+        rsp->buf = NULL;
+    }
+
+    gr_free( rsp );
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -475,7 +520,7 @@ gr_udp_req_t * gr_udp_req_alloc(
     // 标记字段，必须为0
     req->entry_compact.is_tcp   = false;
     // 引用计数为1
-    req->entry_compact.refs     = 1;
+    //req->entry_compact.refs     = 1;
 
     req->buf_max = buf_max;
     if ( req->buf_max > 0 ) {
@@ -493,11 +538,11 @@ void gr_udp_req_free(
     gr_udp_req_t *          req
 )
 {
-    assert( NULL != req && req->entry_compact.refs > 0 );
+    assert( NULL != req /*&& req->entry_compact.refs > 0*/ );
 
-    -- req->entry_compact.refs;
+    //-- req->entry_compact.refs;
 
-    if ( 0 == req->entry_compact.refs ) {
+    //if ( 0 == req->entry_compact.refs ) {
 
         req->buf_len = 0;
         req->buf_max = 0;
@@ -507,5 +552,5 @@ void gr_udp_req_free(
         }
 
         gr_free( req );
-    }
+    //}
 }
