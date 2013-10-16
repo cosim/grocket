@@ -3,13 +3,40 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/05
  * @version $Revision$ 
- * @brief   连接相关处理
- * Revision History 大事件记
+ * @brief   tcp connection, udp connection, request
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-05    Created.
  **/
+/* 
+ *
+ * Copyright (C) 2013-now da_ming at hotmail.com
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #include "gr_conn.h"
 #include "gr_log.h"
 #include "gr_global.h"
@@ -17,6 +44,9 @@
 #include "gr_mem.h"
 #include "gr_socket.h"
 #include "gr_config.h"
+#include "gr_tcp_close.h"
+
+#define GR_REQ_PUSH_COUNT_HI_WALTER     1500000000
 
 typedef struct
 {
@@ -29,11 +59,6 @@ int gr_conn_init()
 {
     gr_conn_engine_t *  p;
 
-    if ( sizeof( gr_queue_item_t ) != sizeof( gr_queue_item_compact_t ) ) {
-        gr_fatal( "sizeof( gr_queue_item_t ) = %d, sizeof( gr_queue_item_compact_t ) = %d, not equal",
-            (int)sizeof( gr_queue_item_t ), (int)sizeof( gr_queue_item_compact_t ) );
-        return -1;
-    }
     if ( sizeof( gr_udp_req_t ) != sizeof( gr_udp_rsp_t ) ) {
         gr_fatal( "sizeof( gr_tcp_req_t ) = %d, sizeof( gr_udp_req_t ) = %d, not equal",
             (int)sizeof( gr_tcp_req_t ), (int)sizeof( gr_udp_req_t ) );
@@ -122,9 +147,30 @@ gr_tcp_conn_alloc(
         return NULL;
     }
 
-    conn->close_type    = GR_OPENING;
+    // req_pop_count 值为0说明req_pop_count和req_push_count在维护，这时的数据是不准确的，不能读
+    // 所以要小心初始化顺序
+    conn->req_push_count    = 1;
+    conn->req_pop_count     = 1;
+
+    conn->close_type        = GR_OPENING;
 
     return conn;
+}
+
+static inline
+void clear_rsp_list(
+    gr_tcp_conn_item_t *    conn
+)
+{
+    gr_tcp_rsp_t *  rsp = conn->rsp_list_head;
+    gr_tcp_rsp_t *  next_rsp;
+    conn->rsp_list_head = NULL;
+    conn->rsp_list_tail = NULL;
+    while ( NULL != rsp ) {
+        next_rsp = (gr_tcp_rsp_t *)rsp->entry_compact.next;
+        gr_tcp_rsp_free( rsp );
+        rsp = next_rsp;
+    }
 }
 
 void gr_tcp_conn_free(
@@ -139,10 +185,14 @@ void gr_tcp_conn_free(
             conn->fd = -1;
         }
 
+        // 删除正在接收的请求
         if ( NULL != conn->req ) {
             gr_tcp_req_free( conn->req );
             conn->req = NULL;
         }
+
+        // 删除回复列表
+        clear_rsp_list( conn );
 
         gr_free( conn );
     }
@@ -215,7 +265,7 @@ void gr_tcp_conn_add_rsp(
     gr_tcp_rsp_t *          rsp
 )
 {
-    rsp->entry.next = NULL;
+    rsp->entry_compact.next = NULL;
 
     if ( NULL != conn->rsp_list_head ) {
         conn->rsp_list_tail->entry_compact.next = & rsp->entry_compact;
@@ -227,21 +277,18 @@ void gr_tcp_conn_add_rsp(
 
 int gr_tcp_conn_pop_top_rsp(
     gr_tcp_conn_item_t *    conn,
-    gr_tcp_rsp_t *          confirm_rsp
+    gr_tcp_rsp_t *          confirm_rsp,
+    bool                    and_destroy_it
 )
 {
-    gr_tcp_rsp_t *              rsp;
     gr_queue_item_compact_t *   next;
 
-    rsp = conn->rsp_list_head;
-    if ( NULL == rsp ) {
-        return -1;
-    }
-    if ( rsp != confirm_rsp ) {
+    if ( conn->rsp_list_head != confirm_rsp ) {
+        gr_error( "conn->rsp_list_head not equal with confirm_rsp" );
         return -2;
     }
 
-    next = rsp->entry_compact.next;
+    next = conn->rsp_list_head->entry_compact.next;
 
     if ( NULL != next ) {
         conn->rsp_list_head = OFFSET_RECORD( next, gr_tcp_rsp_t, entry_compact );
@@ -250,8 +297,60 @@ int gr_tcp_conn_pop_top_rsp(
         conn->rsp_list_tail = NULL;
     }
 
-    gr_tcp_rsp_free( rsp );
+gr_info( "================= will kill rsp %p, %d, refs=%d",
+    confirm_rsp, (int)and_destroy_it, (int)confirm_rsp->entry_compact.refs );
+
+    if( and_destroy_it ) {
+        gr_tcp_rsp_free( confirm_rsp );
+    }
     return 0;
+}
+
+void gr_tcp_conn_pop_top_req(
+    gr_tcp_conn_item_t *    conn
+)
+{
+    gr_atomic_t req_pop_count;
+
+    assert( conn->req_push_count >= conn->req_pop_count );
+    
+    // 现在不能增加请求弹包数量，否则可能会在其它线程中删除连接对象
+    req_pop_count = conn->req_pop_count;
+
+    if ( req_pop_count > GR_REQ_PUSH_COUNT_HI_WALTER ) {
+        // 将弹包数量和压包数量同比减去一个固定值，防止溢出
+
+        // 将conn->req_pop_count设成0, 这会让所有取用该值的人知道此值当前无效
+        conn->req_pop_count = 0;
+
+        // 因为这和in线程会有并发写，所以用原子操作
+        gr_atomic_add( -req_pop_count, & conn->req_push_count );
+        // 因为现在没其它人操作req_pop_count字段，所以不用原子操作
+    }
+
+    if ( conn->close_type > GR_NEED_CLOSE ) {
+        // 最后再增加请求弹包数量, conn->req_pop_count 值非0才表示有效
+        ++ conn->req_pop_count;
+        // 本函数退出后有可能连接会被删除
+        return;
+    }
+
+    // 正在断连接过程中
+
+    // 这个地方限制: 一个TCP的处理必须分配到一个固定的工作线程, 这也是合理和安全的
+    // 判断当前请求是否是最后一个待处理的请求
+    if ( conn->req_pop_count + 1 != conn->req_push_count ) {
+        // 当前请求不是最后一个待处理的请求
+        // 增加请求弹包数量
+        ++ conn->req_pop_count;
+        // 本函数退出后有可能连接会被删除
+        return;
+    }
+
+    // 当前请求是最后一个待处理的请求
+    // 通知TCP连接关闭模块
+    gr_tcp_close_from_work( conn );
+    // 本函数退出后有可能连接会被删除
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -291,16 +390,15 @@ gr_tcp_req_t * gr_tcp_req_alloc(
         }
     }
 
+gr_info( "================ new req %p", req );
     return req;
 }
 
-int gr_tcp_req_free(
+void gr_tcp_req_free(
     gr_tcp_req_t *      req
 )
 {
-    if ( NULL == req || NULL == req->parent || req->entry_compact.refs <= 0 ) {
-        return -1;
-    }
+    assert( NULL != req && NULL != req->parent && req->entry_compact.refs > 0 );
 
     -- req->entry_compact.refs;
 
@@ -314,9 +412,9 @@ int gr_tcp_req_free(
         }
 
         gr_free( req );
-    }
 
-    return 0;
+gr_info( "================= real free req %p", req );
+    }
 }
 
 int gr_tcp_req_add_refs(
@@ -391,13 +489,11 @@ gr_udp_req_t * gr_udp_req_alloc(
     return req;
 }
 
-int gr_udp_req_free(
+void gr_udp_req_free(
     gr_udp_req_t *          req
 )
 {
-    if ( NULL == req || req->entry_compact.refs <= 0 ) {
-        return -1;
-    }
+    assert( NULL != req && req->entry_compact.refs > 0 );
 
     -- req->entry_compact.refs;
 
@@ -412,6 +508,4 @@ int gr_udp_req_free(
 
         gr_free( req );
     }
-
-    return 0;
 }

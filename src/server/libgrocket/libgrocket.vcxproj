@@ -65,10 +65,10 @@
     <ClCompile Include="gr_tcp_accept.c" />
     <ClCompile Include="gr_poll_linux.c" />
     <ClCompile Include="gr_poll_windows.c" />
-    <ClCompile Include="gr_queue.c" />
     <ClCompile Include="gr_server_impl.c" />
     <ClCompile Include="gr_server_impl_windows.c" />
     <ClCompile Include="gr_socket.c" />
+    <ClCompile Include="gr_tcp_close.c" />
     <ClCompile Include="gr_tcp_in.c" />
     <ClCompile Include="gr_tcp_out.c" />
     <ClCompile Include="gr_thread.c" />
@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\third\gperftools-2.1\src\windows\gperftools\tcmalloc.h" />
+    <ClInclude Include="..\include\gr_atomic.h" />
     <ClInclude Include="..\include\gr_backend.h" />
     <ClInclude Include="..\include\gr_config.h" />
     <ClInclude Include="..\include\gr_conn.h" />
@@ -100,6 +101,7 @@
     <ClInclude Include="..\include\gr_queue.h" />
     <ClInclude Include="..\include\gr_server_impl.h" />
     <ClInclude Include="..\include\gr_socket.h" />
+    <ClInclude Include="..\include\gr_tcp_close.h" />
     <ClInclude Include="..\include\gr_tcp_in.h" />
     <ClInclude Include="..\include\gr_tcp_out.h" />
     <ClInclude Include="..\include\gr_thread.h" />
@@ -190,7 +192,7 @@ cd
 echo 删除 gperftools-2.1...
 rd /q /s gperftools-2.1
 echo 解压 gperftools-2.1.tar.gz ...
-call tar -zxvf gperftools-2.1.tar.gz
+call $(SolutionDir)..\third\win_tar\Tar.exe -zxvf gperftools-2.1.tar.gz
 echo 解压完毕，继续编译 ...
 </Command>
     </PreBuildEvent>
@@ -238,7 +240,7 @@ cd
 echo 删除 gperftools-2.1...
 rd /q /s gperftools-2.1
 echo 解压 gperftools-2.1.tar.gz ...
-call tar -zxvf gperftools-2.1.tar.gz
+call $(SolutionDir)..\third\win_tar\Tar.exe -zxvf gperftools-2.1.tar.gz
 echo 解压完毕，继续编译 ...
 </Command>
     </PreBuildEvent>

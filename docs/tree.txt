@@ -3,6 +3,7 @@
 ├─docs                                     文档目录
 │      idea.txt                            一些点子和开始这个项目的初忠
 │      tree.txt                            本文件
+│      changelog.txt                       change log
 │      
 └─src                                      源码目录
     ├─include                              整个服务器的对外接口目录
@@ -19,7 +20,6 @@
     ├─server                               轻量通用服务器
     │  │  build_linux.sh                   Linux 下的编译脚本
     │  │  build_mac.sh                     Mac OS X 和 BSD 下的编译脚本
-    │  │  changelog.txt                    changelog 
     │  │  Makefile.linux                   Linux 下的 Makefile
     │  │  Makefile.mac                     Mac OS X 和 BSD 下的 Makefile
     │  │  server.sln                       Windows版工程文件
@@ -34,6 +34,7 @@
     │  │      demo_server.c                基于服务器框架的独立可执行程序示例代码
     │  │          
     │  ├─include                           轻量通用服务器内部的子模块间接口
+    │  │      gr_atomic.h                  [tool]原子加减操作
     │  │      gr_backend.h                 后台维护类线程，比如踢连接啦等
     │  │      gr_config.h                  配置相关
     │  │      gr_conn.h                    连接处理相关
@@ -53,6 +54,7 @@
     │  │      gr_server_impl.h             服务器模块
     │  │      gr_socket.h                  [tool]SOCKET工具
     │  │      gr_tcp_accept.h              TCP accept
+    │  │      gr_tcp_close.h               TCP 关连接
     │  │      gr_tcp_in.h                  TCP读功能
     │  │      gr_tcp_out.h                 TCP写功能
     │  │      gr_thread.h                  [tool]一些线程相关的工具函数
@@ -80,12 +82,12 @@
     │          gr_poll_bsd.c               BSD和Mac OS X网络高并发操作系统机制封装，KQueue
     │          gr_poll_linux.c             Linux网络高并发操作系统机制封装，EPOLL
     │          gr_poll_windows.c           Windows网络高并发操作系统机制封装，IOCP
-    │          gr_queue.c					[tool]单线程写，单线程读队列
     │          gr_server_impl.c            服务器模块
     │          gr_server_impl_posix.c      posix操作系统下服务器模块平台特定功能
     │          gr_server_impl_windows.c    Windows版服务器模块平台特定功能
     │          gr_socket.c                 [tool]SOCKET工具
     │          gr_tcp_accept.c              TCP accept
+    │          gr_tcp_close.c              TCP 关连接
     │          gr_tcp_in.c                  TCP读功能
     │          gr_tcp_out.c                 TCP写功能
     │          gr_thread.c                 一些线程相关工具函数

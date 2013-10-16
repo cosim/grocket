@@ -3,13 +3,40 @@
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/10/07
  * @version $Revision$ 
- * @brief   
- * Revision History 大事件记
+ * @brief   TCP recv and send implement
+ * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-07    Created.
  **/
+/* 
+ *
+ * Copyright (C) 2013-now da_ming at hotmail.com
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
+
 #ifndef _tcp_io_h_
 #define _tcp_io_h_
 
@@ -30,6 +57,7 @@
 #include "gr_socket.h"
 #include "gr_conn.h"
 #include "gr_worker.h"
+#include "gr_tcp_close.h"
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -51,6 +79,7 @@ typedef gr_tcp_io_t gr_tcp_out_t;
 
 #if defined( WIN32 ) || defined( WIN64 )
 
+// windows 下，tcp_in 线程和 tcp_out 线程都使用的相同的线程函数。
 void tcp_io_windows( gr_thread_t * thread );
 
 #endif // #if defined( WIN32 ) || defined( WIN64 )
@@ -67,6 +96,16 @@ void on_tcp_send_error(
     gr_tcp_conn_item_t *    conn
 )
 {
+    int r;
+    
+    // 先把当前连接在当前接收poll中停掉
+    r = gr_poll_send_failed( self->poll, thread, conn );
+    if ( 0 != r ) {
+        gr_error( "gr_poll_send_failed return error %d", r );
+    }
+
+    // 关连接
+    gr_tcp_close_from_out( conn );
 }
 
 static inline
@@ -103,13 +142,14 @@ void on_tcp_recv_error(
 {
     int r;
     
-    // 先把当前连接在当前poll中停掉
+    // 先把当前连接在当前接收poll中停掉
     r = gr_poll_recv_done( self->poll, thread, conn, false );
     if ( 0 != r ) {
         gr_error( "gr_poll_recv_done return error %d", r );
     }
 
-    // 然后让accept线程处理关连接的动作，因为连接是它分配的。
+    // 关连接
+    gr_tcp_close_from_in( conn );
 }
 
 static inline
