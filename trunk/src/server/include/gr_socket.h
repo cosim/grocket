@@ -42,10 +42,6 @@
 
 #include "gr_stdinc.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #if defined( WIN32 ) || defined( WIN64 )
     #ifdef _WIN32_WCE
         #include <Ws2tcpip.h>

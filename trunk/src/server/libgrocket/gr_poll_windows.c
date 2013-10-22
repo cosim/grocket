@@ -286,7 +286,12 @@ bool recv_with_thread(
         if ( WSA_IO_PENDING != e && 0 != e ) {
             gr_fatal( "WSARecv failed, %d", (int)e );
             return false;
+        } else {
+            gr_debug( "after WSARecv, WSAGetLastError()=%d, "
+                      "is WSA_IO_PENDING=%d", e, (int)(e == WSA_IO_PENDING) );
         }
+    } else {
+        gr_debug( "WSARecv return %d", r );
     }
 
     return true;
@@ -342,7 +347,7 @@ bool send_with_thread(
     int                 r;
     per_worker_io_t *   p   = (per_worker_io_t *)thread->cookie;
 
-    rsp = conn->rsp_list_head;
+    rsp = gr_tcp_conn_top_rsp( conn );
     if ( NULL == rsp ) {
         gr_fatal( "rsp_list_head is NULL" );
         return false;
@@ -371,7 +376,11 @@ bool send_with_thread(
         if ( WSA_IO_PENDING != e && 0 != e ) {
             gr_fatal( "WSASend failed, %d", (int)e );
             return false;
+        } else {
+            gr_debug( "after WSASend, WSAGetLastError() return %d, not WSA_IO_PENDING", (int)e );
         }
+    } else {
+        gr_debug( "WSASend %d bytes return %d", (int)rsp->iocp_wsabuf.len, r );
     }
 
     return true;
@@ -392,15 +401,6 @@ bool send_with_threads(
     int             hash_id = hash_send( poll, conn->fd );
     gr_thread_t *   thread  = & threads->threads[ hash_id ];
     return send_with_thread( poll, conn, thread );
-}
-
-int gr_poll_send_failed(
-    gr_poll_t *             poll,
-    gr_thread_t *           thread,
-    gr_tcp_conn_item_t *    conn
-)
-{
-    return 0;
 }
 
 int gr_poll_add_tcp_send_fd(
@@ -469,10 +469,8 @@ int gr_poll_wait(
     if ( poll->is_accept_thread ) {
         per_worker.accept               = (per_worker_accept_t *)thread->cookie;
         per_worker.accept->is_result_ok = true;
-
         events[ 0 ].events              = GR_POLLIN;
     } else {
-
         per_worker.io                   = (per_worker_io_t *)thread->cookie;
         per_worker.io->transfer_bytes   = transfer_bytes;
         per_worker.io->is_result_ok     = true;
@@ -582,6 +580,11 @@ int gr_poll_recv(
     if ( recved > 0 ) {
         conn->req->buf_len += recved;
         conn->req->buf[ conn->req->buf_len ] = '\0';
+#ifdef GR_DEBUG_CONN
+        conn->recv_bytes += recved;
+#endif
+    } else {
+        gr_debug( "recved = %d", recved );
     }
 
     * req = conn->req;
@@ -602,38 +605,62 @@ int gr_poll_send(
     p                   = (per_worker_io_t *)thread->cookie;
     sent                = (int)p->transfer_bytes;
     is_result_ok        = p->is_result_ok;
-    rsp                 = conn->rsp_list_head;
+    rsp                 = gr_tcp_conn_top_rsp( conn );
 
     p->is_result_ok     = false;
 
     if ( NULL == rsp || ! is_result_ok ) {
         // 没什么可发的
         errno = EAGAIN;
+        gr_debug( "rsp %p is NULL or is_result_ok %d is zero",
+            rsp, (int)is_result_ok );
         return -1;
     }
 
     assert( sizeof( per_worker_io_t ) == thread->cookie_len );
 
+    //TODO: 我如何知道发失败了?
+
     if ( rsp && sent > 0 ) {
         rsp->buf_sent += sent;
-        if ( rsp->buf_sent == rsp->buf_len ) {
-            // 发完了
-            int     r;
+#ifdef GR_DEBUG_CONN
+        conn->send_bytes += sent;
+#endif
+        gr_debug( "sent = %d, buf_sent = %d", sent, rsp->buf_sent );
+    } else {
+        gr_debug( "sent %d <= 0, rsp = %p", sent, rsp );
+    }
 
-            // 将发完的回复包弹出，同时把包删了
-            r = gr_tcp_conn_pop_top_rsp( conn, rsp, true );
-            if ( 0 != r ) {
-                gr_fatal( "gr_tcp_conn_pop_top_rsp return error %d", r );
-                return -1;
+    assert( rsp->buf_sent <= rsp->buf_len );
+    if ( rsp->buf_sent == rsp->buf_len ) {
+        // 发完了
+        int     r;
+
+        // 将发完的回复包弹出，同时把包删了
+        r = gr_tcp_conn_pop_top_rsp( conn, rsp );
+        if ( 0 != r ) {
+            gr_fatal( "gr_tcp_conn_pop_top_rsp return error %d", r );
+            conn->is_network_error = 1;
+            if ( conn->close_type > GR_NEED_CLOSE ) {
+                conn->close_type = GR_NEED_CLOSE;
             }
+            return -2;
         }
 
-        if ( NULL != conn->rsp_list_head ) {
-            if ( ! send_with_thread( poll, conn, thread ) ) {
-                gr_fatal( "send_with_thread failed" );
-                return -2;
+        gr_debug( "gr_tcp_conn_pop_top_rsp() OK" );
+    }
+
+    if ( NULL != gr_tcp_conn_top_rsp( conn ) ) {
+        if ( ! send_with_thread( poll, conn, thread ) ) {
+            gr_fatal( "send_with_thread failed" );
+            conn->is_network_error = 1;
+            if ( conn->close_type > GR_NEED_CLOSE ) {
+                conn->close_type = GR_NEED_CLOSE;
             }
+            return -3;
         }
+
+        gr_debug( "send_with_thread() OK" );
     }
 
     return sent;
@@ -728,6 +755,24 @@ int gr_poll_recv_done(
     //                                  其实这个只是服务器主动发包的场景，大部分服务器是被动回复，所以这个目前优先级不高。
 
     return 0;
+}
+
+int gr_poll_del_tcp_recv_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+)
+{
+    return GR_OK;
+}
+
+int gr_poll_del_tcp_send_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+)
+{
+    return GR_OK;
 }
 
 #endif // #if defined(WIN32) || defined(WIN64)

@@ -50,6 +50,7 @@ typedef struct
 {
     gr_dll_t                dll;
 
+    gr_version_t            version;
     gr_init_t               init;
     gr_term_t               term;
     gr_tcp_accept_t         tcp_accept;
@@ -65,13 +66,14 @@ void module_unload(
     gr_module_t * module
 )
 {
-    module->init         = NULL;
-    module->term         = NULL;
-    module->tcp_accept   = NULL;
-    module->tcp_close    = NULL;
-    module->chk_binary   = NULL;
-    module->proc_binary  = NULL;
-    module->proc_http    = NULL;
+    module->version     = NULL;
+    module->init        = NULL;
+    module->term        = NULL;
+    module->tcp_accept  = NULL;
+    module->tcp_close   = NULL;
+    module->chk_binary  = NULL;
+    module->proc_binary = NULL;
+    module->proc_http   = NULL;
 
     if ( NULL != module->dll ) {
         gr_dll_close( module->dll );
@@ -99,6 +101,7 @@ int module_load(
         return GR_ERR_INIT_MODULE_FAILED;
     }
 
+    module->version = (gr_version_t)gr_dll_symbol( module->dll, GR_VERSION_NAME );
     module->init = (gr_init_t)gr_dll_symbol( module->dll, GR_INIT_NAME );
     module->term = (gr_term_t)gr_dll_symbol( module->dll, GR_TERM_NAME );
     module->tcp_accept = (gr_tcp_accept_t)gr_dll_symbol( module->dll, GR_TCP_ACCEPT_NAME );
@@ -107,16 +110,48 @@ int module_load(
     module->proc_binary = (gr_proc_t)gr_dll_symbol( module->dll, GR_PROC_NAME );
     module->proc_http = (gr_proc_http_t)gr_dll_symbol( module->dll, GR_PROC_HTTP_NAME );
 
-    if ( NULL == module->proc_binary && NULL == module->proc_http ) {
+    if ( NULL == module->version || NULL == module->proc_binary && NULL == module->proc_http ) {
         gr_fatal( "(%s) gr_proc_http & gr_proc both not found", path );
         module_unload( module );
-        return GR_ERR_INIT_MODULE_FAILED;
+        return GR_ERR_INVALID_PARAMS;
     }
 
+    gr_info( "module '%s' loadded", path );
     return 0;
 }
 
+static inline
+bool check_version(
+    gr_module_t *   module
+)
+{
+    int module_ver = 0;
+    module->version( & module_ver );
+
+    if ( module_ver <= 0 || module_ver > 0xFF ) {
+        gr_fatal( "version compatible check FAILED. module=%d, framework=%d, framework.low=%d",
+            module_ver, GR_SERVER_VERSION, GR_SERVER_LOW_VERSION );
+        return false;
+    }
+
+    // 版本号检查，框架的最低兼容版本号必须小于或等于模块开发者使用的开发框架的版本号。
+    // 这个检查，使得可以直接升级甚至降级框架的二进制文件，而模块的兼容性检查只需要看模块是否能被成功装载。
+    if ( GR_SERVER_LOW_VERSION > module_ver ) {
+        // 服务框架接口兼容性检查失败。直接初始化失败，省得在运行时core增加追查成本
+        gr_fatal( "version compatible check FAILED. module=%d, framework=%d, framework.low=%d",
+            module_ver, GR_SERVER_VERSION, GR_SERVER_LOW_VERSION );
+        return false;
+    }
+
+    g_ghost_rocket_global.server_interface.module_version = (unsigned char)module_ver;
+
+    gr_info( "version check OK. module=%d, framework=%d, framework.low=%d",
+        module_ver, GR_SERVER_VERSION, GR_SERVER_LOW_VERSION );
+    return true;
+}
+
 int gr_module_init(
+    gr_version_t    version,
     gr_init_t       init,
     gr_term_t       term,
     gr_tcp_accept_t tcp_accept,
@@ -125,7 +160,8 @@ int gr_module_init(
     gr_proc_t       proc_binary,
     gr_proc_http_t  proc_http)
 {
-    gr_module_t *  module;
+    gr_module_t *   module;
+    int             r;
 
     if ( NULL != g_ghost_rocket_global.module ) {
         gr_fatal( "[init]gr_module_init already called" );
@@ -139,36 +175,60 @@ int gr_module_init(
         return GR_ERR_BAD_ALLOC;
     }
 
-    module->init         = init;
-    module->term         = term;
-    module->tcp_accept   = tcp_accept;
-    module->tcp_close    = tcp_close;
-    module->chk_binary   = chk_binary;
-    module->proc_binary  = proc_binary;
-    module->proc_http    = proc_http;
+    module->version     = version;
+    module->init        = init;
+    module->term        = term;
+    module->tcp_accept  = tcp_accept;
+    module->tcp_close   = tcp_close;
+    module->chk_binary  = chk_binary;
+    module->proc_binary = proc_binary;
+    module->proc_http   = proc_http;
 
-    if (   NULL == module->init
-        && NULL == module->term
-        && NULL == module->tcp_accept
-        && NULL == module->tcp_close
-        && NULL == module->chk_binary
-        && NULL == module->proc_binary
-        && NULL == module->proc_http
-    )
-    {
-        // 没指定用户函数，要装载模块
-        char path[ MAX_PATH ] = "";
-        bool is_absolute;
-        gr_config_get_module_path( path, sizeof( path ), & is_absolute );
+    r = 0;
 
-        if ( '\0' != path[ 0 ] ) {
-            int r;
-            r = module_load( module, path, is_absolute );
-            if ( 0 != r ) {
-                gr_fatal( "module_load( %s ) failed, return %d", path, r );
-                return r;
+    do {
+
+        if (   NULL == module->init
+            && NULL == module->term
+            && NULL == module->tcp_accept
+            && NULL == module->tcp_close
+            && NULL == module->chk_binary
+            && NULL == module->proc_binary
+            && NULL == module->proc_http
+        )
+        {
+            // 没指定用户函数，要装载模块
+            char path[ MAX_PATH ] = "";
+            bool is_absolute;
+            gr_config_get_module_path( path, sizeof( path ), & is_absolute );
+
+            if ( '\0' != path[ 0 ] ) {
+                r = module_load( module, path, is_absolute );
+                if ( 0 != r ) {
+                    gr_fatal( "module_load( %s ) failed, return %d", path, r );
+                    break;
+                }
+            }
+        } else {
+            if ( NULL == module->version ) {
+                gr_fatal( "module->version is NULL" );
+                r = GR_ERR_INVALID_PARAMS;
+                break;
             }
         }
+
+        if ( ! check_version( module ) ) {
+            gr_fatal( "check_version failed" );
+            r = GR_ERR_WRONG_VERSION;
+            break;
+        }
+
+    } while ( false );
+
+    if ( GR_OK != r ) {
+        module_unload( module );
+        gr_free( module );
+        return r;
     }
 
     g_ghost_rocket_global.module = module;

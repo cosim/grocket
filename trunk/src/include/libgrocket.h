@@ -54,6 +54,7 @@ gr_main(
     char **         argv,
     const char *    ini_content,
     size_t          ini_content_len,
+    gr_version_t    version,
     gr_init_t       init,
     gr_term_t       term,
     gr_tcp_accept_t tcp_accept,

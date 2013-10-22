@@ -104,10 +104,12 @@ int gr_library_impl_init()
     const char *        library_core= gr_config_library_core_path();
     int                 ret;
 
-    ret = gr_invoke_test();
-    if ( 0 != ret ) {
-        gr_fatal( "[init] gr_invoke_test return error %d", ret );
-        return GR_ERR_UNKNOWN;
+    if ( g_ghost_rocket_global.server_interface.is_debug ) {
+        ret = gr_invoke_test();
+        if ( 0 != ret ) {
+            gr_fatal( "[init] gr_invoke_test return error %d", ret );
+            return GR_ERR_UNKNOWN;
+        }
     }
 
     if ( NULL != g_ghost_rocket_global.library ) {

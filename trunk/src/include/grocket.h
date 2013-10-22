@@ -301,6 +301,20 @@ typedef struct
 
 ///////////////////////////////////////////////////////////////////////
 //
+// gr_version_t
+//
+// version negotiation
+//
+// parameters:
+//     gr_server_version : 
+//
+typedef void ( * gr_version_t )(
+    int *               gr_server_version
+);
+#define GR_VERSION_NAME     "gr_version"
+
+///////////////////////////////////////////////////////////////////////
+//
 // gr_init_t
 //
 // init the module
@@ -633,6 +647,9 @@ struct gr_library_t
     // just easy to use
     gr_i_server_t * buildin;
 
+    // reserve for feature
+    unsigned char   reserved[ 128 * 8 ];
+
     // classes
     gr_class_t *    classes[ 1 ];
 
@@ -696,8 +713,13 @@ struct gr_server_t
     // server function library
     gr_library_t *  library;
 
+    bool            is_debug;
+
+    // 模块的版本号
+    unsigned char   module_version;
+
     // reserved must be zero fill
-    char            reserved[ 256 ];
+    char            reserved[ 255 ];
 };
 
 #ifdef __cplusplus

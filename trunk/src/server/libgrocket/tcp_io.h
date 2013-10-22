@@ -37,8 +37,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _tcp_io_h_
-#define _tcp_io_h_
+#ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_TCP_IO_H_
+#define _GHOST_ROCKET_SERVER_LIBGROCKET_TCP_IO_H_
 
 // 万恶的Windows！让本应该无需公开的数据结构和代码被公开！FUCK！
 // windows不允许同一个socket同时加到两个iocp里，所以我必须
@@ -90,43 +90,55 @@ void tcp_io_windows( gr_thread_t * thread );
 //
 
 static inline
-void on_tcp_send_error(
-    gr_tcp_in_t *           self,
-    gr_thread_t *           thread,
-    gr_tcp_conn_item_t *    conn
-)
-{
-    int r;
-    
-    // 先把当前连接在当前接收poll中停掉
-    r = gr_poll_send_failed( self->poll, thread, conn );
-    if ( 0 != r ) {
-        gr_error( "gr_poll_send_failed return error %d", r );
-    }
-
-    // 关连接
-    gr_tcp_close_from_out( conn );
-}
-
-static inline
 void on_tcp_send(
     gr_tcp_out_t *          self,
     gr_thread_t *           thread,
     gr_tcp_conn_item_t *    conn
 )
 {
-    int             r;
+    if ( ! conn->is_network_error ) {
 
-    // 发数据，里面已经做循环发了
-    r = gr_poll_send( self->poll, thread, conn );
-    if ( r < 0 ) {
-        // 要么网络出错要么对方断连接了
-        gr_error( "gr_poll_send return error %d", r );
-        on_tcp_send_error( self, thread, conn );
-        return;
+        // 如果网络状态没出错, 则继续发数据
+        // 这儿不能判断 close_type，因为即使 close_type 想关连接，
+        // 也要将已经接收了的请求处理后的返回包发走。
+
+        int             r;
+
+        // 发数据，里面已经做循环发了
+        r = gr_poll_send( self->poll, thread, conn );
+        if ( r < 0 ) {
+            if ( EAGAIN != errno ) {
+                // 要么网络出错要么对方断连接了
+                gr_error( "[tcp.out]gr_poll_send return error %d", r );
+                assert( conn->close_type <= GR_NEED_CLOSE );
+                // 网络异常时已经不可能有返回数据包被压过来，完全可以把返回数据包列表删了
+                gr_tcp_conn_clear_rsp_list( conn );
+                // 关连接，然后退出
+                gr_tcp_close_from_out( conn );
+            }
+            return;
+        }
+
+        //TODO: r 的值如果是0表示什么?
+        //gr_debug( "on_tcp_send called, gr_poll_send %d bytes", r );
+    } else {
+        // 如果网络异常时，close_type 状态至少是正在关闭过程中
+        assert( conn->close_type <= GR_NEED_CLOSE );
+        // 网络异常时已经不可能有返回数据包被压过来，完全可以把返回数据包列表删了
+        // 为什么要加这句话呢？因为代码(1)处只在 NULL == conn->rsp_list_head 时才删连接
+        // 希望走到本分支时，在(1)处可以走到删除连接的逻辑。
+        gr_tcp_conn_clear_rsp_list( conn );
     }
 
-    gr_info( "on_tcp_send called" );
+    if ( conn->close_type <= GR_NEED_CLOSE ) {
+        //(1) 如果连接需要关闭
+        if ( NULL == conn->rsp_list_head ) {
+            // 如果所有待发数据包都已经发完，则关连接
+            gr_error( "[tcp.out]conn->close_type is %d and conn->rsp_list_head is NULL",
+                (int)conn->close_type );
+            gr_tcp_close_from_out( conn );
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -204,10 +216,18 @@ void on_tcp_recv(
 )
 {
     int             r;
-    gr_tcp_req_t *  req = NULL;
-    bool            is_error = false;
-    bool            is_full = false;
+    gr_tcp_req_t *  req         = NULL;
+    bool            is_error    = false;
+    bool            is_full     = false;
 
+    if ( conn->is_network_error || conn->close_type <= GR_NEED_CLOSE ) {
+        // 如果网络已经不可用，或者正在关闭过程中，则不能再收数据了。
+        gr_warning( "is_network_error=%d or conn->close_type=%d, GR_NEED_CLOSE=%d, error",
+            (int)conn->is_network_error, (int)conn->close_type, GR_NEED_CLOSE);
+        on_tcp_recv_error( self, thread, conn );
+        return;
+    }
+    
     // 收数据，里面已经在循环里一直收到没数据了
     r = gr_poll_recv( self->poll, thread, conn, & req );
     if ( r <= 0 ) {
@@ -238,4 +258,4 @@ void on_tcp_recv(
     on_tcp_full( self, thread, conn, req );
 }
 
-#endif // #ifndef _tcp_io_h_
+#endif // #ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_TCP_IO_H_

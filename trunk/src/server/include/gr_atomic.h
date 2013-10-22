@@ -10,6 +10,11 @@
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-14    Created.
  *       2     zouyueming   2013-10-16    add port to linux 32/64 and gcc 4.1.2+
+ *       3     zouyueming   2013-10-21    avoid warning in linux:
+ *
+ *             libgrocket/gr_conn.c: In function ‘gr_tcp_conn_pop_top_req’:
+ *             libgrocket/gr_conn.c:348: warning: passing argument 2 of ‘gr_atomic_add’ discards qualifiers from pointer target type
+ *
  **/
 /* 
  *
@@ -55,17 +60,17 @@ extern "C" {
 
     // gr_atomic_t 在 linux 下是 32 位
     typedef volatile int                gr_atomic_t;
+    #define GR_ATOMIC_T_LEN             4
 
     #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ > 1) || (__GNUC__ == 4 && __GNUC_MINOR__ == 1 && __GNUC_PATCHLEVEL__ >= 2)
         // GCC 从 4.1.2 开始内置 __sync_fetch_and_add 函数
-        static inline void gr_atomic_add( int v, int * dst )
+        static inline int gr_atomic_add( int v, volatile int * dst )
         {
-            // 苹果上的gcc返回的值是加之后的值,不对
-            __sync_fetch_and_add( dst, v );
+            return __sync_fetch_and_add( dst, v );
         }
     #elif defined( __x86_64 )
         // 64 位 X86 CPU
-        static inline void gr_atomic_add( int v, int * dst )
+        static inline int gr_atomic_add( int v, volatile int * dst )
         {
             asm volatile("addl %1,%0"
                             : "+m" (*dst)
@@ -73,7 +78,7 @@ extern "C" {
         }
     #else
         // 32 位 X86 CPU
-        static int gr_atomic_add( int v, int * dst)
+        static int gr_atomic_add( int v, volatile int * dst)
         {
             asm volatile(
                 "movl        %0,%%eax;"
@@ -87,14 +92,16 @@ extern "C" {
 #elif defined( __APPLE__ )
 
     // gr_atomic_t 在 apple 下是 32 位
-    typedef volatile int32_t                gr_atomic_t;
-    #define gr_atomic_add( v, dst )         OSAtomicAdd32( (int32_t)(v), (volatile int32_t *)(dst) )
+    typedef volatile int32_t            gr_atomic_t;
+    #define GR_ATOMIC_T_LEN             4
+    #define gr_atomic_add( v, dst )     OSAtomicAdd32( (int32_t)(v), (volatile int32_t *)(dst) )
 
 #elif defined( WIN32 ) || defined( WIN64 )
 
     // gr_atomic_t 在 windows 下随机器字长不同而大小不同
-    typedef LONG volatile                   gr_atomic_t;
-    #define gr_atomic_add( v, dst )         InterlockedExchangeAdd( (LONG volatile *)(dst), (LONG)(v) )
+    typedef LONG volatile               gr_atomic_t;
+    #define GR_ATOMIC_T_LEN             sizeof(LONG)
+    #define gr_atomic_add( v, dst )     InterlockedExchangeAdd( (LONG volatile *)(dst), (LONG)(v) )
 
 #else
     #error unknown platform

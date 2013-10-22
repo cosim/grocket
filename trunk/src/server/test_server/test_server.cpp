@@ -57,6 +57,10 @@
 extern "C"
 {
 
+extern void gr_version(
+    int *               gr_server_version
+);
+
 extern int gr_init(
     gr_process_type_t   proc_type,
     gr_server_t *       server
@@ -132,6 +136,6 @@ int main( int argc, char ** argv )
     return gr_main(
         argc, argv,
         config, config_len,
-        gr_init, gr_term, gr_tcp_accept, gr_tcp_close, gr_check, gr_proc, gr_proc_http
+        gr_version, gr_init, gr_term, gr_tcp_accept, gr_tcp_close, gr_check, gr_proc, gr_proc_http
     );
 }

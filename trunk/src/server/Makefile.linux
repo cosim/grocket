@@ -1,8 +1,8 @@
 CC			= gcc
 INCLUDE		=  -I../include -I./include -I../third/gperftools-2.1/src
 LIB			= -L/usr/lib -lpthread -ldl -lrt
-#CFLAGS		= -mcmodel=large -g -pg -DNDEBUG -D_FILE_OFFSET_BITS=64
-CFLAGS		= -fPIC -g -pg -DNDEBUG -D_FILE_OFFSET_BITS=64
+#CFLAGS		= -mcmodel=large -g -D_FILE_OFFSET_BITS=64
+CFLAGS		= -fPIC -g -D_FILE_OFFSET_BITS=64
 
 CPPC		= g++
 
@@ -32,6 +32,9 @@ CPPC		= g++
 
 ./bin/linux/o/test_server_%.o: ./test_server/%.cpp
 	$(CPPC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
+./bin/linux/o/test_tcp_client_%.o: ./test_tcp_client/%.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
 TCMALLOC= \
 	./bin/linux/o/third_gperftools-2.1_src_tcmalloc.o \
@@ -109,7 +112,9 @@ DEMOMODULE_OBJECTS=./bin/linux/o/demo_module_demo_module.o
 TESTSERVER_OBJECTS=./bin/linux/o/test_server_test_server.o
 TESTMODULE_OBJECTS=./bin/linux/o/test_module_test_module.o
 
-all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS)
+TESTTCPCLIENT_OBJECTS=./bin/linux/o/test_tcp_client_test_tcp_client.o
+
+all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS) $(TESTTCPCLIENT_OBJECTS)
 
 	$(CPPC) -rdynamic $(LIB) $(OBJECTS)	\
 			-o ./bin/linux/grocketd
@@ -130,10 +135,13 @@ all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS
 			./bin/linux/libgrocket.a	\
 			-o ./bin/linux/demo_server
 
+	$(CPPC) -rdynamic $(LIB) $(TESTTCPCLIENT_OBJECTS)	\
+			-o ./bin/linux/test_tcp_client
+
 	cp ./conf/grocketd.ini ./bin/linux/
 
 clean:
-	rm -fr $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS)
+	rm -fr $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS) $(TESTTCPCLIENT_OBJECTS)
 	rm -fr ./bin/linux/grocketd
 	rm -fr ./bin/linux/libgrocket.a
 	rm -fr ./bin/linux/libdemo_module.so

@@ -419,7 +419,7 @@ socket_recv_inner(
     }
 
     if ( 1 != rs ) {
-        gr_error( "select timeout %d", get_errno() );
+        gr_error( "select return %d", rs );
 
         if ( is_timeout ) {
             * is_timeout = true;

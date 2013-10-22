@@ -50,9 +50,9 @@ int gr_tcp_in_init();
 
 void gr_tcp_in_term();
 
-int gr_tcp_in_add_conn(
-    gr_tcp_conn_item_t *    conn
-);
+int gr_tcp_in_add_conn( gr_tcp_conn_item_t * conn );
+
+int gr_tcp_in_del_tcp_conn( gr_tcp_conn_item_t * conn );
 
 #if defined( WIN32 ) || defined( WIN64 )
 

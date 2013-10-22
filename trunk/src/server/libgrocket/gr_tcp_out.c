@@ -43,6 +43,9 @@
 #include "gr_tcp_in.h"
 #endif // #if defined( WIN32 ) || defined( WIN64 )
 
+#if ! defined( WIN32 ) && ! defined( WIN64 )
+
+static
 void tcp_out_worker( gr_thread_t * thread )
 {
 #define     TCP_OUT_WAIT_TIMEOUT    100
@@ -81,6 +84,8 @@ void tcp_out_worker( gr_thread_t * thread )
 
     gr_free( events );
 }
+
+#endif // #if ! defined( WIN32 ) && ! defined( WIN64 )
 
 int gr_tcp_out_init()
 {
@@ -130,7 +135,7 @@ int gr_tcp_out_init()
             r = GR_ERR_INIT_POLL_FALED;
             break;
         }
-        gr_info( "tcp.in and tcp.out use sampe IOCP" );
+        gr_info( "tcp.in and tcp.out use same IOCP" );
 #endif
 
         r = gr_threads_start(
@@ -189,12 +194,10 @@ void gr_tcp_out_term()
     }
 }
 
-int gr_tcp_out_add(
-    gr_tcp_rsp_t * rsp
-)
+int gr_tcp_out_add( gr_tcp_rsp_t * rsp )
 {
     int                     r;
-    gr_tcp_out_t *           self;
+    gr_tcp_out_t *          self;
     gr_tcp_conn_item_t *    conn;
     
     self = (gr_tcp_out_t *)g_ghost_rocket_global.tcp_out;
@@ -209,8 +212,61 @@ int gr_tcp_out_add(
         return -1;
     }
 
-    // 该标记表示连接在数据发送线程里
-    conn->tcp_out_open = true;
+    if ( ! conn->tcp_out_open ) {
+        //gr_atomic_add( 1, & conn->thread_refs );
+        // 该标记表示连接在数据发送线程里
+        conn->tcp_out_open = true;
+    }
+
+    // 将该socket加到poll里
+    r = gr_poll_add_tcp_send_fd(
+        self->poll,
+        conn,
+        & self->threads
+    );
+    if ( 0 != r ) {
+        gr_fatal( "gr_poll_add_tcp_send_fd return %d", r );
+        //gr_atomic_add( -1, & conn->thread_refs );
+        return -3;
+    }
+
+    return 0;
+}
+
+int gr_tcp_out_del_tcp_conn( gr_tcp_conn_item_t * conn )
+{
+    int                     r;
+    gr_tcp_out_t *          self;
+    
+    self = (gr_tcp_out_t *)g_ghost_rocket_global.tcp_out;
+    if ( NULL == self ) {
+        gr_fatal( "gr_tcp_out_init never call" );
+        return -1;
+    }
+
+    r = gr_poll_del_tcp_send_fd(
+        self->poll,
+        conn,
+        & self->threads
+    );
+    if ( 0 != r ) {
+        gr_fatal( "gr_poll_del_tcp_send_fd return %d", r );
+        return -3;
+    }
+
+    return 0;
+}
+
+int gr_tcp_out_notify_close( gr_tcp_conn_item_t * conn )
+{
+    int r;
+    gr_tcp_out_t *          self;
+    
+    self = (gr_tcp_out_t *)g_ghost_rocket_global.tcp_out;
+    if ( NULL == self ) {
+        gr_fatal( "gr_tcp_out_init never call" );
+        return -1;
+    }
 
     // 将该socket加到poll里
     r = gr_poll_add_tcp_send_fd(

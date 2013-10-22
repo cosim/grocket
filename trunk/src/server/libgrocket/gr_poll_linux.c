@@ -222,7 +222,8 @@ int gr_poll_add_tcp_send_fd(
 static inline
 int del_tcp_send_fd(
     gr_poll_t *             poll,
-    gr_tcp_conn_item_t *    conn
+    gr_tcp_conn_item_t *    conn,
+    int *                   e
 )
 {
     int                 r;
@@ -231,10 +232,12 @@ int del_tcp_send_fd(
     ev.data.ptr = conn;
     ev.events = 0;
     r = epoll_ctl( poll->epfd, EPOLL_CTL_MOD, conn->fd, & ev );
+    if ( NULL != e ) {
+        * e = errno;
+    }
     if ( 0 != r ) {
         if ( ENOENT != errno ) {
             gr_fatal( "epoll_ctl + MOD failed: %d,%s", errno, strerror( errno ) );
-            return -1;
         }
     }
 
@@ -244,7 +247,8 @@ int del_tcp_send_fd(
 static inline
 int del_tcp_recv_fd(
     gr_poll_t *             poll,
-    gr_tcp_conn_item_t *    conn
+    gr_tcp_conn_item_t *    conn,
+    int *                   e
 )
 {
     struct epoll_event  ev;
@@ -253,17 +257,18 @@ int del_tcp_recv_fd(
 
     fd = conn->fd;
 
-    if ( -1 != fd ) {
-        ev.data.ptr = NULL;
-        ev.events = 0;
+    ev.data.ptr = NULL;
+    ev.events = 0;
 
-        r = epoll_ctl( poll->epfd, EPOLL_CTL_DEL, fd, & ev );
-        if ( 0 != r ) {
-            gr_warning( "%s epoll_ctl EPOLL_CTL_DEL return error %d: %d,%s", poll->name, r, errno, strerror( errno ) );
-        } else {
-            gr_info( "%s epoll_ctl EPOLL_CTL_DEL ok", poll->name );
-        }
+    r = epoll_ctl( poll->epfd, EPOLL_CTL_DEL, fd, & ev );
+    if ( NULL != e ) {
+        * e = errno;
     }
+    if ( 0 != r ) {
+        gr_warning( "%s epoll_ctl EPOLL_CTL_DEL return error %d: %d,%s", poll->name, r, errno, strerror( errno ) );
+    }
+
+    return r;
 }
 
 int gr_poll_wait(
@@ -328,6 +333,8 @@ int gr_poll_recv(
         );
         if ( 0 == r ) {
             // 客户端关连接
+            gr_debug( "recv return %d, req_push=%d, req_proc=%d, rsp_send=%u", r,
+                    conn->req_push_count, conn->req_proc_count, conn->rsp_send_count );
             conn->close_type        = GR_NEED_CLOSE;
             conn->is_network_error  = true;
             break;
@@ -336,6 +343,10 @@ int gr_poll_recv(
                 continue;
             } else if ( ECONNRESET == errno ) {
                 // Connection reset by peer
+                gr_warning( "recv return %d, errno = %d(ECONNRESET), "
+                            "req_push=%d, req_proc=%d, rsp_send=%u",
+                            r, errno,
+                            conn->req_push_count, conn->req_proc_count, conn->rsp_send_count );
                 conn->close_type        = GR_NEED_CLOSE;
                 conn->is_network_error  = true;
             } else if ( EAGAIN == errno ) {
@@ -346,6 +357,9 @@ int gr_poll_recv(
 
         recv_bytes += r;
         req->buf_len += r;
+#ifdef GR_DEBUG_CONN
+        conn->recv_bytes += r;
+#endif
     }
 
     if ( recv_bytes > 0 ) {
@@ -366,12 +380,13 @@ int gr_poll_send(
     gr_tcp_rsp_t *      rsp;
     int                 r;
     int                 sent_bytes = 0;
+    int                 e;
 
 RETRY:
 
     while ( true ) {
 
-        rsp = conn->rsp_list_head;
+        rsp = gr_tcp_conn_top_rsp( conn );
         if ( NULL == rsp ) {
             break;
         }
@@ -386,8 +401,11 @@ RETRY:
             );
 
             if ( r >= 0 ) {
-                rsp->buf_sent  += r;
+                rsp->buf_sent   += r;
                 sent_bytes      += r;
+#ifdef GR_DEBUG_CONN
+                conn->send_bytes += r;
+#endif
                 continue;
             }
 
@@ -397,6 +415,17 @@ RETRY:
             if ( EAGAIN != errno ) {
                 // 发失败了
                 gr_error( "send failed: %d", errno );
+
+                conn->is_network_error = 1;
+                // 将当前连接从 poll中删除
+                r = del_tcp_send_fd( poll, conn, &e );
+                if ( 0 != r && ENOENT != e ) {
+                    gr_warning( "del_tcp_send_fd return error %d", r );
+                }
+                if ( conn->close_type > GR_NEED_CLOSE ) {
+                    conn->close_type = GR_NEED_CLOSE;
+                }
+
                 return -1;
             }
 
@@ -404,26 +433,42 @@ RETRY:
             return sent_bytes;
         }
 
+        assert( rsp->buf_sent <= rsp->buf_len );
         if ( rsp->buf_sent == rsp->buf_len ) {
 
             // 将发完的回复包弹出，同时把包删了
-            r = gr_tcp_conn_pop_top_rsp( conn, rsp, true );
+            r = gr_tcp_conn_pop_top_rsp( conn, rsp );
             if ( 0 != r ) {
                 gr_fatal( "gr_tcp_conn_pop_top_rsp return error %d", r );
+
+                conn->is_network_error = 1;
+                // 将当前连接从 poll中删除
+                r = del_tcp_send_fd( poll, conn, &e );
+                if ( 0 != r && ENOENT != e ) {
+                    gr_warning( "del_tcp_send_fd return error %d", r );
+                }
+                if ( conn->close_type > GR_NEED_CLOSE ) {
+                    conn->close_type = GR_NEED_CLOSE;
+                }
+
                 return -2;
             }
         }
     }
 
     // 发完之后，将当前连接从发送epoll中删除
-    r = del_tcp_send_fd( poll, conn );
-    if ( 0 != r ) {
+    r = del_tcp_send_fd( poll, conn, &e );
+    if ( 0 != r && ENOENT != e ) {
         gr_fatal( "del_tcp_send_fd return error %d", r );
+        conn->is_network_error = 1;
+        if ( conn->close_type > GR_NEED_CLOSE ) {
+            conn->close_type = GR_NEED_CLOSE;
+        }
         return -3;
     }
 
     // 因为没有锁，所以在将当前连接从发送epoll中删除后还要再检查一下有没有要发送的包
-    if ( conn->rsp_list_head ) {
+    if ( NULL != gr_tcp_conn_top_rsp( conn ) ) {
         // 如果有，要去重新把没发完的包发完，因为现在已经没有发送动力了。
         goto RETRY;
     }
@@ -442,17 +487,46 @@ int gr_poll_recv_done(
         return 0;
     }
 
-    del_tcp_recv_fd( poll, conn );
+    del_tcp_recv_fd( poll, conn, NULL );
     return 0;
 }
 
-int gr_poll_send_failed(
+int gr_poll_del_tcp_recv_fd(
     gr_poll_t *             poll,
-    gr_thread_t *           thread,
-    gr_tcp_conn_item_t *    conn
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
 )
 {
-    del_tcp_send_fd( poll, conn );
+    int e;
+    int r;
+
+    r = del_tcp_recv_fd( poll, conn, & e );
+    if ( 0 == e ) {
+        return GR_OK;
+    }
+    if ( ENOENT == e ) {
+        return GR_NOT_FOUND;
+    }
+    return GR_ERR_SYSTEM_CALL_FAILED;
+}
+
+int gr_poll_del_tcp_send_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+)
+{
+    int e;
+    int r;
+
+    r = del_tcp_send_fd( poll, conn, & e );
+    if ( 0 == e ) {
+        return GR_OK;
+    }
+    if ( ENOENT == e ) {
+        return GR_NOT_FOUND;
+    }
+    return GR_ERR_SYSTEM_CALL_FAILED;
 }
 
 #endif // #if defined(__linux)

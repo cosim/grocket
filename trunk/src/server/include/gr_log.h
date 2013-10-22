@@ -47,7 +47,7 @@
 extern "C" {
 #endif
 
-int gr_log_open();
+int gr_log_open( const char * log_name );
 
 void gr_log_close();
 

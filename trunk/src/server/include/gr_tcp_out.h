@@ -50,9 +50,11 @@ int gr_tcp_out_init();
 
 void gr_tcp_out_term();
 
-int gr_tcp_out_add(
-    gr_tcp_rsp_t * rsp
-);
+int gr_tcp_out_add( gr_tcp_rsp_t * rsp );
+
+int gr_tcp_out_notify_close( gr_tcp_conn_item_t * conn );
+
+int gr_tcp_out_del_tcp_conn( gr_tcp_conn_item_t * conn );
 
 #ifdef __cplusplus
 }

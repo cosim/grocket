@@ -53,6 +53,7 @@ int gr_config_init(
 void gr_config_term();
 
 bool gr_config_is_daemon();
+bool gr_config_is_debug();
 
 int gr_config_log_level( int def );
 

@@ -67,6 +67,10 @@
 // 唯一区别就是扩展的处理函数就在可执行文件里，不用再装载动态库了。
 // 我只需要在这里将 demo_module.c 文件中的函数声明一下。
 
+extern void gr_version(
+    int *               gr_server_version
+);
+
 extern int gr_init(
     gr_process_type_t   proc_type,
     gr_server_t *       server
@@ -150,7 +154,7 @@ int main( int argc, char ** argv )
         // 配置文件
         config, config_len,
         // 服务器模块处理函数
-        gr_init, gr_term, gr_tcp_accept, gr_tcp_close, gr_check, gr_proc, gr_proc_http
+        gr_version, gr_init, gr_term, gr_tcp_accept, gr_tcp_close, gr_check, gr_proc, gr_proc_http
     );
 }
 

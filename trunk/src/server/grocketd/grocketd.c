@@ -66,6 +66,6 @@ int main( int argc, char ** argv )
     // 使用举例见 demo_server.c
     return gr_main(
         argc, argv,
-        NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+        NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
     );
 }
