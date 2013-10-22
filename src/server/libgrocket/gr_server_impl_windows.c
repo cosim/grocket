@@ -43,6 +43,7 @@
 #include "gr_tools.h"
 #include "gr_errno.h"
 #include "gr_module.h"
+#include "gr_config.h"
 
 #if defined(WIN32) || defined(WIN64)
 
@@ -665,6 +666,9 @@ int gr_server_console_main()
         && ( 0 == strcmp( server->argv[ 1 ], "-debug" ) || 0 == strcmp( server->argv[ 1 ], "debug" ) ) )
     {
         // 有debug参数，则不启看门狗进程
+        is_dog = false;
+    } else if ( gr_config_is_debug() ) {
+        // debug模式，则不启看门狗进程
         is_dog = false;
     } else {
         int i;

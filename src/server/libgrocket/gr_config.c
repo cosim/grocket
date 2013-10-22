@@ -46,6 +46,8 @@
 #include "gr_mem.h"
 #include "gr_ini.h"
 
+//TODO: zouyueming 2013-10-21 21:27 每次启动，真正的配置文件不应该存在本地，应该从某个集中的地方去取。
+
 static inline
 bool
 calc_ini_path(
@@ -303,7 +305,7 @@ int load_listen_info(
                 break;
             }
 
-            gr_info( "Listen %s port %s", is_tcp ? "TCP" : "UDP", ip );
+            gr_info( "bind %s port %s", is_tcp ? "TCP" : "UDP", ip );
         }
     }
 
@@ -471,6 +473,8 @@ int gr_config_init(
     // 返回数据包对齐字节数
     g_ghost_rocket_global.rsp_buf_align = gr_config_rsp_buff_align();
 
+    // is_debug
+    g_ghost_rocket_global.server_interface.is_debug = gr_config_is_debug();
     // worker count
     g_ghost_rocket_global.server_interface.worker_count =
         gr_config_worker_thread_count();
@@ -527,6 +531,11 @@ const char * config_get_string(
 )
 {
     return gr_ini_get_string( ini, section, name, def );
+}
+
+bool gr_config_is_debug()
+{
+    return config_get_bool( g_ghost_rocket_global.config, "server", "debug", false );
 }
 
 bool gr_config_is_daemon()
@@ -843,7 +852,7 @@ bool gr_config_log_enable_tid()
         return true;
     }
 
-    return config_get_bool( g_ghost_rocket_global.config, "server", "log.enable_tid",
+    return config_get_bool( g_ghost_rocket_global.config, "server", "log.tid.enable",
 #ifdef _DEBUG
         true
 #else

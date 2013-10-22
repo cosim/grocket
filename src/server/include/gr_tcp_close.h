@@ -52,7 +52,7 @@ void gr_tcp_close_term();
 
 void gr_tcp_close_from_in( gr_tcp_conn_item_t * conn );
 void gr_tcp_close_from_out( gr_tcp_conn_item_t * conn );
-void gr_tcp_close_from_work( gr_tcp_conn_item_t * conn );
+void gr_tcp_close_from_worker( gr_tcp_conn_item_t * conn );
 
 #ifdef __cplusplus
 }

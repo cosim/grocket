@@ -118,6 +118,18 @@ int gr_poll_add_tcp_send_fd(
     gr_threads_t *          threads
 );
 
+int gr_poll_del_tcp_recv_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+);
+
+int gr_poll_del_tcp_send_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+);
+
 int gr_poll_raw_buff_for_accept_len();
 int gr_poll_raw_buff_for_udp_in_len();
 int gr_poll_raw_buff_for_tcp_in_len();

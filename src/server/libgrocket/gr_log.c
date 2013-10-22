@@ -45,15 +45,16 @@
 
 typedef struct
 {
+    char    path[ MAX_PATH ];
     bool    enable_tid;
 } gr_log_t;
 
-int gr_log_open()
+int gr_log_open( const char * log_name )
 {
     gr_log_t *  p;
-    int r;
+    int         r;
 
-    remove( "log.txt" );
+    //TODO: å½“ç„¶, è¿™ä¸ªæ—¥å¿—æ˜¯ä¸´æ—¶çš„
 
     if ( NULL != g_ghost_rocket_global.log ) {
         gr_fatal( "[init]gr_log_open already called" );
@@ -72,6 +73,21 @@ int gr_log_open()
     do {
 
         p->enable_tid = gr_config_log_enable_tid();
+
+        if ( NULL == log_name || '\0' == * log_name ) {
+            strcpy( p->path, "log.txt" );
+        } else {
+            static const char tail[] = ".txt";
+            strcpy( p->path, log_name );
+            if ( sizeof( p->path ) - strlen( p->path ) < sizeof( tail ) ) {
+                gr_fatal( "log_name tooooooooo long" );
+                r = GR_ERR_INVALID_PARAMS;
+                break;
+            }
+            strcat( p->path, tail );
+        }
+
+        remove( p->path );
 
         r = GR_OK;
     } while ( false );
@@ -113,7 +129,7 @@ void log_write_file(
 {
     //TODO:
 
-    FILE * fp = fopen( "log.txt", "ab" );
+    FILE * fp = fopen( log->path, "ab" );
     if ( NULL != fp ) {
         fwrite( data, 1, data_len, fp );
         fclose( fp );
@@ -138,8 +154,8 @@ void gr_log_write(
     gr_log_t *      log_obj = (gr_log_t *)g_ghost_rocket_global.log;
 
 #if defined( WIN32 ) || defined( WIN64 )
-    // windows µÄ vsnprintf ÔÚ»º³åÇø²»×ãÊ±»áÖ±½Ó·µ»Ø -1,
-    // µ¼ÖÂÎÒ²»ÖªµÀÐ´ÁË¶àÉÙ×Ö½ÚÊý¾Ý, ËùÒÔÏÈÇå¿Õ»º³åÇø,·´ÕýÎÒÒ²Ã»´òËãÔÚ Windows ÉÏÔËÐÐ¶à¿ì.
+    // windows çš„ vsnprintf åœ¨ç¼“å†²åŒºä¸è¶³æ—¶ä¼šç›´æŽ¥è¿”å›ž -1,
+    // å¯¼è‡´æˆ‘ä¸çŸ¥é“å†™äº†å¤šå°‘å­—èŠ‚æ•°æ®, æ‰€ä»¥å…ˆæ¸…ç©ºç¼“å†²åŒº,åæ­£æˆ‘ä¹Ÿæ²¡æ‰“ç®—åœ¨ Windows ä¸Šè¿è¡Œå¤šå¿«.
     memset( buf, 0, sizeof( buf ) );
 #endif
 
@@ -162,25 +178,25 @@ void gr_log_write(
     }
 
     #define LEADDING_BYTES  8
-    // ½«ÈÕÖ¾ÄÚÈÝ´òÓ¡³öÀ´
+    // å°†æ—¥å¿—å†…å®¹æ‰“å°å‡ºæ¥
     va_start( ap, fmt );
     r = vsnprintf( & buf[ LEADDING_BYTES ], sizeof( buf ) - LEADDING_BYTES, fmt, ap );
     va_end ( ap );
     buf[ sizeof( buf ) - 1 ] = '\0';
-    // ½«ÈÕÖ¾ÀàÐÍÇ°×º¿½±´¹ýÈ¥
+    // å°†æ—¥å¿—ç±»åž‹å‰ç¼€æ‹·è´è¿‡åŽ»
     memcpy( buf, level_s, LEADDING_BYTES );
 
     if ( r >= sizeof( buf ) - LEADDING_BYTES ) {
-        // »º³åÇø²»×ã. ÕâÊÇ¸ø·Ç Windows×¼±¸µÄ
+        // ç¼“å†²åŒºä¸è¶³. è¿™æ˜¯ç»™éž Windowså‡†å¤‡çš„
         r = sizeof( buf ) - 1;
     } else if ( r < 0 ) {
-        // ÔÚ windows ÉÏ»º³åÇø²»×ã»á·µ»Ø -1, ÔÚ·ÇWindowsÉÏ²»»á½øÈëÕâ¸ö·ÖÖ§
+        // åœ¨ windows ä¸Šç¼“å†²åŒºä¸è¶³ä¼šè¿”å›ž -1, åœ¨éžWindowsä¸Šä¸ä¼šè¿›å…¥è¿™ä¸ªåˆ†æ”¯
         r = (int)strlen( buf );
     } else {
         r += LEADDING_BYTES;
     }
 
-    // ÈÕÖ¾ÄÚÈÝºÍºóÃæµÄÎÄ¼þÃûÇø·Ö¿ªÀ´
+    // æ—¥å¿—å†…å®¹å’ŒåŽé¢çš„æ–‡ä»¶ååŒºåˆ†å¼€æ¥
     #define MIN_LOG_LEN     64
     if ( r < MIN_LOG_LEN ) {
         memset( & buf[ r ], ' ', MIN_LOG_LEN - r );
@@ -196,24 +212,24 @@ void gr_log_write(
             getpid(), file, (int)line, func);
     }
     if ( r2 >= (int)sizeof( buf ) - r ) {
-        // »º³åÇø²»×ã. ÕâÊÇ¸ø·Ç Windows×¼±¸µÄ
+        // ç¼“å†²åŒºä¸è¶³. è¿™æ˜¯ç»™éž Windowså‡†å¤‡çš„
         r = sizeof( buf ) - 1;
     } else if ( r < 0 ) {
-        // ÔÚ windows ÉÏ»º³åÇø²»×ã»á·µ»Ø -1, ÔÚ·ÇWindowsÉÏ²»»á½øÈëÕâ¸ö·ÖÖ§
+        // åœ¨ windows ä¸Šç¼“å†²åŒºä¸è¶³ä¼šè¿”å›ž -1, åœ¨éžWindowsä¸Šä¸ä¼šè¿›å…¥è¿™ä¸ªåˆ†æ”¯
         r += (int)strlen( & buf[ r ] );
     } else {
         r += r2;
     }
 
-    // ´ò»Ø³µ»»ÐÐ, Õâ¸ö±ØÐë¼Ó³É¹¦,»º³åÇø²»¹»¾Í½ØÈÕÖ¾, 
-    // Ç°Ãæ¼ÓÖÁÉÙÁ½¸ö°ë½Ç¿Õ¸ñÊÇ·ÀÖ¹Óöµ½ÂÒÂëµ¼ÖÂ»»ÐÐ²»³É¹¦
+    // æ‰“å›žè½¦æ¢è¡Œ, è¿™ä¸ªå¿…é¡»åŠ æˆåŠŸ,ç¼“å†²åŒºä¸å¤Ÿå°±æˆªæ—¥å¿—, 
+    // å‰é¢åŠ è‡³å°‘ä¸¤ä¸ªåŠè§’ç©ºæ ¼æ˜¯é˜²æ­¢é‡åˆ°ä¹±ç å¯¼è‡´æ¢è¡Œä¸æˆåŠŸ
     #define LOG_TAIL "  " S_CRLF
     if ( sizeof( buf ) - r >= sizeof( LOG_TAIL ) ) {
-        // »º³åÇø×ã¹». Á¬ '\0'Ò²¿½±´½øÈ¥ÁË
+        // ç¼“å†²åŒºè¶³å¤Ÿ. è¿ž '\0'ä¹Ÿæ‹·è´è¿›åŽ»äº†
         memcpy( & buf[ r ], LOG_TAIL, sizeof( LOG_TAIL ) );
         r += sizeof( LOG_TAIL ) - 1;
     } else {
-        // »º³åÇø²»×ã, ½Ø¶ÏÈÕÖ¾
+        // ç¼“å†²åŒºä¸è¶³, æˆªæ–­æ—¥å¿—
         memcpy( & buf[ sizeof( buf ) - sizeof( LOG_TAIL ) ], LOG_TAIL, sizeof( LOG_TAIL ) );
         r = sizeof( buf ) - 1;
     }

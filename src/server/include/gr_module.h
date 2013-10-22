@@ -49,6 +49,7 @@ extern "C" {
 #endif
 
 int gr_module_init(
+    gr_version_t    version,
     gr_init_t       init,
     gr_term_t       term,
     gr_tcp_accept_t tcp_accept,

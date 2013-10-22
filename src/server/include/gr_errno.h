@@ -56,6 +56,10 @@ enum
 
     GR_ERR_WRONG_CALL_ORDER             = -4,
 
+    GR_NOT_FOUND                        = -5,
+
+    GR_ERR_WRONG_VERSION                = -6,
+
     GR_ERR_BAD_ALLOC                    = -10,
 
     GR_ERR_CREATE_THREAD_FALED          = -11,

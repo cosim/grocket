@@ -1,4 +1,47 @@
 
+邹月明 20131023-00:05
+======================
+1. libgrocket
+    给模块增加了一个 gr_version 函数进行版本兼容性检查。
+    现在已经不需要用户做这个工作了，由框架进行强制性检查。
+
+邹月明 20131022-00:15
+======================
+1. libgrocket
+   终于改好了TCP断连接会core的BUG。这可是 lock free、而且是将散布在多个的线程的同一个连接删除哦...
+   在你急着怀疑设计上有没有问题之前，我先提醒一下，这个服务器框架当前阶段的TCP是偏向于长连接的，
+   短连接性能相关的考虑会在将来以一个配置选项的方式来支持。
+
+2. 还差一个触发断言的BUG：
+#3  0x0000000000432ef9 in gr_tcp_conn_pop_top_req (conn=0x2aaaab2f2040) at libgrocket/gr_conn.c:336
+336         assert( conn->req_push_count >= conn->req_proc_count );
+
+   原因如下：
+[root@localhost server]# ./bin/linux/test_tcp_client 
+ 856 kiss package, send 37664 bytes, recv 37664 bytes. req=856 ;rsp=856 
+compare failed: 857  != 856 
+
+   请求包发的是857, 但回复包是856。
+   可能的问题需要排除两个地方：
+   1、tcp in 收包以后向 worker 中压包过程的问题；
+   2、worker 处理以后向 conn->rsp_list_* 中压包过程的问题。这个最可能出问题，因为它还没调过。但改了似乎还是一样。
+   似乎是 gr_poll_send 函数操作 conn->rsp_list_* 字段的BUG，这部分目前没按照无锁队列的规则访问。
+
+邹月明 20131020-19:24
+======================
+1. libgrocket
+   差不多完成了断连接的逻辑，虽然可能会有一些隐含的问题，但可以留在后面做压力测试时一起解决。
+
+邹月明 20131019-22:18
+======================
+1. test_tcp_client
+   增加了 TCP 测试客户端程序
+
+邹月明 20131017-00:25
+======================
+1. libgrocket
+   在 gr_tcp_close.c 源文件中, 对 TCP 断连接的流程做了一些思考
+
 邹月明 20131010-01:00
 ======================
 1. libgrocket

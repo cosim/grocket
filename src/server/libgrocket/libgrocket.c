@@ -10,6 +10,7 @@
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-09-24    Created.
+ *       2     zouyueming   2013-10-21    add CoUninitialize for windows
  **/
 /* 
  *
@@ -55,7 +56,7 @@
 #endif
 
 // 唯一的全局变量,没加static目的是方便 extern 关键字
-// 加extern关键字的目的是性能，不必付出函数调用时间
+// 加extern关键字的目的是性能，不必由于使用 static 关键字而付出取全局变量指针的函数调用时间
 gr_global_t g_ghost_rocket_global;
 
 static inline
@@ -63,7 +64,7 @@ int system_init()
 {
 #if defined( WIN32 ) || defined( WIN64 )
 	WSADATA wsa_data;
-	DWORD ret;
+	int r;
 
     #if defined( _MSC_VER ) && defined( _DEBUG )
     _CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );//| _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_CHECK_CRT_DF );
@@ -72,8 +73,9 @@ int system_init()
     CoInitialize( NULL );
 
     // 加载 Winsock 2.2
-    if ( ( ret = WSAStartup( 0x0202, & wsa_data ) ) != 0 ) {
-        gr_fatal( "[init]WSAStartup failed, GetLastError = %d", (int)GetLastError() );
+    r = WSAStartup( 0x0202, & wsa_data );
+    if ( 0 != r ) {
+        gr_fatal( "[init]WSAStartup failed %d, GetLastError = %d", r, (int)GetLastError() );
         return GR_ERR_SYSTEM_CALL_FAILED;
     }
 #endif
@@ -86,6 +88,7 @@ void system_term()
 {
 #if defined( WIN32 ) || defined( WIN64 )
     WSACleanup();
+    CoUninitialize();
 #endif
 }
 
@@ -129,7 +132,7 @@ int setup_current_directory()
     }
 #endif
 
-    gr_info( "[init]Set current directory to %s", path );
+    //gr_info( "[init]Set current directory to %s", path );
 
     return GR_OK;
 }
@@ -140,6 +143,7 @@ gr_main(
     char **         argv,
     const char *    ini_content,
     size_t          ini_content_len,
+    gr_version_t    version,
     gr_init_t       init,
     gr_term_t       term,
     gr_tcp_accept_t tcp_accept,
@@ -162,6 +166,14 @@ gr_main(
         g_ghost_rocket_global.server_interface.argc = argc;
         g_ghost_rocket_global.server_interface.argv = argv;
 
+        // 设置当前目录，方便模块取当前目录
+        r = setup_current_directory();
+        if ( 0 != r ) {
+            gr_fatal( "[init]setup_current_directory return error %d", r );
+            r = GR_ERR_SET_CURRENT_DIRECTORY_FAILED;
+            break;
+        }
+
         // 初始化系统相关的一些东西，比如Windows下的Socket库啦
         r = system_init();
         if ( 0 != r ) {
@@ -171,20 +183,15 @@ gr_main(
         }
 
         // 打开日志模块
-        r = gr_log_open();
+        r = gr_log_open( NULL );
         if ( 0 != r ) {
             gr_fatal( "[init]gr_log_open() return error %d", r );
             r = GR_ERR_OPEN_LOG_FAILED;
             break;
         }
 
-        // 设置当前目录，方便模块取当前目录是正确的
-        r = setup_current_directory();
-        if ( 0 != r ) {
-            gr_fatal( "[init]setup_current_directory return error %d", r );
-            r = GR_ERR_SET_CURRENT_DIRECTORY_FAILED;
-            break;
-        }
+        gr_info( "==== grocket server version 1.%d(low compatible 1.%d) ====",
+            GR_SERVER_VERSION, GR_SERVER_LOW_VERSION );
 
         // 初始化配置模块
         r = gr_config_init( ini_content, ini_content_len );
@@ -202,13 +209,19 @@ gr_main(
             break;
         }
 
-        // 从配置文件里读取日志级别
-        g_ghost_rocket_global.log_start_level = (gr_log_level_t)
-            gr_config_log_level( g_ghost_rocket_global.log_start_level );
+        if ( gr_config_is_debug() ) {
+            gr_info( "[init] DEBUG model" );
+            g_ghost_rocket_global.log_start_level = GR_LOG_DEBUG;
+        } else {
+            // 从配置文件里读取日志级别
+            g_ghost_rocket_global.log_start_level = (gr_log_level_t)
+                gr_config_log_level( g_ghost_rocket_global.log_start_level );
+        }
+        gr_info( "[init] LOG level = %d", g_ghost_rocket_global.log_start_level );
 
         // 初始化用户模块
         r = gr_module_init(
-            init, term, tcp_accept, tcp_close, chk_binary, proc_binary, proc_http );
+            version, init, term, tcp_accept, tcp_close, chk_binary, proc_binary, proc_http );
         if ( 0 != r ) {
             gr_fatal( "[init]gr_module_init return error %d", r );
             r = GR_ERR_INIT_MODULE_FAILED;

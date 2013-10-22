@@ -41,6 +41,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_server", "test_server\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_module", "test_module\test_module.vcxproj", "{F86E584C-2E92-4765-8A92-934745D05BE9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test_tcp_client", "test_tcp_client\test_tcp_client.vcxproj", "{C54D9C43-E1B6-4FC0-99C1-6824D5A7DDC4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D3129E6B-2DA3-46B8-B45A-3DB5E905A082} = {D3129E6B-2DA3-46B8-B45A-3DB5E905A082}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -93,6 +98,12 @@ Global
 		{F86E584C-2E92-4765-8A92-934745D05BE9}.Release|Win32.ActiveCfg = Release|Win32
 		{F86E584C-2E92-4765-8A92-934745D05BE9}.Release|Win32.Build.0 = Release|Win32
 		{F86E584C-2E92-4765-8A92-934745D05BE9}.Release|x64.ActiveCfg = Release|Win32
+		{C54D9C43-E1B6-4FC0-99C1-6824D5A7DDC4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C54D9C43-E1B6-4FC0-99C1-6824D5A7DDC4}.Debug|Win32.Build.0 = Debug|Win32
+		{C54D9C43-E1B6-4FC0-99C1-6824D5A7DDC4}.Debug|x64.ActiveCfg = Debug|Win32
+		{C54D9C43-E1B6-4FC0-99C1-6824D5A7DDC4}.Release|Win32.ActiveCfg = Release|Win32
+		{C54D9C43-E1B6-4FC0-99C1-6824D5A7DDC4}.Release|Win32.Build.0 = Release|Win32
+		{C54D9C43-E1B6-4FC0-99C1-6824D5A7DDC4}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

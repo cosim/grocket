@@ -42,12 +42,15 @@
 
 #include "gr_stdinc.h"
 #include "grocket.h"
-//#include "gr_queue.h"
 #include "gr_atomic.h"
+#include "gr_log.h"
+#include "gr_global.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define GR_DEBUG_CONN
 
         struct gr_conn_t;
 typedef struct gr_conn_t                gr_conn_t;
@@ -61,9 +64,13 @@ typedef struct gr_udp_req_t             gr_udp_req_t;
 typedef struct gr_queue_item_compact_t  gr_queue_item_compact_t;
 
 #if ! defined( WIN32 ) && ! defined( WIN64 )
-#define GR_TCP_CONN_ITEM_LEN            64
-#define GR_TCP_REQ_LEN                  64
-#define GR_UDP_REQ_LEN                  64
+    #ifdef GR_DEBUG_CONN
+        #define GR_TCP_CONN_ITEM_LEN    128
+    #else
+        #define GR_TCP_CONN_ITEM_LEN    64
+    #endif
+    #define GR_TCP_REQ_LEN              64
+    #define GR_UDP_REQ_LEN              64
 #endif
 
 #define gr_tcp_rsp_t    gr_tcp_req_t
@@ -84,8 +91,9 @@ typedef enum
     GR_NEED_CLOSE   = 2,
 
     // 连接是正常有效的。
-    GR_OPENING      = 2
+    GR_OPENING      = 3
 
+    // 用三位存状态，所以最大值是7
 } gr_tcp_close_type_t;
 
 // 关于该结构的细节，见gr_queue.h文件中的gr_queue_t和gr_queue_item_t
@@ -162,7 +170,7 @@ struct gr_udp_req_t
     // 该成员必须在最前面
 
     // 由于gr_queue_item_t有好大的空洞可以用来存东西，所以我们内部使用可以用这个。
-    gr_queue_item_compact_t         entry_compact;
+    gr_queue_item_compact_t             entry_compact;
 
     // 当前数据包的检查上下文  
     gr_check_ctxt_t                     check_ctxt;
@@ -199,14 +207,20 @@ struct gr_udp_req_t
 struct gr_tcp_conn_item_t
 {
     // 当前连接往工作线程中压入的请求数量。
-    // 平时操作都是直接 ++，等请求数超过1500000000(最大2147483647)，用 gr_atomic_add 和 req_pop_count 一起减少防止溢出。
+    // 平时操作都是直接 ++，等请求数超过1500000000(最大2147483647)，用 gr_atomic_add 和 req_proc_count 一起减少防止溢出。
     // 应该 99.9999% 都不需要原子操作。检查并减少的工作在worker线程调用的 gr_tcp_conn_pop_top_req 函数中做。
     gr_atomic_t                         req_push_count;
-    // 工作线程已经处理完并弹出了当前连接的请求数量。
+    // 工作线程已经处理完的请求数量。
     // 平时操作都是直接 ++，等请求数超过1500000000(最大2147483647)，用 gr_atomic_add 和 req_push_count 一起减少防止溢出。
     // 应该 99.9999% 都不需要原子操作。检查并减少的工作在worker线程调用的 gr_tcp_conn_pop_top_req 函数中做。
-    // 本字段值为0说明req_pop_count和req_push_count在维护，这时的数据是不准确的，不能读
-    gr_atomic_t                         req_pop_count;
+    // 本字段值为0说明req_proc_count和req_push_count在维护，这时的数据是不准确的，不能读
+    gr_atomic_t                         req_proc_count;
+
+    // out 线程实际发出的回复包数量, 爱折回就折回, 不管。调试用的。
+    unsigned int                        rsp_send_count;
+
+    // 当前连接的句柄
+    int                                 fd;
 
     // TCP回复单向列表表头。worker线程在压包前操作它，删除已经处理完的请求(是否压包后做删除会更好一点儿?)
     gr_tcp_rsp_t *                      rsp_list_head;
@@ -222,11 +236,10 @@ struct gr_tcp_conn_item_t
     // 该连接的监听情况
     gr_port_item_t *                    port_item;
 
-    // 当前连接的句柄
-    int                                 fd;
+    // 在64位系统上, 以上56字节
 
     // 关闭类型。见 gr_tcp_close_type_t
-    gr_tcp_close_type_t                 close_type;
+    unsigned char                       close_type;
 
     // 是否已经检测出连接异常，此值为1，则不允许收发数据
     unsigned char                       is_network_error;
@@ -240,7 +253,18 @@ struct gr_tcp_conn_item_t
     // 是否在允许处理状态中。
     unsigned char                       worker_open;
 
+    // 是否正在 worker 的处理过程中
+    unsigned char                       worker_locked;
+
+#ifdef GR_DEBUG_CONN
+    uint64_t                            recv_bytes;
+    uint64_t                            send_bytes;
+    char                                reserved[ 40 ];
+#endif
+
 } __attribute__ ((aligned (64)));
+
+#define QUEUE_ALL_DONE  ((void *)1)
 
 int gr_conn_init();
 
@@ -256,6 +280,14 @@ void gr_tcp_conn_free(
     gr_tcp_conn_item_t *    conn
 );
 
+void gr_tcp_conn_del_receiving_req(
+    gr_tcp_conn_item_t *    conn
+);
+
+void gr_tcp_conn_clear_rsp_list(
+    gr_tcp_conn_item_t *    conn
+);
+
 gr_tcp_req_t * gr_tcp_conn_prepare_recv(
     gr_tcp_conn_item_t *    conn
 );
@@ -265,14 +297,38 @@ void gr_tcp_conn_add_rsp(
     gr_tcp_rsp_t *          rsp
 );
 
+static inline
+gr_tcp_rsp_t * gr_tcp_conn_top_rsp(
+    gr_tcp_conn_item_t *    conn
+)
+{
+    if ( NULL == conn->rsp_list_curr ) {
+        conn->rsp_list_curr = conn->rsp_list_head;
+    } else if ( QUEUE_ALL_DONE == conn->rsp_list_curr ) {
+        return NULL;
+    }
+
+    return conn->rsp_list_curr;
+}
+
 int gr_tcp_conn_pop_top_rsp(
     gr_tcp_conn_item_t *    conn,
-    gr_tcp_rsp_t *          confirm_rsp,
-    bool                    and_destroy_it
+    gr_tcp_rsp_t *          confirm_rsp
 );
 
-#define gr_tcp_conn_add_req( conn )         ++ (conn)->req_push_count
-#define gr_tcp_conn_pop_tail_req( conn )    -- (conn)->req_push_count
+static inline
+void gr_tcp_conn_add_req( gr_tcp_conn_item_t * conn )
+{
+    ++ (conn)->req_push_count;
+    gr_debug( "add req_push_count %d", (conn)->req_push_count );
+}
+
+static inline
+void gr_tcp_conn_pop_tail_req( gr_tcp_conn_item_t * conn )
+{
+    -- (conn)->req_push_count;
+    gr_debug( "dec req_push_count %d", (conn)->req_push_count );
+}
 
 void gr_tcp_conn_pop_top_req(
     gr_tcp_conn_item_t *    conn
@@ -280,6 +336,7 @@ void gr_tcp_conn_pop_top_req(
 
 // gr_tcp_req_free 和 gr_udp_req_free 的函数声明与本函数指针必须兼容
 typedef void ( * gr_func_req_free_t )( void * req );
+
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -334,7 +391,6 @@ void gr_tcp_rsp_free(
     gr_tcp_rsp_t *          rsp
 );
 
-#define gr_tcp_rsp_add_refs gr_tcp_req_add_refs
 #define gr_tcp_rsp_set_buf  gr_tcp_req_set_buf
 ///////////////////////////////////////////////////////////////////////
 

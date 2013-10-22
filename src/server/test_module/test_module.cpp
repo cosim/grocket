@@ -1,5 +1,5 @@
 /**
- * @file test_module/test_module.c
+ * @file test_module/test_module.cpp
  * @author zouyueming(da_ming at hotmail.com)
  * @date 2013/09/27
  * @version $Revision$ 
@@ -46,6 +46,13 @@ gr_i_server_t * g_funcs     = NULL;
 extern "C"
 {
 
+void gr_version(
+    int *               gr_server_version
+)
+{
+    * gr_server_version = GR_SERVER_VERSION;
+}
+
 int gr_init(
     gr_process_type_t   proc_type,
     gr_server_t *       server
@@ -53,16 +60,6 @@ int gr_init(
 {
     g_server    = server;
     g_funcs     = g_server->library->buildin;
-
-    if ( GR_PROCESS_MASTER == proc_type ) {
-        // check version compatible
-        if ( g_server->low_version > GR_SERVER_VERSION ) {
-            g_funcs->log( g_funcs, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
-                "version compatible check failed, I'm %d, Framework %d\n",
-                GR_SERVER_VERSION, server->low_version );
-            return -1;
-        }
-    }
 
     // 主进程初始化、子进程初始化、所有线程初始化时都会调用本函数。
     // 那如何区分呢？答案是proc_type参数，它的取值会有如下几种：
@@ -281,42 +278,48 @@ void gr_check(
 }
 
 void gr_proc(
-    const void *        data,
+    const char *        data,
     int                 len,
     gr_proc_ctxt_t *    ctxt,
     int *               processed_len
 )
 {
-    // 我们这里会用到服务器内置对象 gr_i_server_t 的功能，如果常用，就应该将它保存起来
-
-    gr_i_server_t * o = g_server->library->buildin;
+    static int      g_last_n = 0;
+    gr_i_server_t * o = g_funcs;
     char *          rsp;
+    int             n;
 
-    // data, len 两个参数就是在 gr_check 函数中，自己切分好的完整包。
-    // ctxt是处理数据包的上下文，它提供了更多相关数据：
-    //      1、当前数据包是否TCP包
-    //         uint16_t                 pc_is_tcp( bit field )
-    //      2、在gr_check函数中确定的数据包类型,该机制用于支持多套协议
-    //         uint16_t                 pc_package_type( bit field )
-    //      4、使用的监听端口号
-    //         int                      pc_port;
-    //      5、处理SOCKET描述符
-    //         int                      pc_fd;
-    //      6、处理线程ID, 配置中有线程数量. [0, n)。服务器承诺，一个
-    //         TCP连接的所有请求会分配到一个固定的工作线程上。
-    //         相同客户端地址的UDP所有请求会分配到一个固定的工作线程上。
-    //         int                      pc_thread_id;
-    //      7、返回缓冲区
-    //         char *                   pc_result_buf;
-    //      8、返回缓冲区最大长度
-    //         int                      pc_result_buf_max;
-    //      9、返回缓冲区中的数据长度
-    //         int *                    pc_result_buf_len;
-    //     10、实际处理输入数据包的字节数。
-    //         int *                    processed_len
-    //                     < 0，数据包有错误，需要断连接.
-    //                     = 0，数据包正确，但需要服务器端主动断连接。
-    //                     > 0。数据包正确，返回已经处理的数据包长度.
+    if ( len <= 1 ) {
+        o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
+            "invalid len %d", len );
+        * processed_len = -1;
+        g_last_n = 0;
+        return;
+    }
+
+    if ( data[0] <= 0 || ! isdigit( data[0] ) ) {
+        o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
+            "invalid data=\"%s\", len=%d", data, len );
+        * processed_len = -1;
+        g_last_n = 0;
+        return;
+    }
+    n = atoi( data );
+    if ( n <= 0 ) {
+        o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
+            "invalid data=\"%s\", len=%d", data, len );
+        * processed_len = -1;
+        g_last_n = 0;
+        return;
+    }
+
+    if ( n != g_last_n + 1 ) {
+        o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
+            "invalid data=\"%s\", len=%d, last=%d, now=%d", data, len, g_last_n, n );
+        * processed_len = -1;
+        g_last_n = 0;
+        return;
+    }
 
     printf( "process %d byte user data\n", len );
 
@@ -331,6 +334,7 @@ void gr_proc(
         o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
             "set_max_response %d failed", len );
         * processed_len = -1;
+        g_last_n = 0;
         return;
     }
 
@@ -340,7 +344,7 @@ void gr_proc(
     // 记录实际写入的数据字节数
     ctxt->pc_result_buf_len = len;
 
-    // 至此我们完成了一个echo服务器，简单么？
+    g_last_n = n;
 }
 
 void gr_proc_http(

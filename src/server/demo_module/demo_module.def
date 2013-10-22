@@ -1,4 +1,5 @@
 EXPORTS
+gr_version
 gr_init
 gr_term
 gr_tcp_accept

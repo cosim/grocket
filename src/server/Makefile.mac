@@ -37,6 +37,9 @@ MC			= gcc
 ./bin/mac/o/test_server_%.o: ./test_server/%.cpp
 	$(CPPC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
 
+./bin/mac/o/test_tcp_client_%.o: ./test_tcp_client/%.c
+	$(CC) $(CFLAGS) $(INCLUDE) -c -o $@ $<
+
 TCMALLOC= \
 	./bin/mac/o/third_gperftools-2.1_src_tcmalloc.o \
 	./bin/mac/o/third_gperftools-2.1_src_system-alloc.o \
@@ -114,7 +117,9 @@ DEMOMODULE_OBJECTS=./bin/mac/o/demo_module_demo_module.o
 TESTSERVER_OBJECTS=./bin/mac/o/test_server_test_server.o
 TESTMODULE_OBJECTS=./bin/mac/o/test_module_test_module.o
 
-all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS)
+TESTTCPCLIENT_OBJECTS=./bin/mac/o/test_tcp_client_test_tcp_client.o
+
+all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS) $(TESTTCPCLIENT_OBJECTS)
 
 	$(CPPC) -rdynamic $(LIB) $(OBJECTS)	\
 			-o ./bin/mac/grocketd
@@ -135,10 +140,13 @@ all: $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS
 			./bin/mac/libgrocket.a	\
 			-o ./bin/mac/demo_server
 
+	$(CPPC) -rdynamic $(LIB) $(TESTTCPCLIENT_OBJECTS)	\
+			-o ./bin/mac/test_tcp_client
+
 	cp ./conf/grocketd.ini ./bin/mac/
 
 clean:
-	rm -fr $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS)
+	rm -fr $(OBJECTS) $(DEMOMODULE_OBJECTS) $(DEMOSERVER_OBJECTS) $(TESTMODULE_OBJECTS) $(TESTSERVER_OBJECTS) $(TESTTCPCLIENT_OBJECTS)
 	rm -fr ./bin/mac/grocketd
 	rm -fr ./bin/mac/libgrocket.a
 	rm -fr ./bin/mac/libdemo_module.dylib

@@ -40,6 +40,9 @@
 #include "gr_tcp_in.h"
 #include "tcp_io.h"
 
+#if ! defined( WIN32 ) && ! defined( WIN64 )
+
+static
 void tcp_in_worker( gr_thread_t * thread )
 {
 #define     TCP_IN_WAIT_TIMEOUT    100
@@ -81,6 +84,8 @@ void tcp_in_worker( gr_thread_t * thread )
 
     gr_free( events );
 }
+
+#endif // #if ! defined( WIN32 ) && ! defined( WIN64 )
 
 int gr_tcp_in_init()
 {
@@ -175,9 +180,7 @@ void gr_tcp_in_term()
     }
 }
 
-int gr_tcp_in_add_conn(
-    gr_tcp_conn_item_t *    conn
-)
+int gr_tcp_in_add_conn( gr_tcp_conn_item_t * conn )
 {
     int             r;
     gr_tcp_in_t *   self;
@@ -191,6 +194,10 @@ int gr_tcp_in_add_conn(
     // 该标记表示连接已经在数据收线程里
     conn->tcp_in_open = true;
 
+    // 请求、回复模式
+    //assert( 0 == conn->thread_refs );
+    //conn->thread_refs = 1;
+
     // 将该socket加到poll里
     r = gr_poll_add_tcp_recv_fd(
         self->poll,
@@ -199,7 +206,33 @@ int gr_tcp_in_add_conn(
     );
     if ( 0 != r ) {
         gr_fatal( "gr_poll_add_tcp_recv_fd return %d", r );
+        //gr_atomic_add( -1, & conn->thread_refs );
+        conn->tcp_in_open = false;
         return -2;
+    }
+
+    return 0;
+}
+
+int gr_tcp_in_del_tcp_conn( gr_tcp_conn_item_t * conn )
+{
+    int                     r;
+    gr_tcp_in_t *           self;
+    
+    self = (gr_tcp_in_t *)g_ghost_rocket_global.tcp_in;
+    if ( NULL == self ) {
+        gr_fatal( "gr_tcp_in_init never call" );
+        return -1;
+    }
+
+    r = gr_poll_del_tcp_recv_fd(
+        self->poll,
+        conn,
+        & self->threads
+    );
+    if ( 0 != r ) {
+        gr_fatal( "gr_poll_del_tcp_rec_fd return %d", r );
+        return -3;
     }
 
     return 0;

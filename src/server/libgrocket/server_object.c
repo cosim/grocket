@@ -122,6 +122,7 @@ void * server_class_set_max_response(
         void * p;
 
         // align to K
+        assert( g_ghost_rocket_global.rsp_buf_align > 0 );
         bytes = ALIGN_UP( bytes, g_ghost_rocket_global.rsp_buf_align );
 
         p = gr_malloc( bytes );

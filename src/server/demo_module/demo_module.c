@@ -109,6 +109,17 @@ static int getpid()
 // 服务器框架提供给用户模块的接口指针。这行算行数。
 gr_server_t *   g_server = NULL;
 
+// 版本号检查，框架的最低兼容版本号必须小于或等于模块开发者使用的开发框架的版本号。该判断算行数。
+// 这个检查，使得可以直接升级甚至降级框架的二进制文件，而模块的兼容性检查只需要看模块是否能被成功装载。
+// 服务框架接口兼容性检查失败。直接初始化失败，省得在运行时core增加追查成本
+// 本函数算行数。它是要求必须实现的，这个函数无论在任何模块中也完全不需要修改。
+void gr_version(
+    int *               gr_server_version
+)
+{
+    * gr_server_version = GR_SERVER_VERSION;
+}
+
 // 注意这个函数是可选的，你可以不实现它。
 // 初始化函数。
 
@@ -123,15 +134,6 @@ int gr_init(
     // 2、GR_PROCESS_CHILD 正常的工作进程
     // 3、GR_PROCESS_THREAD_1 表示工作进程中的第一个工作线程初始化
     // 4、GR_PROCESS_THREAD_1 + n 表示工作进程中的第 n 个工作线程初始化
-
-    // 版本号检查，框架的最低兼容版本号必须小于或等于模块开发者使用的开发框架的版本号。该判断算行数。
-    // 这个检查，使得可以直接升级甚至降级框架的二进制文件，而模块的兼容性检查只需要看模块是否能被成功装载。
-    if ( server->low_version > GR_SERVER_VERSION ) {
-        // 服务框架接口兼容性检查失败。直接初始化失败，省得在运行时core增加追查成本
-        printf( "version compatible check failed, I'm %d, Framework %d\n",
-            GR_SERVER_VERSION, server->low_version );
-        return -1;
-    }
 
     // 前面说：“写服务器模块唯一需要包含的文件，不需要链接任何库”，那服务器框架导出函数的实现
     // 在哪里？答案是：在服务器框架进程里，它在gr_init函数中通过gr_server_t *接口以函数指针的
@@ -167,6 +169,7 @@ int gr_init(
         if ( NULL != log ) {
 
             char pt[ 32 ] = "";
+            const char * addr = NULL;
 
             * log = '\0';
 
@@ -194,14 +197,24 @@ int gr_init(
             sprintf( buf, "        ports, count = %d:\n", server->ports_count );
             strcat( log, buf );
 
-            // 不白看这儿，长经验呢！inet_ntoa在Windows下能转出0.0.0.0的地址，在linux下会core
             for ( i = 0; i < server->ports_count; ++ i ) {
                 gr_port_item_t * item = & server->ports[ i ];
+
+                // 不白看这儿，长经验呢！inet_ntoa在Windows下能转出0.0.0.0的地址，在linux下会core
+                if ( 0 != item->addr4.sin_addr.s_addr ) {
+                    //TODO: zouyueming 2013-10-21 21:40 we should avoid warning:
+                    // demo_module/demo_module.c: In function ‘gr_init’:
+                    // demo_module/demo_module.c:206: warning: assignment makes pointer from integer without a cast
+                    addr = inet_ntoa( item->addr4.sin_addr );
+                } else {
+                    addr = "(empty)";
+                }
+
                 sprintf( buf, "            %s port = %d, addr_len = %d, addr = %s:%d, fd = %d\n",
                     item->is_tcp ? "TCP" : "UDP",
                     item->port,
                     (int)item->addr_len,
-                    (const char*)(( 0 != item->addr4.sin_addr.s_addr ) ? inet_ntoa(item->addr4.sin_addr) : "(empty)"),
+                    addr,
                     (int)ntohs(item->addr4.sin_port),
                     item->fd );
                 strcat( log, buf );
