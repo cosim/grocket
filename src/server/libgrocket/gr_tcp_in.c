@@ -9,6 +9,7 @@
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-03    Created.
+ *       2     zouyueming   2013-10-27    support tcp out disable
  **/
 /* 
  *
@@ -110,7 +111,9 @@ int gr_tcp_in_init()
         return GR_ERR_BAD_ALLOC;
     }
 
-    p->concurrent = gr_config_tcp_in_concurrent();
+    p->concurrent       = gr_config_tcp_in_concurrent();
+    p->worker_disabled  = gr_config_worker_disabled();
+    p->tcp_out_disabled = gr_config_tcp_out_disabled();
 
     r = GR_OK;
 
@@ -118,8 +121,13 @@ int gr_tcp_in_init()
 
         const char * name = "tcp.input ";
 
-        p->poll = gr_poll_create( p->concurrent, thread_count, GR_POLLIN, name );
+        p->poll = gr_poll_create(
+            p->concurrent,
+            thread_count,
+            p->tcp_out_disabled ? (GR_POLLIN | GR_POLLOUT) : GR_POLLIN,
+            name );
         if ( NULL == p->poll ) {
+            gr_fatal( "[init]gr_poll_create return NULL" );
             r = GR_ERR_INIT_POLL_FALED;
             break;
         }
@@ -129,19 +137,21 @@ int gr_tcp_in_init()
             thread_count,
             NULL,
 #if defined( WIN32 ) || defined( WIN64 )
-            tcp_io_windows,
+            tcp_io_worker,
 #else
-            tcp_in_worker,
+            p->tcp_out_disabled ? tcp_io_worker : tcp_in_worker,
 #endif
             p,
             gr_poll_raw_buff_for_tcp_in_len(),
             true,
+            ENABLE_THREAD,
             name );
         if ( GR_OK != r ) {
+            gr_fatal( "[init]gr_threads_start return error %d", r );
             break;
         }
 
-        gr_debug( "tcp_in_init OK" );
+        gr_debug( "[init]tcp_in_init OK, poll = %p", p->poll );
 
         r = GR_OK;
     } while ( false );
@@ -238,8 +248,6 @@ int gr_tcp_in_del_tcp_conn( gr_tcp_conn_item_t * conn )
     return 0;
 }
 
-#if defined( WIN32 ) || defined( WIN64 )
-
 void * gr_tcp_in_get_poll()
 {
     gr_tcp_in_t *   self;
@@ -252,5 +260,3 @@ void * gr_tcp_in_get_poll()
 
     return self->poll;
 }
-
-#endif // #if defined( WIN32 ) || defined( WIN64 )

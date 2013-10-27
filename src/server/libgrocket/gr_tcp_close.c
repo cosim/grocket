@@ -11,7 +11,6 @@
  *       1     zouyueming   2013-10-13    Created.
  **/
 /* 
- *
  * Copyright (C) 2013-now da_ming at hotmail.com
  * All rights reserved.
  *
@@ -105,24 +104,7 @@ void gr_tcp_close_term()
            这里细节不少，见代码。
 */
 
-
-typedef enum
-{
-    // 无
-    ROLE_NONE       = 0,
-
-    // 从 tcp in 调过来的
-    ROLE_IN         = 1,
-
-    // 从 tcp out 调过来的
-    ROLE_OUT        = 2,
-
-    // 从 worker 调过来的
-    ROLE_WORKER     = 3
-
-} thread_role_t;
-
-static inline
+static_inline
 bool is_out_busy( gr_tcp_conn_item_t * conn )
 {
     if ( NULL == conn->rsp_list_head ) {
@@ -139,7 +121,7 @@ bool is_out_busy( gr_tcp_conn_item_t * conn )
     return true;
 }
 
-static inline
+static_inline
 bool is_worker_busy( gr_tcp_conn_item_t * conn )
 {
     //TODO: 其实 worker_locked 是一个冗余字段，正在查错，为了排错加的
@@ -154,7 +136,9 @@ bool is_worker_busy( gr_tcp_conn_item_t * conn )
     return false;
 }
 
-void gr_tcp_close_from_in( gr_tcp_conn_item_t * conn )
+void gr_tcp_close_from_in(
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled )
 {
     // 在 tcp_in 模块中发现连接异常, 会将连接的 close_type 字段设为 GR_NEED_CLOSE
     // 在 tcp_in 模块在接收数据过程中通过调用用户模块来判断数据包完整与否, 如果协议错, 则不会设 GR_NEED_CLOSE
@@ -179,31 +163,43 @@ void gr_tcp_close_from_in( gr_tcp_conn_item_t * conn )
     }
 
     // 该标记表示连接已经不在数据收线程里
-    assert( conn->tcp_in_open );
-    conn->tcp_in_open = false;
+    if ( conn->tcp_in_open ) {
+        conn->tcp_in_open = false;
+    }
 
-    // 把连接在自己这儿已经死亡的喜讯告诉tcp out
-    gr_tcp_out_notify_close( conn );
+    if ( tcp_out_disabled ) {
+        gr_tcp_close_from_out( conn, true );
+    } else {
+        // 把连接在自己这儿已经死亡的喜讯告诉tcp out
+        gr_tcp_out_notify_close( conn );
+    }
 }
 
-void gr_tcp_close_from_worker( gr_tcp_conn_item_t * conn )
+void gr_tcp_close_from_worker(
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled )
 {
     assert( conn->close_type <= GR_NEED_CLOSE );
 
-    // 把连接在自己这儿已经死亡的喜讯告诉tcp out
-    gr_tcp_out_notify_close( conn );
+    if ( tcp_out_disabled ) {
+        gr_tcp_close_from_out( conn, true );
+    } else {
+        // 把连接在自己这儿已经死亡的喜讯告诉tcp out
+        gr_tcp_out_notify_close( conn );
+    }
 }
 
-void gr_tcp_close_from_out( gr_tcp_conn_item_t * conn )
+void gr_tcp_close_from_out(
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled )
 {
     // 想关闭连接时才会进来
     assert( GR_NEED_CLOSE == conn->close_type );
 
-    // 未发完的数据包该删的都应该已经删了
-    assert( NULL == conn->rsp_list_head );
-
-    // 该标记表示连接已经不在数据发送线程里
-    assert ( conn->tcp_out_open );
+    // 未发完的数据包该删的都应该已经删了，但对于禁用 tcp_out 线程的情况，可能没删
+    if ( NULL != conn->rsp_list_head ) {
+        gr_tcp_conn_clear_rsp_list( conn );
+    }
 
     // 如果没从poll中删除，则删一下
     gr_tcp_out_del_tcp_conn( conn );
@@ -214,14 +210,14 @@ void gr_tcp_close_from_out( gr_tcp_conn_item_t * conn )
         conn->worker_open = false;
     }
 
+    // 该标记表示连接已经不在数据发送线程里
     if ( conn->tcp_out_open ) {
         conn->tcp_out_open = false;
     }
 
     if ( conn->tcp_in_open || conn->worker_open ) {
-gr_debug( "in_open = %d, out_open = %d, worker_open = %d, ignore",
-            (int)conn->tcp_in_open, (int)conn->tcp_out_open, (int)conn->worker_open
-);
+        gr_debug( "in_open = %d, out_open = %d, worker_open = %d, ignore",
+            (int)conn->tcp_in_open, (int)conn->tcp_out_open, (int)conn->worker_open );
         return;
     }
 

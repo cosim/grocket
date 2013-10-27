@@ -51,13 +51,15 @@ int gr_worker_init();
 void gr_worker_term();
 
 int gr_worker_add_tcp(
-    gr_tcp_req_t *  req,
-    bool            is_emerge
+    gr_tcp_req_t *  req
 );
 
 int gr_worker_add_udp(
-    gr_tcp_req_t *  req,
-    bool            is_emerge
+    gr_tcp_req_t *  req
+);
+
+int gr_worker_process_tcp(
+    gr_tcp_req_t *  req
 );
 
 #ifdef __cplusplus

@@ -1,0 +1,255 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		EBA79D50181BF653000F9AB7 /* grocketd.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D4F181BF653000F9AB7 /* grocketd.c */; };
+		EBA79DFF181C1985000F9AB7 /* libgrocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EBA79DFE181C1985000F9AB7 /* libgrocket.a */; };
+		EBA79E03181C1A8A000F9AB7 /* libc++.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EBA79E02181C1A8A000F9AB7 /* libc++.1.dylib */; };
+		EBA79E04181C1AA8000F9AB7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBA79E00181C19E0000F9AB7 /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		EBB44809181BF5B600C824B5 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		EBA79D4F181BF653000F9AB7 /* grocketd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = grocketd.c; sourceTree = SOURCE_ROOT; };
+		EBA79DFE181C1985000F9AB7 /* libgrocket.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgrocket.a; path = ../DerivedData/server/Build/Products/Debug/libgrocket.a; sourceTree = "<group>"; };
+		EBA79E00181C19E0000F9AB7 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		EBA79E02181C1A8A000F9AB7 /* libc++.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.1.dylib"; path = "usr/lib/libc++.1.dylib"; sourceTree = SDKROOT; };
+		EBB4480B181BF5B600C824B5 /* grocketd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grocketd; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EBB44808181BF5B600C824B5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBA79E04181C1AA8000F9AB7 /* Foundation.framework in Frameworks */,
+				EBA79E03181C1A8A000F9AB7 /* libc++.1.dylib in Frameworks */,
+				EBA79DFF181C1985000F9AB7 /* libgrocket.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		EBB44802181BF5B600C824B5 = {
+			isa = PBXGroup;
+			children = (
+				EBA79E02181C1A8A000F9AB7 /* libc++.1.dylib */,
+				EBA79E00181C19E0000F9AB7 /* Foundation.framework */,
+				EBA79DFE181C1985000F9AB7 /* libgrocket.a */,
+				EBB4480D181BF5B600C824B5 /* grocketd */,
+				EBB4480C181BF5B600C824B5 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		EBB4480C181BF5B600C824B5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EBB4480B181BF5B600C824B5 /* grocketd */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EBB4480D181BF5B600C824B5 /* grocketd */ = {
+			isa = PBXGroup;
+			children = (
+				EBA79D4F181BF653000F9AB7 /* grocketd.c */,
+			);
+			path = grocketd;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		EBB4480A181BF5B600C824B5 /* grocketd */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EBB44814181BF5B600C824B5 /* Build configuration list for PBXNativeTarget "grocketd" */;
+			buildPhases = (
+				EBB44807181BF5B600C824B5 /* Sources */,
+				EBB44808181BF5B600C824B5 /* Frameworks */,
+				EBB44809181BF5B600C824B5 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = grocketd;
+			productName = grocketd;
+			productReference = EBB4480B181BF5B600C824B5 /* grocketd */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EBB44803181BF5B600C824B5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+				ORGANIZATIONNAME = daming;
+			};
+			buildConfigurationList = EBB44806181BF5B600C824B5 /* Build configuration list for PBXProject "grocketd" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = EBB44802181BF5B600C824B5;
+			productRefGroup = EBB4480C181BF5B600C824B5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EBB4480A181BF5B600C824B5 /* grocketd */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EBB44807181BF5B600C824B5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBA79D50181BF653000F9AB7 /* grocketd.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		EBB44812181BF5B600C824B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		EBB44813181BF5B600C824B5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		EBB44815181BF5B600C824B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
+				CLANG_ENABLE_MODULES = NO;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Volumes/Data/Projects/GhostRocket/src/server/DerivedData/server/Build/Products/Debug,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = ../../include;
+			};
+			name = Debug;
+		};
+		EBB44816181BF5B600C824B5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
+				CLANG_ENABLE_MODULES = NO;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/Volumes/Data/Projects/GhostRocket/src/server/DerivedData/server/Build/Products/Debug,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = ../../include;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		EBB44806181BF5B600C824B5 /* Build configuration list for PBXProject "grocketd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EBB44812181BF5B600C824B5 /* Debug */,
+				EBB44813181BF5B600C824B5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EBB44814181BF5B600C824B5 /* Build configuration list for PBXNativeTarget "grocketd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EBB44815181BF5B600C824B5 /* Debug */,
+				EBB44816181BF5B600C824B5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EBB44803181BF5B600C824B5 /* Project object */;
+}

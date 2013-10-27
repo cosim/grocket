@@ -51,6 +51,12 @@ struct gr_poll_t
     int             epfd;
 
     const char *    name;
+    
+    bool            need_in;
+    bool            already_in;
+    
+    bool            need_out;
+    bool            already_out;
 };
 
 int gr_poll_raw_buff_for_accept_len()
@@ -83,16 +89,16 @@ gr_poll_t * gr_poll_create(
     gr_poll_t * p;
     int r = 0;
 
-    if (   sizeof( gr_poll_data_t ) != sizeof( epoll_data_t )
+    if (   sizeof( gr_poll_data_t )  != sizeof( epoll_data_t )
         || sizeof( gr_poll_event_t ) != sizeof( struct epoll_event ) )
     {
-        gr_fatal( "invalid struct implementation" );
+        gr_fatal( "[init]invalid struct implementation" );
         return NULL;
     }
 
     p = (gr_poll_t *)gr_calloc( 1, sizeof( gr_poll_t ) );
     if ( NULL == p ) {
-        gr_fatal( "alloc %d failed", (int)sizeof( gr_poll_t ) );
+        gr_fatal( "[init]alloc %d failed", (int)sizeof( gr_poll_t ) );
         return NULL;
     }
 
@@ -100,17 +106,29 @@ gr_poll_t * gr_poll_create(
 
         p->epfd         = -1;
         p->name         = name;
+        
+        if ( EPOLLIN & poll_type ) {
+            p->need_in  = true;
+        }
+        if ( EPOLLOUT & poll_type ) {
+            p->need_out = true;
+        }
+        if ( ! p->need_in && ! p->need_out ) {
+            gr_fatal( "[init][poll_type=%d]invalid poll_type", (int)poll_type );
+            r = -2;
+            break;
+        }
 
         p->epfd = epoll_create( concurrent );
         if ( -1 == p->epfd ) {
             gr_fatal( "epoll_create( %d ) failed: %d,%s",
                 concurrent, (int)errno, strerror(errno) );
-            r = -2;
+            r = -3;
             break;
         }
 
-        gr_debug( "%s epoll_create( %d ) OK. epfd = %d",
-            p->name, concurrent, p->epfd );
+        gr_debug( "%s epoll_create( %d ) OK. epfd = %d, poll = %p",
+            p->name, concurrent, p->epfd, p );
 
     } while ( false );
 
@@ -149,9 +167,15 @@ int gr_poll_add_listen_fd(
     int r;
 
     // 将 accept 加入 epoll
-    ev.data.ptr = data;
+    ev.data.ptr             = data;
     // 使用边缘触发
-    ev.events   = EPOLLIN | EPOLLET;
+    ev.events               = EPOLLIN | EPOLLET;
+    poll->already_in        = true;
+    if ( poll->need_out ) {
+        ev.events           |= EPOLLOUT;
+        poll->already_out   = true;
+    }
+        
     r = epoll_ctl( poll->epfd, EPOLL_CTL_ADD, fd, & ev );
     if ( 0 != r ) {
         gr_fatal( "epoll_ctl return %d: %d,%s", r, errno, strerror( errno ) );
@@ -173,9 +197,15 @@ int gr_poll_add_tcp_recv_fd(
     int r;
 
     // 将 fd 加入 epoll
-    ev.data.ptr = conn;
+    ev.data.ptr             = conn;
     // 使用边缘触发
-    ev.events   = EPOLLIN | EPOLLET;
+    ev.events               = EPOLLIN | EPOLLET;
+    poll->already_in        = true;
+    if ( poll->need_out ) {
+        ev.events           |= EPOLLOUT;
+        poll->already_out   = true;
+    }
+
     r = epoll_ctl( poll->epfd, EPOLL_CTL_ADD, conn->fd, & ev );
     if ( 0 != r ) {
         gr_fatal( "epoll_ctl return %d: %d,%s", r, errno, strerror( errno ) );
@@ -197,9 +227,14 @@ int gr_poll_add_tcp_send_fd(
     int r;
 
     // 将 fd 加入 epoll
-    ev.data.ptr = conn;
+    ev.data.ptr             = conn;
     // 使用边缘触发
-    ev.events = EPOLLOUT | EPOLLET;
+    ev.events               = EPOLLOUT | EPOLLET;
+    poll->already_out       = true;
+    if ( poll->need_in ) {
+        ev.events           |= EPOLLIN;
+        poll->already_in    = true;
+    }
 
     //TODO: 这个逻辑是长连接优先考虑，短连接呢？
     r = epoll_ctl( poll->epfd, EPOLL_CTL_MOD, conn->fd, & ev );
@@ -219,7 +254,7 @@ int gr_poll_add_tcp_send_fd(
     return r;
 }
 
-static inline
+static_inline
 int del_tcp_send_fd(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -229,8 +264,9 @@ int del_tcp_send_fd(
     int                 r;
     struct epoll_event  ev;
 
-    ev.data.ptr = conn;
-    ev.events = 0;
+    ev.data.ptr         = conn;
+    ev.events           = poll->already_in ? ( EPOLLIN | EPOLLET ) : 0;
+    poll->already_out   = false;
     r = epoll_ctl( poll->epfd, EPOLL_CTL_MOD, conn->fd, & ev );
     if ( NULL != e ) {
         * e = errno;
@@ -244,7 +280,7 @@ int del_tcp_send_fd(
     return 0;
 }
 
-static inline
+static_inline
 int del_tcp_recv_fd(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -253,14 +289,12 @@ int del_tcp_recv_fd(
 {
     struct epoll_event  ev;
     int                 r;
-    int                 fd;
 
-    fd = conn->fd;
+    ev.data.ptr         = NULL;
+    ev.events           = poll->already_out ? ( EPOLLOUT | EPOLLET ) : 0;
+    poll->already_in    = false;
 
-    ev.data.ptr = NULL;
-    ev.events = 0;
-
-    r = epoll_ctl( poll->epfd, EPOLL_CTL_DEL, fd, & ev );
+    r = epoll_ctl( poll->epfd, EPOLL_CTL_DEL, conn->fd, & ev );
     if ( NULL != e ) {
         * e = errno;
     }
@@ -333,8 +367,13 @@ int gr_poll_recv(
         );
         if ( 0 == r ) {
             // 客户端关连接
-            gr_debug( "recv return %d, req_push=%d, req_proc=%d, rsp_send=%u", r,
+#ifdef GR_DEBUG_CONN
+            gr_debug( "recv return %d, req_push=%d, req_proc=%d, rsp_send=%llu", r,
                     conn->req_push_count, conn->req_proc_count, conn->rsp_send_count );
+#else
+            gr_debug( "recv return %d, req_push=%d, req_proc=%d", r,
+                    conn->req_push_count, conn->req_proc_count );
+#endif
             conn->close_type        = GR_NEED_CLOSE;
             conn->is_network_error  = true;
             break;
@@ -343,10 +382,13 @@ int gr_poll_recv(
                 continue;
             } else if ( ECONNRESET == errno ) {
                 // Connection reset by peer
-                gr_warning( "recv return %d, errno = %d(ECONNRESET), "
-                            "req_push=%d, req_proc=%d, rsp_send=%u",
-                            r, errno,
-                            conn->req_push_count, conn->req_proc_count, conn->rsp_send_count );
+#ifdef GR_DEBUG_CONN
+                gr_warning( "recv return %d, errno = %d(ECONNRESET), req_push=%d, req_proc=%d, rsp_send=%llu",
+                            r, errno, conn->req_push_count, conn->req_proc_count, conn->rsp_send_count );
+#else
+                gr_warning( "recv return %d, errno = %d(ECONNRESET), req_push=%d, req_proc=%d",
+                            r, errno, conn->req_push_count, conn->req_proc_count );
+#endif
                 conn->close_type        = GR_NEED_CLOSE;
                 conn->is_network_error  = true;
             } else if ( EAGAIN == errno ) {
@@ -406,11 +448,14 @@ RETRY:
 #ifdef GR_DEBUG_CONN
                 conn->send_bytes += r;
 #endif
+                gr_debug( "[rsp=%p][conn=%p][poll=%p][epfd=%d] send %d bytes",
+                         rsp, conn, poll, poll->epfd, r )
                 continue;
             }
 
-            if ( EINTR == errno )
+            if ( EINTR == errno ) {
                 continue;
+            }
 
             if ( EAGAIN != errno ) {
                 // 发失败了
@@ -527,6 +572,30 @@ int gr_poll_del_tcp_send_fd(
         return GR_NOT_FOUND;
     }
     return GR_ERR_SYSTEM_CALL_FAILED;
+}
+
+int gr_pool_replace_from(
+    gr_poll_t *             poll,
+    gr_poll_t *             from_poll
+)
+{
+    int  t;
+
+    if ( NULL == from_poll || NULL == poll ) {
+        gr_fatal( "from_poll %p or poll %p is NULL", from_poll, poll );
+        return -1;
+    }
+
+    if ( -1 == from_poll->epfd ) {
+        gr_fatal( "from_poll->epfd is -1" );
+        return -2;
+    }
+
+    t = poll->epfd;
+    poll->epfd = from_poll->epfd;
+    close( t );
+
+    return 0;
 }
 
 #endif // #if defined(__linux)

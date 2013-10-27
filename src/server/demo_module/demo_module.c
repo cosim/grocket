@@ -48,7 +48,7 @@
 // 蛋疼开始
 // 
 #include <stdio.h>  // 随便包含一个头文件，这样 size_t 类型就肯定有了
-
+#include <assert.h> // for assert
 #include <string.h> // for strcmp
 #include <assert.h> // for assert
 #include <stdlib.h> // for malloc. cross windows, linux, OS X(bsd)
@@ -67,6 +67,7 @@
     typedef int                 socklen_t;
     typedef unsigned short      uint16_t;
     typedef unsigned int        uint32_t;
+    typedef __int64             int64_t;
 
 #elif defined(__linux)
 
@@ -79,6 +80,8 @@
     #include <stdint.h>
     // 在 Mac 下，socklen_t 声明在netdb.h
     #include <netdb.h>
+    // 在 Mac 下，inet_ntoa 声明在inet.h
+    #include <arpa/inet.h>
 #endif
 
 #if ! defined(__cplusplus)
@@ -106,13 +109,15 @@ static int getpid()
 // 写服务器模块唯一需要包含的文件，不需要链接任何库。这行算行数。
 #include "grocket.h"
 
-// 服务器框架提供给用户模块的接口指针。这行算行数。
-gr_server_t *   g_server = NULL;
+// 服务器框架提供给用户模块的接口指针。这两行算行数。
+gr_server_t *   g_server    = NULL;
+gr_i_server_t * g_funcs     = NULL;
 
 // 版本号检查，框架的最低兼容版本号必须小于或等于模块开发者使用的开发框架的版本号。该判断算行数。
 // 这个检查，使得可以直接升级甚至降级框架的二进制文件，而模块的兼容性检查只需要看模块是否能被成功装载。
 // 服务框架接口兼容性检查失败。直接初始化失败，省得在运行时core增加追查成本
 // 本函数算行数。它是要求必须实现的，这个函数无论在任何模块中也完全不需要修改。
+
 void gr_version(
     int *               gr_server_version
 )
@@ -139,10 +144,11 @@ int gr_init(
     // 在哪里？答案是：在服务器框架进程里，它在gr_init函数中通过gr_server_t *接口以函数指针的
     // 方式暴露给用户模块，所以用户模块当然要把这个指针保存起来。这行算行数。
     g_server = server;
+    g_funcs  = g_server->library->buildin;
 
     {
         int n;
-        gr_i_server_t * o = g_server->library->buildin;
+        gr_i_server_t * o = g_funcs;
 
         // 调用它的config_get_int从服务器配置文件读取[server]段的tcp.accept.concurrent的值
         n = o->config_get_int( o, "server", "tcp.accept.concurrent", 0 );
@@ -256,6 +262,7 @@ void gr_term(
 void gr_tcp_accept(
     int                 port,
     int                 sock,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              need_disconnect
 )
 {
@@ -263,6 +270,15 @@ void gr_tcp_accept(
     // 模块可以从port参数得到这个连接是从服务器的哪个监听端口连上来的
 
     printf( "%d port accepted socket %d\n", port, sock );
+
+    // 至于 conn_buddy，它是与 sock 绑定到一起的一个 void * 大小的数据结构，模块可以存自己的东西。
+    // 这是很有用的功能。
+    // 是的，服务器本身提供了内存分配与释放函数，目前是用tcmalloc 2.1实现的。
+
+    assert( NULL == conn_buddy->ptr );
+    conn_buddy->ptr = g_funcs->memory_alloc( g_funcs, sizeof( int ) );
+    assert( conn_buddy->ptr );
+    * ((int *)conn_buddy->ptr) = 100;
 }
 
 // 注意这个函数是可选的，你可以不实现它。
@@ -270,12 +286,18 @@ void gr_tcp_accept(
 
 void gr_tcp_close(
 	int                 port,
-    int                 sock
+    int                 sock,
+    gr_conn_buddy_t *   conn_buddy
 )
 {
     // 模块可以从port参数得到这个要断掉的TCP连接是从服务器的哪个监听端口连上来的
 
     printf( "%d port will close socket %d\n", port, sock );
+
+    // 当然，如果在 conn_buddy 里有自己分配的内存，自己释放掉
+    assert( NULL != conn_buddy->ptr && 100 == * ((int *)conn_buddy->ptr) );
+    g_funcs->memory_free( g_funcs, conn_buddy->ptr );
+
 }
 
 // 该函数用于检查data, len指定的数据包是否是个有效的数据包。这是个协议检查。本函数算行数。
@@ -283,9 +305,8 @@ void gr_tcp_close(
 void gr_check(
     void *              data,
     int                 len,
-    gr_port_item_t *    port_info,
-    int                 sock,
     gr_check_ctxt_t *   ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              is_error,
     bool *              is_full
 )
@@ -372,10 +393,13 @@ void gr_proc(
     const void *        data,
     int                 len,
     gr_proc_ctxt_t *    ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     int *               processed_len
 )
 {
     // 我们这里会用到服务器内置对象 gr_i_server_t 的功能，如果常用，就应该将它保存起来
+
+    // 对了，这回看到 conn_buddy 就比较亲切了吧？
 
     gr_i_server_t * o = g_server->library->buildin;
     char *          rsp;
@@ -442,7 +466,9 @@ void gr_proc(
 // 如果觉得还不够刺激，那我们再继续吧：
 
 void gr_proc_http(
-    gr_http_ctxt_t *    http
+    gr_http_ctxt_t *    http,
+    gr_conn_buddy_t *   conn_buddy,
+    int *               processed_len
 )
 {
     // 是的，你没猜错，当服务器收到了一个HTTP数据包时，就会调用该函数。
@@ -514,6 +540,12 @@ void gr_proc_http(
     printf( "\n" );
     // 数据区
     printf( "%s\n", http->hc_body );
+
+    // 想回点儿数据给调用方？稍带脚再仔细看看 gr_i_server_t, 有好多种方法呢...
+    {
+        char buf[] = "hello world";
+        g_funcs->http_send( g_funcs, http, buf, sizeof( buf ) - 1, "text/plain" );
+    }
 }
 
 // 这回够刺激了吧？

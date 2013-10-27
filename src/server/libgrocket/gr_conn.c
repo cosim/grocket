@@ -10,6 +10,7 @@
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-05    Created.
  *       2     zouyueming   2013-10-22    add entry_compact field is first member check in runtime.
+ *       3     zouyueming   2013-10-27    support tcp out disable
  **/
 /* 
  *
@@ -46,6 +47,7 @@
 #include "gr_socket.h"
 #include "gr_config.h"
 #include "gr_tcp_close.h"
+#include "gr_module.h"
 
 #define GR_REQ_PUSH_COUNT_HI_WALTER     1500000000
 
@@ -217,7 +219,18 @@ void gr_tcp_conn_free(
 
         int fd = conn->fd;
 
-        gr_debug( "gr_tcp_conn_free enter %p", conn );
+#ifdef GR_DEBUG_CONN
+        gr_info( "[req.push=%d][req.proc=%d][rsp.send=%llu]free tcp_conn %p",
+            conn->req_push_count, conn->req_proc_count, conn->rsp_send_count, conn );
+#else
+        gr_info( "[req.push=%d][req.proc=%d]free tcp_conn %p",
+            conn->req_push_count, conn->req_proc_count, conn );
+#endif
+        if ( -1 != conn->fd ) {
+            // 关闭连接前回调模块一下
+            gr_module_on_tcp_close( conn );
+            conn->fd = -1;
+        }
 
         // 删除正在接收的请求
         gr_tcp_conn_del_receiving_req( conn );
@@ -392,14 +405,17 @@ int gr_tcp_conn_pop_top_rsp(
         conn->rsp_list_curr = next;
     }
 
+#ifdef GR_DEBUG_CONN
     // 增加发包计数
     ++ conn->rsp_send_count;
+#endif
 
     return 0;
 }
 
 void gr_tcp_conn_pop_top_req(
-    gr_tcp_conn_item_t *    conn
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled
 )
 {
     int req_proc_count;
@@ -458,7 +474,7 @@ void gr_tcp_conn_pop_top_req(
     // 解锁
     conn->worker_locked = 0;
     // 通知TCP连接关闭模块
-    gr_tcp_close_from_worker( conn );
+    gr_tcp_close_from_worker( conn, tcp_out_disabled );
     // 本函数退出后有可能连接会被删除
 }
 

@@ -48,7 +48,7 @@
 
 //TODO: zouyueming 2013-10-21 21:27 每次启动，真正的配置文件不应该存在本地，应该从某个集中的地方去取。
 
-static inline
+static_inline
 bool
 calc_ini_path(
     char * path,
@@ -86,7 +86,7 @@ calc_ini_path(
     return true;
 }
 
-static inline
+static_inline
 int
 calc_module_path(
     char * path,
@@ -156,7 +156,7 @@ calc_module_path(
     return 0;
 }
 
-static inline
+static_inline
 int
 add_port(
     gr_server_t * server,
@@ -305,7 +305,7 @@ int load_listen_info(
                 break;
             }
 
-            gr_info( "bind %s port %s", is_tcp ? "TCP" : "UDP", ip );
+            gr_info( "[init]will bind %s port %s", is_tcp ? "TCP" : "UDP", ip );
         }
     }
 
@@ -499,7 +499,7 @@ void gr_config_term()
 
 }
 
-static inline
+static_inline
 bool config_get_bool(
     gr_ini *  ini,
     const char *        section,
@@ -511,7 +511,7 @@ bool config_get_bool(
 }
 
 
-static inline
+static_inline
 int config_get_int(
     gr_ini *  ini,
     const char *        section,
@@ -522,7 +522,7 @@ int config_get_int(
     return gr_ini_get_int( ini, section, name, def );
 }
 
-static inline
+static_inline
 const char * config_get_string(
     gr_ini *  ini,
     const char *        section,
@@ -674,6 +674,18 @@ int gr_config_worker_thread_count()
     }
 
     return n;
+}
+
+bool gr_config_worker_disabled()
+{
+    static const bool def = true;
+    return config_get_bool( g_ghost_rocket_global.config, "server", "worker.disabled", def );
+}
+
+bool gr_config_tcp_out_disabled()
+{
+    static const bool def = false;
+    return config_get_bool( g_ghost_rocket_global.config, "server", "tcp.out.disabled", def );
 }
 
 int gr_config_backend_thread_count()

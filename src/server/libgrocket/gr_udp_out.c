@@ -145,6 +145,7 @@ int gr_udp_out_init()
             p,
             0,
             true,
+            ENABLE_THREAD,
             "udp.out" );
         if ( GR_OK != r ) {
             break;

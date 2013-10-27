@@ -47,7 +47,7 @@
 
 #if ! defined(WIN32) && ! defined(WIN64)
 
-static inline
+static_inline
 bool run_back()
 {
     int flag;
@@ -68,36 +68,27 @@ process_parent_signal(
     int sig
 )
 {
-    gr_server_impl_t *  server;
-
     signal( sig, process_parent_signal );
 
     printf( "!!!!!! receive monitor stopping signal %d !!!!!!\n", sig );
     gr_info( "receive monitor stopping signal %d", sig );
 
-    if ( NULL != g_ghost_rocket_global.server ) {
-        server = g_ghost_rocket_global.server;
-        server->is_server_stopping = true;
-    }
+    g_ghost_rocket_global.server_interface.is_server_stopping = true;
 }
 
 int
 gr_server_daemon_main()
 {
-    pid_t exit_pid = 0;
-    pid_t pid = -1;
-    int   exit_status = 0;
-    int   r = 0;
-    gr_server_impl_t *  server;
+    pid_t               exit_pid = 0;
+    pid_t               pid = -1;
+    int                 exit_status = 0;
+    int                 r = 0;
+    gr_server_t *       face;
 
-    if ( NULL == g_ghost_rocket_global.server ) {
-        gr_error( "global.server is NULL" );
-        return GR_ERR_INVALID_PARAMS;
-    }
-    server  = g_ghost_rocket_global.server;
+    face    = & g_ghost_rocket_global.server_interface;
 
-    if ( server->argc <= 1 
-        || ( 0 != strcmp( server->argv[ 1 ], "-debug" ) && 0 != strcmp( server->argv[ 1 ], "debug" ) ) )
+    if ( face->argc <= 1 
+        || ( 0 != strcmp( face->argv[ 1 ], "-debug" ) && 0 != strcmp( face->argv[ 1 ], "debug" ) ) )
     {
         // 不是调试模式才把进程扔到后台。
         run_back();
@@ -119,9 +110,9 @@ gr_server_daemon_main()
     r =  gr_module_master_process_init();
     if ( 0 == r ) {
 
-        server->is_server_stopping = 0;
+        face->is_server_stopping = false;
 
-        while( ! server->is_server_stopping ) {
+        while( ! face->is_server_stopping ) {
 
             pid = fork();
             if ( 0 == pid ) {
@@ -154,7 +145,7 @@ gr_server_daemon_main()
 
                 exit_pid = wait( & exit_status );
 
-                if ( server->is_server_stopping )
+                if ( face->is_server_stopping )
                     break;
 
                 //sleep( 2 ); // 等待两秒，防止程序bug导致频繁故障, 如果是core，可能会瞬间写满硬盘
@@ -176,16 +167,11 @@ gr_server_daemon_main()
 
 int gr_server_console_main()
 {
-    gr_server_impl_t *  server;
-    int                 r;
-
     if ( NULL == g_ghost_rocket_global.server ) {
         gr_error( "global.server is NULL" );
         return GR_ERR_INVALID_PARAMS;
     }
-    server  = g_ghost_rocket_global.server;
-
-    r = gr_server_main( server );
+    return gr_server_main( g_ghost_rocket_global.server );
 }
 
 #endif // #if defined(__linux)

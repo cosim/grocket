@@ -84,20 +84,21 @@ extern void gr_term(
 extern void gr_tcp_accept(
     int                 port,
     int                 sock,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              need_disconnect
 );
 
 extern void gr_tcp_close(
 	int                 port,
-    int                 sock
+    int                 sock,
+    gr_conn_buddy_t *   conn_buddy
 );
 
 extern void gr_check(
     void *              data,
     int                 len,
-    gr_port_item_t *    port_info,
-    int                 sock,
     gr_check_ctxt_t *   ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              is_error,
     bool *              is_full
 );
@@ -106,11 +107,14 @@ extern void gr_proc(
     const void *        data,
     int                 len,
     gr_proc_ctxt_t *    ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     int *               processed_len
 );
 
 extern void gr_proc_http(
-    gr_http_ctxt_t *    http
+    gr_http_ctxt_t *    http,
+    gr_conn_buddy_t *   conn_buddy,
+    int *               processed_len
 );
 
 // 接下来写 main 函数

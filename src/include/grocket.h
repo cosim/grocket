@@ -5,13 +5,15 @@
  * @version $Revision$ 
  * @brief   server frame header. caller just need this one header file
  * @warning before including this header file, below type must ready:
- *          uint16_t, uint32_t, socklen_t, bool, size_t, sockaddr_in, sockaddr_in6.
+ *          uint16_t, uint32_t, int64_t, socklen_t, bool, size_t, sockaddr_in, sockaddr_in6.
  *          if C language, must define bool as one byte.
  * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-09-24    Created.
+ *       2     zouyueming   2013-10-25    add is_server_stopping member to gr_server_t
+ *                                        adjust interface
  **/
 /* 
  *
@@ -52,6 +54,24 @@ typedef struct gr_server_t  gr_server_t;
 
 typedef enum
 {
+    // enable all log
+    GR_LOG_ALL      = 0,
+    // enable debug or higher log
+    GR_LOG_DEBUG    = 1,
+    // enable info or higher log
+    GR_LOG_INFO     = 2,
+    // enable warning or higher log
+    GR_LOG_WARNING  = 3,
+    // enable error or higher log
+    GR_LOG_ERROR    = 4,
+    // enable fatal or higher log
+    GR_LOG_FATAL    = 5,
+    // disable log
+    GR_LOG_NONE     = 6,
+} gr_log_level_t;
+
+typedef enum
+{
     // master process.
     GR_PROCESS_MASTER           = 1,
 
@@ -64,6 +84,17 @@ typedef enum
     GR_PROCESS_THREAD_1         = 3
 
 } gr_process_type_t;
+
+typedef struct
+{
+    union
+    {
+        int     n;
+        long    ln;
+        void *  ptr;
+    };
+
+} gr_conn_buddy_t;
 
 // never change at running, so multiple thread concurrent is OK
 typedef struct
@@ -112,19 +143,6 @@ typedef enum
 
 typedef struct
 {
-    // uint16_t                cc_is_tcp              : 1;
-    // uint16_t                cc_package_type        : 3;
-    // uint32_t                cc_package_length;
-    // uint32_t                cc_udp_addr_id;
-
-#define cc_is_tcp              is_tcp
-#define cc_package_type        package_type
-#define cc_package_length      package_length
-#define cc_udp_addr_id         udp_addr_id
-
-    ///////////////////////////////////////////////////////////////////
-    // Inner field
-
     uint16_t                    http_header_offset  : 11;
 
     uint16_t                    is_tcp              : 1;
@@ -149,9 +167,37 @@ typedef struct
     // only for UDP, compatibile with IPV6
     uint32_t                    udp_addr_id;
 
-} gr_check_ctxt_t;
+} gr_check_base_t;
 
 #pragma pack( pop ) // #pragma pack( push, 4 )
+
+
+typedef struct
+{
+    // uint16_t                 cc_is_tcp              : 1;
+    // uint16_t                 cc_package_type        : 3;
+    // uint32_t                 cc_package_length;
+    // uint16_t                 cc_http_header_offset  : 11;
+    // uint16_t                 cc_http_body_offset;
+    // uint32_t                 cc_http_content_length;
+
+#define cc_is_tcp               base->is_tcp
+#define cc_package_type         base->package_type
+#define cc_package_length       base->package_length
+#define cc_http_header_offset   base->http_header_offset
+#define cc_http_body_offset     base->http_body_offset
+#define cc_http_content_length  base->http_content_length
+
+    ///////////////////////////////////////////////////////////////////
+    // Inner field
+
+    gr_check_base_t *   base;
+
+    gr_port_item_t *    port_info;
+
+    int                 sock;
+
+} gr_check_ctxt_t;
 
 typedef struct
 {
@@ -164,6 +210,7 @@ typedef struct
     // char *                   pc_result_buf;
     // int                      pc_result_buf_max;
     // int *                    pc_result_buf_len;
+    // gr_conn_buddy_t *        conn_buddy
 
 #define pc_is_tcp               check_ctxt->is_tcp
 #define pc_package_type         check_ctxt->package_type
@@ -174,11 +221,14 @@ typedef struct
 #define pc_result_buf           result_buf
 #define pc_result_buf_max       result_buf_max
 #define pc_result_buf_len       result_buf_len
+#define pc_http_content_length  check_ctxt->http_content_length
+#define pc_http_header_offset   check_ctxt->http_header_offset
+#define pc_http_body_offset     check_ctxt->http_body_offset
 
     ///////////////////////////////////////////////////////////////////
     // Inner field
 
-    gr_check_ctxt_t *          check_ctxt;
+    gr_check_base_t *           check_ctxt;
 
     int                         port;
     int                         fd;
@@ -364,6 +414,7 @@ typedef void ( * gr_term_t )(
 // parameters:
 //     port           : listen port
 //     sock           : return by accept function
+//     conn_buddy     : 
 //     need_disconnect: 1 if need disconnect the connection, default 0
 // remark:
 //     optional function
@@ -371,6 +422,7 @@ typedef void ( * gr_term_t )(
 typedef void ( * gr_tcp_accept_t )(
     int                 port,
     int                 sock,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              need_disconnect
 );
 #define GR_TCP_ACCEPT_NAME     "gr_tcp_accept"
@@ -384,12 +436,14 @@ typedef void ( * gr_tcp_accept_t )(
 // parameters:
 //     port           : listen port
 //     sock           : SOCKET
+//     conn_buddy     : 
 // remark:
 //     option functions
 //
 typedef void ( * gr_tcp_close_t )(
 	int                 port,
-    int                 sock
+    int                 sock,
+    gr_conn_buddy_t *   conn_buddy
 );
 #define GR_TCP_CLOSE_NAME     "gr_tcp_close"
 
@@ -402,9 +456,8 @@ typedef void ( * gr_tcp_close_t )(
 // parameters:
 //     data           : received data
 //     len            : received data len
-//     port           : listen port
-//     sock           : recv socket
 //     ctxt           : function fill data to caller
+//     conn_buddy     : 
 //     is_error       : is it valie package
 //     is_full        : is al full package
 // remark:
@@ -413,9 +466,8 @@ typedef void ( * gr_tcp_close_t )(
 typedef void ( * gr_check_t )(
     void *              data,
     int                 len,
-    gr_port_item_t *    port_info,
-    int                 sock,
     gr_check_ctxt_t *   ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              is_error,
     bool *              is_full
 );
@@ -441,6 +493,7 @@ typedef void ( * gr_proc_t )(
     const void *        data,
     int                 len,
     gr_proc_ctxt_t *    ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     int *               processed_len
 );
 #define GR_PROC_NAME     "gr_proc"
@@ -456,7 +509,9 @@ typedef void ( * gr_proc_t )(
 //     option functions
 //
 typedef void ( * gr_proc_http_t )(
-    gr_http_ctxt_t *    http
+    gr_http_ctxt_t *    http,
+    gr_conn_buddy_t *   conn_buddy,
+    int *               processed_len
 );
 #define GR_PROC_HTTP_NAME     "gr_proc_http"
 
@@ -563,27 +618,18 @@ do {                                                                            
         struct gr_i_server_t;
 typedef struct gr_i_server_t gr_i_server_t;
 
-typedef enum
-{
-    // enable all log
-    GR_LOG_ALL      = 0,
-    // enable debug or higher log
-    GR_LOG_DEBUG    = 1,
-    // enable info or higher log
-    GR_LOG_INFO     = 2,
-    // enable warning or higher log
-    GR_LOG_WARNING  = 3,
-    // enable error or higher log
-    GR_LOG_ERROR    = 4,
-    // enable fatal or higher log
-    GR_LOG_FATAL    = 5,
-    // disable log
-    GR_LOG_NONE     = 6,
-} gr_log_level_t;
-
 struct gr_i_server_t
 {
     gr_class_t      base;
+
+    void *          ( * memory_alloc )(     gr_i_server_t *     self,
+                                            size_t              bytes );
+
+    void *          ( * memory_calloc )(    gr_i_server_t *     self,
+                                            size_t              bytes );
+
+    void            ( * memory_free )(      gr_i_server_t *     self,
+                                            void *              p );
 
     // get config item as bool
     bool            ( * config_get_bool )(  gr_i_server_t *     self,
@@ -616,6 +662,57 @@ struct gr_i_server_t
                                 gr_log_level_t  level,
                                 const char *    fmt,
                                 ... );
+
+    void *          ( * http_set_max_response)( gr_i_server_t * self,
+                                                gr_http_ctxt_t *http,
+                                                size_t          bytes );
+
+    const char *    ( * http_get_req )( gr_i_server_t *         self,
+                                        gr_http_ctxt_t *        http,
+                                        const char *            name );
+
+    int             ( * http_get_req_int )( gr_i_server_t *     self,
+                                            gr_http_ctxt_t *    http,
+                                            const char *        name,
+                                            int                 default_value );
+
+    int64_t         ( * http_get_req_int64)(gr_i_server_t *     self,
+                                            gr_http_ctxt_t *    http,
+                                            const char *        name,
+                                            int64_t             default_value );
+
+    bool            ( * http_get_req_bool)( gr_i_server_t *     self,
+                                            gr_http_ctxt_t *    http,
+                                            const char *        name,
+                                            bool                default_value );
+
+    const char *    ( * http_get_header )(  gr_i_server_t *     self,
+                                            gr_http_ctxt_t *    http,
+                                            const char *        name );
+
+    bool            ( * http_append )(  gr_i_server_t *         self,
+                                        gr_http_ctxt_t *        http,
+                                        const void *            data,
+                                        size_t                  len );
+
+    bool            ( * http_send )(    gr_i_server_t *         self,
+                                        gr_http_ctxt_t *        http,
+                                        const void *            data,
+                                        size_t                  len,
+                                        const char *            content_type );
+
+    bool            ( * http_send_header )( gr_i_server_t *     self,
+                                            gr_http_ctxt_t *    http,
+                                            size_t              content_length,
+                                            const char *        content_type );
+
+    bool            ( * http_send_header2)( gr_i_server_t *     self,
+                                            gr_http_ctxt_t *    http,
+                                            size_t              content_length,
+                                            const char *        content_type,
+                                            const char *        connection,
+                                            const char *        status,
+                                            const char *        additional_headers );
 
 };
 
@@ -713,10 +810,20 @@ struct gr_server_t
     // server function library
     gr_library_t *  library;
 
+    // server stopping signature
+    volatile bool   is_server_stopping;
+
+    // is it running at debug mode
     bool            is_debug;
 
-    // 模块的版本号
+    // module's GR_SERVER_VERSION
     unsigned char   module_version;
+
+    // server start time
+    time_t          start_time;
+
+    // current log level. small this level will not output
+    gr_log_level_t  log_level;
 
     // reserved must be zero fill
     char            reserved[ 255 ];

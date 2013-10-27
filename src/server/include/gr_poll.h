@@ -177,16 +177,13 @@ int gr_poll_send_failed(
     gr_tcp_conn_item_t *    conn
 );
 
-#if defined( WIN32 ) || defined( WIN64 )
-
 // windows不允许同一个socket同时加到两个iocp里
 // 提供该函数以便于让 tcp_out 使用 tcp_in 的 IOCP
+// 而非 windows 下，在禁用 tcp_out 时，也要让 tcp_out 使用 tcp_in 的 poll
 int gr_pool_replace_from(
     gr_poll_t *             poll,
     gr_poll_t *             from_poll
 );
-
-#endif // #if defined( WIN32 ) || defined( WIN64 )
 
 #ifdef __cplusplus
 }

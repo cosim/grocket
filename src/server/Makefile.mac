@@ -1,9 +1,11 @@
-OBJC_LIB	= --sysroot="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk" -framework Foundation
+MAC_SDK_VER = 10.9
+MAC_SDK_PATH= /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX$(MAC_SDK_VER).sdk
+OBJC_LIB	= --sysroot=$(MAC_SDK_PATH) -framework Foundation
 
 CC			= gcc
 INCLUDE		= -I../include -I./include -I../third/gperftools-2.1/src
-LIB			= -L/usr/lib -lpthread -ldl -lobjc $(OBJC_LIB)
-CFLAGS		= -g -DNDEBUG -D_FILE_OFFSET_BITS=64 -fasm-blocks
+LIB			= -LMAC_SDK_PATH/usr/lib -lpthread -ldl -lobjc $(OBJC_LIB)
+CFLAGS		= -g -DNDEBUG -D_FILE_OFFSET_BITS=64 -fasm-blocks -DAVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER
 CPPC		= g++
 MC			= gcc
 

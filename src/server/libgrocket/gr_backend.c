@@ -96,6 +96,7 @@ int gr_backend_init()
             p,
             0,
             true,
+            ENABLE_THREAD,
             "backend" );
         if ( GR_OK != r ) {
             break;

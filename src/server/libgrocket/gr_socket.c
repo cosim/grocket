@@ -367,7 +367,7 @@ gr_socket_send(
     return r;
 }
 
-static inline
+static_inline
 bool
 socket_recv_inner(
     int fd,

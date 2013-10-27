@@ -1,0 +1,647 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		EBA79D9B181C0B99000F9AB7 /* gr_backend.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D79181C0B99000F9AB7 /* gr_backend.c */; };
+		EBA79D9C181C0B99000F9AB7 /* gr_config.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D7A181C0B99000F9AB7 /* gr_config.c */; };
+		EBA79D9D181C0B99000F9AB7 /* gr_conn.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D7B181C0B99000F9AB7 /* gr_conn.c */; };
+		EBA79D9E181C0B99000F9AB7 /* gr_dll.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D7C181C0B99000F9AB7 /* gr_dll.c */; };
+		EBA79D9F181C0B99000F9AB7 /* gr_event.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D7D181C0B99000F9AB7 /* gr_event.c */; };
+		EBA79DA0181C0B99000F9AB7 /* gr_http_default.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D7E181C0B99000F9AB7 /* gr_http_default.c */; };
+		EBA79DA1181C0B99000F9AB7 /* gr_http.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D7F181C0B99000F9AB7 /* gr_http.c */; };
+		EBA79DA2181C0B99000F9AB7 /* gr_ini.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D80181C0B99000F9AB7 /* gr_ini.c */; };
+		EBA79DA3181C0B99000F9AB7 /* gr_library_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D81181C0B99000F9AB7 /* gr_library_impl.c */; };
+		EBA79DA4181C0B99000F9AB7 /* gr_library_invoke.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D82181C0B99000F9AB7 /* gr_library_invoke.c */; };
+		EBA79DA5181C0B99000F9AB7 /* gr_log.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D83181C0B99000F9AB7 /* gr_log.c */; };
+		EBA79DA6181C0B99000F9AB7 /* gr_module.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D84181C0B99000F9AB7 /* gr_module.c */; };
+		EBA79DA7181C0B99000F9AB7 /* gr_poll_bsd.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D85181C0B99000F9AB7 /* gr_poll_bsd.c */; };
+		EBA79DA8181C0B99000F9AB7 /* gr_poll_linux.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D86181C0B99000F9AB7 /* gr_poll_linux.c */; };
+		EBA79DA9181C0B99000F9AB7 /* gr_poll_windows.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D87181C0B99000F9AB7 /* gr_poll_windows.c */; };
+		EBA79DAA181C0B99000F9AB7 /* gr_server_impl_posix.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D88181C0B99000F9AB7 /* gr_server_impl_posix.c */; };
+		EBA79DAB181C0B99000F9AB7 /* gr_server_impl_windows.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D89181C0B99000F9AB7 /* gr_server_impl_windows.c */; };
+		EBA79DAC181C0B99000F9AB7 /* gr_server_impl.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D8A181C0B99000F9AB7 /* gr_server_impl.c */; };
+		EBA79DAD181C0B99000F9AB7 /* gr_socket.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D8B181C0B99000F9AB7 /* gr_socket.c */; };
+		EBA79DAE181C0B99000F9AB7 /* gr_tcp_accept.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D8C181C0B99000F9AB7 /* gr_tcp_accept.c */; };
+		EBA79DAF181C0B99000F9AB7 /* gr_tcp_close.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D8D181C0B99000F9AB7 /* gr_tcp_close.c */; };
+		EBA79DB0181C0B99000F9AB7 /* gr_tcp_in.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D8E181C0B99000F9AB7 /* gr_tcp_in.c */; };
+		EBA79DB1181C0B99000F9AB7 /* gr_tcp_out.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D8F181C0B99000F9AB7 /* gr_tcp_out.c */; };
+		EBA79DB2181C0B99000F9AB7 /* gr_thread.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D90181C0B99000F9AB7 /* gr_thread.c */; };
+		EBA79DB3181C0B99000F9AB7 /* gr_tools_mac.m in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D91181C0B99000F9AB7 /* gr_tools_mac.m */; };
+		EBA79DB4181C0B99000F9AB7 /* gr_tools.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D92181C0B99000F9AB7 /* gr_tools.c */; };
+		EBA79DB5181C0B99000F9AB7 /* gr_udp_in.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D93181C0B99000F9AB7 /* gr_udp_in.c */; };
+		EBA79DB6181C0B99000F9AB7 /* gr_udp_out.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D94181C0B99000F9AB7 /* gr_udp_out.c */; };
+		EBA79DB7181C0B99000F9AB7 /* gr_worker.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D95181C0B99000F9AB7 /* gr_worker.c */; };
+		EBA79DB8181C0B99000F9AB7 /* libgrocket.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D96181C0B99000F9AB7 /* libgrocket.c */; };
+		EBA79DB9181C0B99000F9AB7 /* server_object.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79D97181C0B99000F9AB7 /* server_object.c */; };
+		EBA79DBA181C0B99000F9AB7 /* server_object.h in Headers */ = {isa = PBXBuildFile; fileRef = EBA79D98181C0B99000F9AB7 /* server_object.h */; };
+		EBA79DBB181C0B99000F9AB7 /* tcp_io.h in Headers */ = {isa = PBXBuildFile; fileRef = EBA79D99181C0B99000F9AB7 /* tcp_io.h */; };
+		EBA79DD2181C1281000F9AB7 /* central_freelist.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DBD181C1281000F9AB7 /* central_freelist.cc */; };
+		EBA79DD3181C1281000F9AB7 /* common.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DBE181C1281000F9AB7 /* common.cc */; };
+		EBA79DD4181C1281000F9AB7 /* heap-checker-bcad.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DBF181C1281000F9AB7 /* heap-checker-bcad.cc */; };
+		EBA79DD5181C1281000F9AB7 /* heap-checker.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC0181C1281000F9AB7 /* heap-checker.cc */; };
+		EBA79DD6181C1281000F9AB7 /* heap-profile-table.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC1181C1281000F9AB7 /* heap-profile-table.cc */; };
+		EBA79DD7181C1281000F9AB7 /* internal_logging.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC2181C1281000F9AB7 /* internal_logging.cc */; };
+		EBA79DD8181C1281000F9AB7 /* malloc_extension.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC3181C1281000F9AB7 /* malloc_extension.cc */; };
+		EBA79DD9181C1281000F9AB7 /* malloc_hook.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC4181C1281000F9AB7 /* malloc_hook.cc */; };
+		EBA79DDA181C1281000F9AB7 /* maybe_threads.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC5181C1281000F9AB7 /* maybe_threads.cc */; };
+		EBA79DDB181C1281000F9AB7 /* memory_region_map.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC6181C1281000F9AB7 /* memory_region_map.cc */; };
+		EBA79DDC181C1281000F9AB7 /* page_heap.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC7181C1281000F9AB7 /* page_heap.cc */; };
+		EBA79DDD181C1281000F9AB7 /* raw_printer.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC8181C1281000F9AB7 /* raw_printer.cc */; };
+		EBA79DDE181C1281000F9AB7 /* sampler.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DC9181C1281000F9AB7 /* sampler.cc */; };
+		EBA79DDF181C1281000F9AB7 /* span.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DCA181C1281000F9AB7 /* span.cc */; };
+		EBA79DE0181C1281000F9AB7 /* stack_trace_table.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DCB181C1281000F9AB7 /* stack_trace_table.cc */; };
+		EBA79DE1181C1281000F9AB7 /* stacktrace.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DCC181C1281000F9AB7 /* stacktrace.cc */; };
+		EBA79DE2181C1281000F9AB7 /* static_vars.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DCD181C1281000F9AB7 /* static_vars.cc */; };
+		EBA79DE3181C1281000F9AB7 /* symbolize.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DCE181C1281000F9AB7 /* symbolize.cc */; };
+		EBA79DE4181C1281000F9AB7 /* system-alloc.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DCF181C1281000F9AB7 /* system-alloc.cc */; };
+		EBA79DE5181C1281000F9AB7 /* tcmalloc.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DD0181C1281000F9AB7 /* tcmalloc.cc */; };
+		EBA79DE6181C1281000F9AB7 /* thread_cache.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DD1181C1281000F9AB7 /* thread_cache.cc */; };
+		EBA79DF2181C12F4000F9AB7 /* atomicops-internals-x86.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DE8181C12F4000F9AB7 /* atomicops-internals-x86.cc */; };
+		EBA79DF3181C12F4000F9AB7 /* dynamic_annotations.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DE9181C12F4000F9AB7 /* dynamic_annotations.c */; };
+		EBA79DF4181C12F4000F9AB7 /* elf_mem_image.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DEA181C12F4000F9AB7 /* elf_mem_image.cc */; };
+		EBA79DF5181C12F4000F9AB7 /* logging.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DEB181C12F4000F9AB7 /* logging.cc */; };
+		EBA79DF6181C12F4000F9AB7 /* low_level_alloc.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DEC181C12F4000F9AB7 /* low_level_alloc.cc */; };
+		EBA79DF7181C12F4000F9AB7 /* spinlock_internal.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DED181C12F4000F9AB7 /* spinlock_internal.cc */; };
+		EBA79DF8181C12F4000F9AB7 /* spinlock.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DEE181C12F4000F9AB7 /* spinlock.cc */; };
+		EBA79DF9181C12F4000F9AB7 /* sysinfo.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DEF181C12F4000F9AB7 /* sysinfo.cc */; };
+		EBA79DFA181C12F4000F9AB7 /* thread_lister.c in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DF0181C12F4000F9AB7 /* thread_lister.c */; };
+		EBA79DFB181C12F4000F9AB7 /* vdso_support.cc in Sources */ = {isa = PBXBuildFile; fileRef = EBA79DF1181C12F4000F9AB7 /* vdso_support.cc */; };
+		EBA79DFD181C1443000F9AB7 /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = EBA79DFC181C1443000F9AB7 /* config.h */; };
+		EBFFC4B3181C812B001B25BA /* gr_atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC498181C812B001B25BA /* gr_atomic.h */; };
+		EBFFC4B4181C812B001B25BA /* gr_backend.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC499181C812B001B25BA /* gr_backend.h */; };
+		EBFFC4B5181C812B001B25BA /* gr_config.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC49A181C812B001B25BA /* gr_config.h */; };
+		EBFFC4B6181C812B001B25BA /* gr_conn.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC49B181C812B001B25BA /* gr_conn.h */; };
+		EBFFC4B7181C812B001B25BA /* gr_dll.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC49C181C812B001B25BA /* gr_dll.h */; };
+		EBFFC4B8181C812B001B25BA /* gr_errno.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC49D181C812B001B25BA /* gr_errno.h */; };
+		EBFFC4B9181C812B001B25BA /* gr_event.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC49E181C812B001B25BA /* gr_event.h */; };
+		EBFFC4BA181C812B001B25BA /* gr_global.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC49F181C812B001B25BA /* gr_global.h */; };
+		EBFFC4BB181C812B001B25BA /* gr_http.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A0181C812B001B25BA /* gr_http.h */; };
+		EBFFC4BC181C812B001B25BA /* gr_ini.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A1181C812B001B25BA /* gr_ini.h */; };
+		EBFFC4BD181C812B001B25BA /* gr_library_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A2181C812B001B25BA /* gr_library_impl.h */; };
+		EBFFC4BE181C812B001B25BA /* gr_library_invoke.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A3181C812B001B25BA /* gr_library_invoke.h */; };
+		EBFFC4BF181C812B001B25BA /* gr_log.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A4181C812B001B25BA /* gr_log.h */; };
+		EBFFC4C0181C812B001B25BA /* gr_mem.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A5181C812B001B25BA /* gr_mem.h */; };
+		EBFFC4C1181C812B001B25BA /* gr_module.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A6181C812B001B25BA /* gr_module.h */; };
+		EBFFC4C2181C812B001B25BA /* gr_poll.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A7181C812B001B25BA /* gr_poll.h */; };
+		EBFFC4C3181C812B001B25BA /* gr_server_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A8181C812B001B25BA /* gr_server_impl.h */; };
+		EBFFC4C4181C812B001B25BA /* gr_socket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4A9181C812B001B25BA /* gr_socket.h */; };
+		EBFFC4C5181C812B001B25BA /* gr_tcp_accept.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4AA181C812B001B25BA /* gr_tcp_accept.h */; };
+		EBFFC4C6181C812B001B25BA /* gr_tcp_close.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4AB181C812B001B25BA /* gr_tcp_close.h */; };
+		EBFFC4C7181C812B001B25BA /* gr_tcp_in.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4AC181C812B001B25BA /* gr_tcp_in.h */; };
+		EBFFC4C8181C812B001B25BA /* gr_tcp_out.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4AD181C812B001B25BA /* gr_tcp_out.h */; };
+		EBFFC4C9181C812B001B25BA /* gr_thread.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4AE181C812B001B25BA /* gr_thread.h */; };
+		EBFFC4CA181C812B001B25BA /* gr_tools.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4AF181C812B001B25BA /* gr_tools.h */; };
+		EBFFC4CB181C812B001B25BA /* gr_udp_in.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4B0181C812B001B25BA /* gr_udp_in.h */; };
+		EBFFC4CC181C812B001B25BA /* gr_udp_out.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4B1181C812B001B25BA /* gr_udp_out.h */; };
+		EBFFC4CD181C812B001B25BA /* gr_worker.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4B2181C812B001B25BA /* gr_worker.h */; };
+		EBFFC4D2181C8164001B25BA /* gr_stdinc.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4CF181C8164001B25BA /* gr_stdinc.h */; };
+		EBFFC4D3181C8164001B25BA /* grocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4D0181C8164001B25BA /* grocket.h */; };
+		EBFFC4D4181C8164001B25BA /* libgrocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFC4D1181C8164001B25BA /* libgrocket.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		EBA79D6A181C0A97000F9AB7 /* libgrocket.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libgrocket.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		EBA79D79181C0B99000F9AB7 /* gr_backend.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_backend.c; sourceTree = "<group>"; };
+		EBA79D7A181C0B99000F9AB7 /* gr_config.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_config.c; sourceTree = "<group>"; };
+		EBA79D7B181C0B99000F9AB7 /* gr_conn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_conn.c; sourceTree = "<group>"; };
+		EBA79D7C181C0B99000F9AB7 /* gr_dll.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_dll.c; sourceTree = "<group>"; };
+		EBA79D7D181C0B99000F9AB7 /* gr_event.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_event.c; sourceTree = "<group>"; };
+		EBA79D7E181C0B99000F9AB7 /* gr_http_default.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_http_default.c; sourceTree = "<group>"; };
+		EBA79D7F181C0B99000F9AB7 /* gr_http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_http.c; sourceTree = "<group>"; };
+		EBA79D80181C0B99000F9AB7 /* gr_ini.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_ini.c; sourceTree = "<group>"; };
+		EBA79D81181C0B99000F9AB7 /* gr_library_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_library_impl.c; sourceTree = "<group>"; };
+		EBA79D82181C0B99000F9AB7 /* gr_library_invoke.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_library_invoke.c; sourceTree = "<group>"; };
+		EBA79D83181C0B99000F9AB7 /* gr_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_log.c; sourceTree = "<group>"; };
+		EBA79D84181C0B99000F9AB7 /* gr_module.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_module.c; sourceTree = "<group>"; };
+		EBA79D85181C0B99000F9AB7 /* gr_poll_bsd.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_poll_bsd.c; sourceTree = "<group>"; };
+		EBA79D86181C0B99000F9AB7 /* gr_poll_linux.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_poll_linux.c; sourceTree = "<group>"; };
+		EBA79D87181C0B99000F9AB7 /* gr_poll_windows.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_poll_windows.c; sourceTree = "<group>"; };
+		EBA79D88181C0B99000F9AB7 /* gr_server_impl_posix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_server_impl_posix.c; sourceTree = "<group>"; };
+		EBA79D89181C0B99000F9AB7 /* gr_server_impl_windows.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_server_impl_windows.c; sourceTree = "<group>"; };
+		EBA79D8A181C0B99000F9AB7 /* gr_server_impl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_server_impl.c; sourceTree = "<group>"; };
+		EBA79D8B181C0B99000F9AB7 /* gr_socket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_socket.c; sourceTree = "<group>"; };
+		EBA79D8C181C0B99000F9AB7 /* gr_tcp_accept.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_tcp_accept.c; sourceTree = "<group>"; };
+		EBA79D8D181C0B99000F9AB7 /* gr_tcp_close.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_tcp_close.c; sourceTree = "<group>"; };
+		EBA79D8E181C0B99000F9AB7 /* gr_tcp_in.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_tcp_in.c; sourceTree = "<group>"; };
+		EBA79D8F181C0B99000F9AB7 /* gr_tcp_out.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_tcp_out.c; sourceTree = "<group>"; };
+		EBA79D90181C0B99000F9AB7 /* gr_thread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_thread.c; sourceTree = "<group>"; };
+		EBA79D91181C0B99000F9AB7 /* gr_tools_mac.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = gr_tools_mac.m; sourceTree = "<group>"; };
+		EBA79D92181C0B99000F9AB7 /* gr_tools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_tools.c; sourceTree = "<group>"; };
+		EBA79D93181C0B99000F9AB7 /* gr_udp_in.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_udp_in.c; sourceTree = "<group>"; };
+		EBA79D94181C0B99000F9AB7 /* gr_udp_out.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_udp_out.c; sourceTree = "<group>"; };
+		EBA79D95181C0B99000F9AB7 /* gr_worker.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gr_worker.c; sourceTree = "<group>"; };
+		EBA79D96181C0B99000F9AB7 /* libgrocket.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = libgrocket.c; sourceTree = "<group>"; };
+		EBA79D97181C0B99000F9AB7 /* server_object.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = server_object.c; sourceTree = "<group>"; };
+		EBA79D98181C0B99000F9AB7 /* server_object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = server_object.h; sourceTree = "<group>"; };
+		EBA79D99181C0B99000F9AB7 /* tcp_io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tcp_io.h; sourceTree = "<group>"; };
+		EBA79DBD181C1281000F9AB7 /* central_freelist.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = central_freelist.cc; path = "../../third/gperftools-2.1/src/central_freelist.cc"; sourceTree = "<group>"; };
+		EBA79DBE181C1281000F9AB7 /* common.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = common.cc; path = "../../third/gperftools-2.1/src/common.cc"; sourceTree = "<group>"; };
+		EBA79DBF181C1281000F9AB7 /* heap-checker-bcad.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "heap-checker-bcad.cc"; path = "../../third/gperftools-2.1/src/heap-checker-bcad.cc"; sourceTree = "<group>"; };
+		EBA79DC0181C1281000F9AB7 /* heap-checker.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "heap-checker.cc"; path = "../../third/gperftools-2.1/src/heap-checker.cc"; sourceTree = "<group>"; };
+		EBA79DC1181C1281000F9AB7 /* heap-profile-table.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "heap-profile-table.cc"; path = "../../third/gperftools-2.1/src/heap-profile-table.cc"; sourceTree = "<group>"; };
+		EBA79DC2181C1281000F9AB7 /* internal_logging.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = internal_logging.cc; path = "../../third/gperftools-2.1/src/internal_logging.cc"; sourceTree = "<group>"; };
+		EBA79DC3181C1281000F9AB7 /* malloc_extension.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = malloc_extension.cc; path = "../../third/gperftools-2.1/src/malloc_extension.cc"; sourceTree = "<group>"; };
+		EBA79DC4181C1281000F9AB7 /* malloc_hook.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = malloc_hook.cc; path = "../../third/gperftools-2.1/src/malloc_hook.cc"; sourceTree = "<group>"; };
+		EBA79DC5181C1281000F9AB7 /* maybe_threads.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = maybe_threads.cc; path = "../../third/gperftools-2.1/src/maybe_threads.cc"; sourceTree = "<group>"; };
+		EBA79DC6181C1281000F9AB7 /* memory_region_map.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = memory_region_map.cc; path = "../../third/gperftools-2.1/src/memory_region_map.cc"; sourceTree = "<group>"; };
+		EBA79DC7181C1281000F9AB7 /* page_heap.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = page_heap.cc; path = "../../third/gperftools-2.1/src/page_heap.cc"; sourceTree = "<group>"; };
+		EBA79DC8181C1281000F9AB7 /* raw_printer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = raw_printer.cc; path = "../../third/gperftools-2.1/src/raw_printer.cc"; sourceTree = "<group>"; };
+		EBA79DC9181C1281000F9AB7 /* sampler.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sampler.cc; path = "../../third/gperftools-2.1/src/sampler.cc"; sourceTree = "<group>"; };
+		EBA79DCA181C1281000F9AB7 /* span.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = span.cc; path = "../../third/gperftools-2.1/src/span.cc"; sourceTree = "<group>"; };
+		EBA79DCB181C1281000F9AB7 /* stack_trace_table.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = stack_trace_table.cc; path = "../../third/gperftools-2.1/src/stack_trace_table.cc"; sourceTree = "<group>"; };
+		EBA79DCC181C1281000F9AB7 /* stacktrace.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = stacktrace.cc; path = "../../third/gperftools-2.1/src/stacktrace.cc"; sourceTree = "<group>"; };
+		EBA79DCD181C1281000F9AB7 /* static_vars.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = static_vars.cc; path = "../../third/gperftools-2.1/src/static_vars.cc"; sourceTree = "<group>"; };
+		EBA79DCE181C1281000F9AB7 /* symbolize.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = symbolize.cc; path = "../../third/gperftools-2.1/src/symbolize.cc"; sourceTree = "<group>"; };
+		EBA79DCF181C1281000F9AB7 /* system-alloc.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "system-alloc.cc"; path = "../../third/gperftools-2.1/src/system-alloc.cc"; sourceTree = "<group>"; };
+		EBA79DD0181C1281000F9AB7 /* tcmalloc.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tcmalloc.cc; path = "../../third/gperftools-2.1/src/tcmalloc.cc"; sourceTree = "<group>"; };
+		EBA79DD1181C1281000F9AB7 /* thread_cache.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = thread_cache.cc; path = "../../third/gperftools-2.1/src/thread_cache.cc"; sourceTree = "<group>"; };
+		EBA79DE8181C12F4000F9AB7 /* atomicops-internals-x86.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "atomicops-internals-x86.cc"; path = "../../third/gperftools-2.1/src/base/atomicops-internals-x86.cc"; sourceTree = "<group>"; };
+		EBA79DE9181C12F4000F9AB7 /* dynamic_annotations.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = dynamic_annotations.c; path = "../../third/gperftools-2.1/src/base/dynamic_annotations.c"; sourceTree = "<group>"; };
+		EBA79DEA181C12F4000F9AB7 /* elf_mem_image.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = elf_mem_image.cc; path = "../../third/gperftools-2.1/src/base/elf_mem_image.cc"; sourceTree = "<group>"; };
+		EBA79DEB181C12F4000F9AB7 /* logging.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = logging.cc; path = "../../third/gperftools-2.1/src/base/logging.cc"; sourceTree = "<group>"; };
+		EBA79DEC181C12F4000F9AB7 /* low_level_alloc.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = low_level_alloc.cc; path = "../../third/gperftools-2.1/src/base/low_level_alloc.cc"; sourceTree = "<group>"; };
+		EBA79DED181C12F4000F9AB7 /* spinlock_internal.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = spinlock_internal.cc; path = "../../third/gperftools-2.1/src/base/spinlock_internal.cc"; sourceTree = "<group>"; };
+		EBA79DEE181C12F4000F9AB7 /* spinlock.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = spinlock.cc; path = "../../third/gperftools-2.1/src/base/spinlock.cc"; sourceTree = "<group>"; };
+		EBA79DEF181C12F4000F9AB7 /* sysinfo.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sysinfo.cc; path = "../../third/gperftools-2.1/src/base/sysinfo.cc"; sourceTree = "<group>"; };
+		EBA79DF0181C12F4000F9AB7 /* thread_lister.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = thread_lister.c; path = "../../third/gperftools-2.1/src/base/thread_lister.c"; sourceTree = "<group>"; };
+		EBA79DF1181C12F4000F9AB7 /* vdso_support.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vdso_support.cc; path = "../../third/gperftools-2.1/src/base/vdso_support.cc"; sourceTree = "<group>"; };
+		EBA79DFC181C1443000F9AB7 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = "../../third/gperftools-2.1/src/config.h"; sourceTree = "<group>"; };
+		EBFFC498181C812B001B25BA /* gr_atomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_atomic.h; path = ../include/gr_atomic.h; sourceTree = "<group>"; };
+		EBFFC499181C812B001B25BA /* gr_backend.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_backend.h; path = ../include/gr_backend.h; sourceTree = "<group>"; };
+		EBFFC49A181C812B001B25BA /* gr_config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_config.h; path = ../include/gr_config.h; sourceTree = "<group>"; };
+		EBFFC49B181C812B001B25BA /* gr_conn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_conn.h; path = ../include/gr_conn.h; sourceTree = "<group>"; };
+		EBFFC49C181C812B001B25BA /* gr_dll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_dll.h; path = ../include/gr_dll.h; sourceTree = "<group>"; };
+		EBFFC49D181C812B001B25BA /* gr_errno.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_errno.h; path = ../include/gr_errno.h; sourceTree = "<group>"; };
+		EBFFC49E181C812B001B25BA /* gr_event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_event.h; path = ../include/gr_event.h; sourceTree = "<group>"; };
+		EBFFC49F181C812B001B25BA /* gr_global.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_global.h; path = ../include/gr_global.h; sourceTree = "<group>"; };
+		EBFFC4A0181C812B001B25BA /* gr_http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_http.h; path = ../include/gr_http.h; sourceTree = "<group>"; };
+		EBFFC4A1181C812B001B25BA /* gr_ini.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_ini.h; path = ../include/gr_ini.h; sourceTree = "<group>"; };
+		EBFFC4A2181C812B001B25BA /* gr_library_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_library_impl.h; path = ../include/gr_library_impl.h; sourceTree = "<group>"; };
+		EBFFC4A3181C812B001B25BA /* gr_library_invoke.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_library_invoke.h; path = ../include/gr_library_invoke.h; sourceTree = "<group>"; };
+		EBFFC4A4181C812B001B25BA /* gr_log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_log.h; path = ../include/gr_log.h; sourceTree = "<group>"; };
+		EBFFC4A5181C812B001B25BA /* gr_mem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_mem.h; path = ../include/gr_mem.h; sourceTree = "<group>"; };
+		EBFFC4A6181C812B001B25BA /* gr_module.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_module.h; path = ../include/gr_module.h; sourceTree = "<group>"; };
+		EBFFC4A7181C812B001B25BA /* gr_poll.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_poll.h; path = ../include/gr_poll.h; sourceTree = "<group>"; };
+		EBFFC4A8181C812B001B25BA /* gr_server_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_server_impl.h; path = ../include/gr_server_impl.h; sourceTree = "<group>"; };
+		EBFFC4A9181C812B001B25BA /* gr_socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_socket.h; path = ../include/gr_socket.h; sourceTree = "<group>"; };
+		EBFFC4AA181C812B001B25BA /* gr_tcp_accept.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_tcp_accept.h; path = ../include/gr_tcp_accept.h; sourceTree = "<group>"; };
+		EBFFC4AB181C812B001B25BA /* gr_tcp_close.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_tcp_close.h; path = ../include/gr_tcp_close.h; sourceTree = "<group>"; };
+		EBFFC4AC181C812B001B25BA /* gr_tcp_in.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_tcp_in.h; path = ../include/gr_tcp_in.h; sourceTree = "<group>"; };
+		EBFFC4AD181C812B001B25BA /* gr_tcp_out.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_tcp_out.h; path = ../include/gr_tcp_out.h; sourceTree = "<group>"; };
+		EBFFC4AE181C812B001B25BA /* gr_thread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_thread.h; path = ../include/gr_thread.h; sourceTree = "<group>"; };
+		EBFFC4AF181C812B001B25BA /* gr_tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_tools.h; path = ../include/gr_tools.h; sourceTree = "<group>"; };
+		EBFFC4B0181C812B001B25BA /* gr_udp_in.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_udp_in.h; path = ../include/gr_udp_in.h; sourceTree = "<group>"; };
+		EBFFC4B1181C812B001B25BA /* gr_udp_out.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_udp_out.h; path = ../include/gr_udp_out.h; sourceTree = "<group>"; };
+		EBFFC4B2181C812B001B25BA /* gr_worker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_worker.h; path = ../include/gr_worker.h; sourceTree = "<group>"; };
+		EBFFC4CF181C8164001B25BA /* gr_stdinc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gr_stdinc.h; path = ../../include/gr_stdinc.h; sourceTree = "<group>"; };
+		EBFFC4D0181C8164001B25BA /* grocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = grocket.h; path = ../../include/grocket.h; sourceTree = "<group>"; };
+		EBFFC4D1181C8164001B25BA /* libgrocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libgrocket.h; path = ../../include/libgrocket.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		EBA79D67181C0A97000F9AB7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		EBA79D61181C0A97000F9AB7 = {
+			isa = PBXGroup;
+			children = (
+				EBFFC4CE181C8148001B25BA /* include */,
+				EBFFC497181C811B001B25BA /* include_private */,
+				EBA79DBC181C1060000F9AB7 /* tc */,
+				EBA79D77181C0B7D000F9AB7 /* grocket */,
+				EBA79D6B181C0A97000F9AB7 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		EBA79D6B181C0A97000F9AB7 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EBA79D6A181C0A97000F9AB7 /* libgrocket.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		EBA79D77181C0B7D000F9AB7 /* grocket */ = {
+			isa = PBXGroup;
+			children = (
+				EBA79D79181C0B99000F9AB7 /* gr_backend.c */,
+				EBA79D7A181C0B99000F9AB7 /* gr_config.c */,
+				EBA79D7B181C0B99000F9AB7 /* gr_conn.c */,
+				EBA79D7C181C0B99000F9AB7 /* gr_dll.c */,
+				EBA79D7D181C0B99000F9AB7 /* gr_event.c */,
+				EBA79D7E181C0B99000F9AB7 /* gr_http_default.c */,
+				EBA79D7F181C0B99000F9AB7 /* gr_http.c */,
+				EBA79D80181C0B99000F9AB7 /* gr_ini.c */,
+				EBA79D81181C0B99000F9AB7 /* gr_library_impl.c */,
+				EBA79D82181C0B99000F9AB7 /* gr_library_invoke.c */,
+				EBA79D83181C0B99000F9AB7 /* gr_log.c */,
+				EBA79D84181C0B99000F9AB7 /* gr_module.c */,
+				EBA79D85181C0B99000F9AB7 /* gr_poll_bsd.c */,
+				EBA79D86181C0B99000F9AB7 /* gr_poll_linux.c */,
+				EBA79D87181C0B99000F9AB7 /* gr_poll_windows.c */,
+				EBA79D88181C0B99000F9AB7 /* gr_server_impl_posix.c */,
+				EBA79D89181C0B99000F9AB7 /* gr_server_impl_windows.c */,
+				EBA79D8A181C0B99000F9AB7 /* gr_server_impl.c */,
+				EBA79D8B181C0B99000F9AB7 /* gr_socket.c */,
+				EBA79D8C181C0B99000F9AB7 /* gr_tcp_accept.c */,
+				EBA79D8D181C0B99000F9AB7 /* gr_tcp_close.c */,
+				EBA79D8E181C0B99000F9AB7 /* gr_tcp_in.c */,
+				EBA79D8F181C0B99000F9AB7 /* gr_tcp_out.c */,
+				EBA79D90181C0B99000F9AB7 /* gr_thread.c */,
+				EBA79D91181C0B99000F9AB7 /* gr_tools_mac.m */,
+				EBA79D92181C0B99000F9AB7 /* gr_tools.c */,
+				EBA79D93181C0B99000F9AB7 /* gr_udp_in.c */,
+				EBA79D94181C0B99000F9AB7 /* gr_udp_out.c */,
+				EBA79D95181C0B99000F9AB7 /* gr_worker.c */,
+				EBA79D96181C0B99000F9AB7 /* libgrocket.c */,
+				EBA79D97181C0B99000F9AB7 /* server_object.c */,
+				EBA79D98181C0B99000F9AB7 /* server_object.h */,
+				EBA79D99181C0B99000F9AB7 /* tcp_io.h */,
+			);
+			name = grocket;
+			sourceTree = "<group>";
+		};
+		EBA79DBC181C1060000F9AB7 /* tc */ = {
+			isa = PBXGroup;
+			children = (
+				EBA79DFC181C1443000F9AB7 /* config.h */,
+				EBA79DE7181C12E8000F9AB7 /* base */,
+				EBA79DBD181C1281000F9AB7 /* central_freelist.cc */,
+				EBA79DBE181C1281000F9AB7 /* common.cc */,
+				EBA79DBF181C1281000F9AB7 /* heap-checker-bcad.cc */,
+				EBA79DC0181C1281000F9AB7 /* heap-checker.cc */,
+				EBA79DC1181C1281000F9AB7 /* heap-profile-table.cc */,
+				EBA79DC2181C1281000F9AB7 /* internal_logging.cc */,
+				EBA79DC3181C1281000F9AB7 /* malloc_extension.cc */,
+				EBA79DC4181C1281000F9AB7 /* malloc_hook.cc */,
+				EBA79DC5181C1281000F9AB7 /* maybe_threads.cc */,
+				EBA79DC6181C1281000F9AB7 /* memory_region_map.cc */,
+				EBA79DC7181C1281000F9AB7 /* page_heap.cc */,
+				EBA79DC8181C1281000F9AB7 /* raw_printer.cc */,
+				EBA79DC9181C1281000F9AB7 /* sampler.cc */,
+				EBA79DCA181C1281000F9AB7 /* span.cc */,
+				EBA79DCB181C1281000F9AB7 /* stack_trace_table.cc */,
+				EBA79DCC181C1281000F9AB7 /* stacktrace.cc */,
+				EBA79DCD181C1281000F9AB7 /* static_vars.cc */,
+				EBA79DCE181C1281000F9AB7 /* symbolize.cc */,
+				EBA79DCF181C1281000F9AB7 /* system-alloc.cc */,
+				EBA79DD0181C1281000F9AB7 /* tcmalloc.cc */,
+				EBA79DD1181C1281000F9AB7 /* thread_cache.cc */,
+			);
+			name = tc;
+			sourceTree = "<group>";
+		};
+		EBA79DE7181C12E8000F9AB7 /* base */ = {
+			isa = PBXGroup;
+			children = (
+				EBA79DE8181C12F4000F9AB7 /* atomicops-internals-x86.cc */,
+				EBA79DE9181C12F4000F9AB7 /* dynamic_annotations.c */,
+				EBA79DEA181C12F4000F9AB7 /* elf_mem_image.cc */,
+				EBA79DEB181C12F4000F9AB7 /* logging.cc */,
+				EBA79DEC181C12F4000F9AB7 /* low_level_alloc.cc */,
+				EBA79DED181C12F4000F9AB7 /* spinlock_internal.cc */,
+				EBA79DEE181C12F4000F9AB7 /* spinlock.cc */,
+				EBA79DEF181C12F4000F9AB7 /* sysinfo.cc */,
+				EBA79DF0181C12F4000F9AB7 /* thread_lister.c */,
+				EBA79DF1181C12F4000F9AB7 /* vdso_support.cc */,
+			);
+			name = base;
+			sourceTree = "<group>";
+		};
+		EBFFC497181C811B001B25BA /* include_private */ = {
+			isa = PBXGroup;
+			children = (
+				EBFFC498181C812B001B25BA /* gr_atomic.h */,
+				EBFFC499181C812B001B25BA /* gr_backend.h */,
+				EBFFC49A181C812B001B25BA /* gr_config.h */,
+				EBFFC49B181C812B001B25BA /* gr_conn.h */,
+				EBFFC49C181C812B001B25BA /* gr_dll.h */,
+				EBFFC49D181C812B001B25BA /* gr_errno.h */,
+				EBFFC49E181C812B001B25BA /* gr_event.h */,
+				EBFFC49F181C812B001B25BA /* gr_global.h */,
+				EBFFC4A0181C812B001B25BA /* gr_http.h */,
+				EBFFC4A1181C812B001B25BA /* gr_ini.h */,
+				EBFFC4A2181C812B001B25BA /* gr_library_impl.h */,
+				EBFFC4A3181C812B001B25BA /* gr_library_invoke.h */,
+				EBFFC4A4181C812B001B25BA /* gr_log.h */,
+				EBFFC4A5181C812B001B25BA /* gr_mem.h */,
+				EBFFC4A6181C812B001B25BA /* gr_module.h */,
+				EBFFC4A7181C812B001B25BA /* gr_poll.h */,
+				EBFFC4A8181C812B001B25BA /* gr_server_impl.h */,
+				EBFFC4A9181C812B001B25BA /* gr_socket.h */,
+				EBFFC4AA181C812B001B25BA /* gr_tcp_accept.h */,
+				EBFFC4AB181C812B001B25BA /* gr_tcp_close.h */,
+				EBFFC4AC181C812B001B25BA /* gr_tcp_in.h */,
+				EBFFC4AD181C812B001B25BA /* gr_tcp_out.h */,
+				EBFFC4AE181C812B001B25BA /* gr_thread.h */,
+				EBFFC4AF181C812B001B25BA /* gr_tools.h */,
+				EBFFC4B0181C812B001B25BA /* gr_udp_in.h */,
+				EBFFC4B1181C812B001B25BA /* gr_udp_out.h */,
+				EBFFC4B2181C812B001B25BA /* gr_worker.h */,
+			);
+			name = include_private;
+			sourceTree = "<group>";
+		};
+		EBFFC4CE181C8148001B25BA /* include */ = {
+			isa = PBXGroup;
+			children = (
+				EBFFC4CF181C8164001B25BA /* gr_stdinc.h */,
+				EBFFC4D0181C8164001B25BA /* grocket.h */,
+				EBFFC4D1181C8164001B25BA /* libgrocket.h */,
+			);
+			name = include;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		EBA79D68181C0A97000F9AB7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBFFC4C2181C812B001B25BA /* gr_poll.h in Headers */,
+				EBFFC4BC181C812B001B25BA /* gr_ini.h in Headers */,
+				EBFFC4C3181C812B001B25BA /* gr_server_impl.h in Headers */,
+				EBFFC4C9181C812B001B25BA /* gr_thread.h in Headers */,
+				EBFFC4C8181C812B001B25BA /* gr_tcp_out.h in Headers */,
+				EBFFC4B9181C812B001B25BA /* gr_event.h in Headers */,
+				EBFFC4B8181C812B001B25BA /* gr_errno.h in Headers */,
+				EBFFC4BD181C812B001B25BA /* gr_library_impl.h in Headers */,
+				EBFFC4C7181C812B001B25BA /* gr_tcp_in.h in Headers */,
+				EBA79DBB181C0B99000F9AB7 /* tcp_io.h in Headers */,
+				EBFFC4BB181C812B001B25BA /* gr_http.h in Headers */,
+				EBFFC4C6181C812B001B25BA /* gr_tcp_close.h in Headers */,
+				EBFFC4C4181C812B001B25BA /* gr_socket.h in Headers */,
+				EBFFC4D2181C8164001B25BA /* gr_stdinc.h in Headers */,
+				EBFFC4D3181C8164001B25BA /* grocket.h in Headers */,
+				EBFFC4BE181C812B001B25BA /* gr_library_invoke.h in Headers */,
+				EBFFC4B5181C812B001B25BA /* gr_config.h in Headers */,
+				EBFFC4CA181C812B001B25BA /* gr_tools.h in Headers */,
+				EBFFC4BF181C812B001B25BA /* gr_log.h in Headers */,
+				EBFFC4C1181C812B001B25BA /* gr_module.h in Headers */,
+				EBFFC4C0181C812B001B25BA /* gr_mem.h in Headers */,
+				EBFFC4B7181C812B001B25BA /* gr_dll.h in Headers */,
+				EBFFC4CB181C812B001B25BA /* gr_udp_in.h in Headers */,
+				EBFFC4B6181C812B001B25BA /* gr_conn.h in Headers */,
+				EBA79DBA181C0B99000F9AB7 /* server_object.h in Headers */,
+				EBFFC4C5181C812B001B25BA /* gr_tcp_accept.h in Headers */,
+				EBFFC4B4181C812B001B25BA /* gr_backend.h in Headers */,
+				EBFFC4BA181C812B001B25BA /* gr_global.h in Headers */,
+				EBFFC4B3181C812B001B25BA /* gr_atomic.h in Headers */,
+				EBFFC4CC181C812B001B25BA /* gr_udp_out.h in Headers */,
+				EBFFC4D4181C8164001B25BA /* libgrocket.h in Headers */,
+				EBA79DFD181C1443000F9AB7 /* config.h in Headers */,
+				EBFFC4CD181C812B001B25BA /* gr_worker.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		EBA79D69181C0A97000F9AB7 /* grocket */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EBA79D6E181C0A97000F9AB7 /* Build configuration list for PBXNativeTarget "grocket" */;
+			buildPhases = (
+				EBA79D66181C0A97000F9AB7 /* Sources */,
+				EBA79D67181C0A97000F9AB7 /* Frameworks */,
+				EBA79D68181C0A97000F9AB7 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = grocket;
+			productName = grocket;
+			productReference = EBA79D6A181C0A97000F9AB7 /* libgrocket.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EBA79D62181C0A97000F9AB7 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0500;
+				ORGANIZATIONNAME = daming;
+			};
+			buildConfigurationList = EBA79D65181C0A97000F9AB7 /* Build configuration list for PBXProject "grocket" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = EBA79D61181C0A97000F9AB7;
+			productRefGroup = EBA79D6B181C0A97000F9AB7 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EBA79D69181C0A97000F9AB7 /* grocket */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EBA79D66181C0A97000F9AB7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EBA79DD3181C1281000F9AB7 /* common.cc in Sources */,
+				EBA79DF9181C12F4000F9AB7 /* sysinfo.cc in Sources */,
+				EBA79DFA181C12F4000F9AB7 /* thread_lister.c in Sources */,
+				EBA79DA3181C0B99000F9AB7 /* gr_library_impl.c in Sources */,
+				EBA79DD7181C1281000F9AB7 /* internal_logging.cc in Sources */,
+				EBA79DB2181C0B99000F9AB7 /* gr_thread.c in Sources */,
+				EBA79DAD181C0B99000F9AB7 /* gr_socket.c in Sources */,
+				EBA79DAE181C0B99000F9AB7 /* gr_tcp_accept.c in Sources */,
+				EBA79DE6181C1281000F9AB7 /* thread_cache.cc in Sources */,
+				EBA79D9D181C0B99000F9AB7 /* gr_conn.c in Sources */,
+				EBA79DA1181C0B99000F9AB7 /* gr_http.c in Sources */,
+				EBA79D9E181C0B99000F9AB7 /* gr_dll.c in Sources */,
+				EBA79DA2181C0B99000F9AB7 /* gr_ini.c in Sources */,
+				EBA79DDB181C1281000F9AB7 /* memory_region_map.cc in Sources */,
+				EBA79DA8181C0B99000F9AB7 /* gr_poll_linux.c in Sources */,
+				EBA79DF4181C12F4000F9AB7 /* elf_mem_image.cc in Sources */,
+				EBA79DD6181C1281000F9AB7 /* heap-profile-table.cc in Sources */,
+				EBA79D9C181C0B99000F9AB7 /* gr_config.c in Sources */,
+				EBA79DA5181C0B99000F9AB7 /* gr_log.c in Sources */,
+				EBA79DAF181C0B99000F9AB7 /* gr_tcp_close.c in Sources */,
+				EBA79DD4181C1281000F9AB7 /* heap-checker-bcad.cc in Sources */,
+				EBA79DB9181C0B99000F9AB7 /* server_object.c in Sources */,
+				EBA79DDF181C1281000F9AB7 /* span.cc in Sources */,
+				EBA79DFB181C12F4000F9AB7 /* vdso_support.cc in Sources */,
+				EBA79DDE181C1281000F9AB7 /* sampler.cc in Sources */,
+				EBA79DD2181C1281000F9AB7 /* central_freelist.cc in Sources */,
+				EBA79DE2181C1281000F9AB7 /* static_vars.cc in Sources */,
+				EBA79DA4181C0B99000F9AB7 /* gr_library_invoke.c in Sources */,
+				EBA79DF3181C12F4000F9AB7 /* dynamic_annotations.c in Sources */,
+				EBA79DB7181C0B99000F9AB7 /* gr_worker.c in Sources */,
+				EBA79DB3181C0B99000F9AB7 /* gr_tools_mac.m in Sources */,
+				EBA79DD8181C1281000F9AB7 /* malloc_extension.cc in Sources */,
+				EBA79DE3181C1281000F9AB7 /* symbolize.cc in Sources */,
+				EBA79DF6181C12F4000F9AB7 /* low_level_alloc.cc in Sources */,
+				EBA79DA6181C0B99000F9AB7 /* gr_module.c in Sources */,
+				EBA79DE1181C1281000F9AB7 /* stacktrace.cc in Sources */,
+				EBA79DB6181C0B99000F9AB7 /* gr_udp_out.c in Sources */,
+				EBA79DB8181C0B99000F9AB7 /* libgrocket.c in Sources */,
+				EBA79DA9181C0B99000F9AB7 /* gr_poll_windows.c in Sources */,
+				EBA79DA0181C0B99000F9AB7 /* gr_http_default.c in Sources */,
+				EBA79DD5181C1281000F9AB7 /* heap-checker.cc in Sources */,
+				EBA79D9B181C0B99000F9AB7 /* gr_backend.c in Sources */,
+				EBA79DD9181C1281000F9AB7 /* malloc_hook.cc in Sources */,
+				EBA79DAC181C0B99000F9AB7 /* gr_server_impl.c in Sources */,
+				EBA79DB4181C0B99000F9AB7 /* gr_tools.c in Sources */,
+				EBA79D9F181C0B99000F9AB7 /* gr_event.c in Sources */,
+				EBA79DB1181C0B99000F9AB7 /* gr_tcp_out.c in Sources */,
+				EBA79DF2181C12F4000F9AB7 /* atomicops-internals-x86.cc in Sources */,
+				EBA79DE4181C1281000F9AB7 /* system-alloc.cc in Sources */,
+				EBA79DB5181C0B99000F9AB7 /* gr_udp_in.c in Sources */,
+				EBA79DDC181C1281000F9AB7 /* page_heap.cc in Sources */,
+				EBA79DB0181C0B99000F9AB7 /* gr_tcp_in.c in Sources */,
+				EBA79DDA181C1281000F9AB7 /* maybe_threads.cc in Sources */,
+				EBA79DDD181C1281000F9AB7 /* raw_printer.cc in Sources */,
+				EBA79DAB181C0B99000F9AB7 /* gr_server_impl_windows.c in Sources */,
+				EBA79DAA181C0B99000F9AB7 /* gr_server_impl_posix.c in Sources */,
+				EBA79DF8181C12F4000F9AB7 /* spinlock.cc in Sources */,
+				EBA79DE5181C1281000F9AB7 /* tcmalloc.cc in Sources */,
+				EBA79DF5181C12F4000F9AB7 /* logging.cc in Sources */,
+				EBA79DA7181C0B99000F9AB7 /* gr_poll_bsd.c in Sources */,
+				EBA79DE0181C1281000F9AB7 /* stack_trace_table.cc in Sources */,
+				EBA79DF7181C12F4000F9AB7 /* spinlock_internal.cc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		EBA79D6C181C0A97000F9AB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		EBA79D6D181C0A97000F9AB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		EBA79D6F181C0A97000F9AB7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				EXECUTABLE_PREFIX = lib;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../include ../include ../../third/gperftools-2.1/src";
+			};
+			name = Debug;
+		};
+		EBA79D70181C0A97000F9AB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++98";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				EXECUTABLE_PREFIX = lib;
+				PRECOMPS_INCLUDE_HEADERS_FROM_BUILT_PRODUCTS_DIR = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../../include ../include ../../third/gperftools-2.1/src";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		EBA79D65181C0A97000F9AB7 /* Build configuration list for PBXProject "grocket" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EBA79D6C181C0A97000F9AB7 /* Debug */,
+				EBA79D6D181C0A97000F9AB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EBA79D6E181C0A97000F9AB7 /* Build configuration list for PBXNativeTarget "grocket" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EBA79D6F181C0A97000F9AB7 /* Debug */,
+				EBA79D70181C0A97000F9AB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EBA79D62181C0A97000F9AB7 /* Project object */;
+}

@@ -72,17 +72,16 @@ typedef struct
 
     int             concurrent;
 
+    // 是否 worker 线程被禁用
+    bool            worker_disabled;
+
+    // 是否 tcp_out 线程被禁用
+    bool            tcp_out_disabled;
+
 } gr_tcp_io_t;
 
 typedef gr_tcp_io_t gr_tcp_in_t;
 typedef gr_tcp_io_t gr_tcp_out_t;
-
-#if defined( WIN32 ) || defined( WIN64 )
-
-// windows 下，tcp_in 线程和 tcp_out 线程都使用的相同的线程函数。
-void tcp_io_windows( gr_thread_t * thread );
-
-#endif // #if defined( WIN32 ) || defined( WIN64 )
 
 ///////////////////////////////////////////////////////////////////////
 //
@@ -113,14 +112,18 @@ void on_tcp_send(
                 assert( conn->close_type <= GR_NEED_CLOSE );
                 // 网络异常时已经不可能有返回数据包被压过来，完全可以把返回数据包列表删了
                 gr_tcp_conn_clear_rsp_list( conn );
+                if ( self->tcp_out_disabled ) {
+                    // 如果 tcp_out 已经禁用，则 tcp_out 退出，tcp_in 就已经退出了
+                    conn->tcp_in_open = false;
+                }
                 // 关连接，然后退出
-                gr_tcp_close_from_out( conn );
+                gr_tcp_close_from_out( conn, self->tcp_out_disabled );
             }
             return;
         }
 
         //TODO: r 的值如果是0表示什么?
-        //gr_debug( "on_tcp_send called, gr_poll_send %d bytes", r );
+        gr_debug( "[sent=%d]gr_poll_send OK", r );
     } else {
         // 如果网络异常时，close_type 状态至少是正在关闭过程中
         assert( conn->close_type <= GR_NEED_CLOSE );
@@ -136,7 +139,11 @@ void on_tcp_send(
             // 如果所有待发数据包都已经发完，则关连接
             gr_error( "[tcp.out]conn->close_type is %d and conn->rsp_list_head is NULL",
                 (int)conn->close_type );
-            gr_tcp_close_from_out( conn );
+            if ( self->tcp_out_disabled ) {
+                // 如果 tcp_out 已经禁用，则 tcp_out 退出，tcp_in 就已经退出了
+                conn->tcp_in_open = false;
+            }
+            gr_tcp_close_from_out( conn, self->tcp_out_disabled );
         }
     }
 }
@@ -160,8 +167,12 @@ void on_tcp_recv_error(
         gr_error( "gr_poll_recv_done return error %d", r );
     }
 
+    if ( self->tcp_out_disabled ) {
+        // 如果 tcp_out 已经禁用，则 tcp_in 退出，tcp_out 就已经退出了
+        conn->tcp_out_open = false;
+    }
     // 关连接
-    gr_tcp_close_from_in( conn );
+    gr_tcp_close_from_in( conn, self->tcp_out_disabled );
 }
 
 static inline
@@ -192,11 +203,22 @@ void on_tcp_full(
     // 当前连接的包继续收
     int     r;
  
-    r = gr_worker_add_tcp( req, false );
-    if ( 0 != r ) {
-        gr_fatal( "gr_worker_add_tcp return error %d", r );
-        on_tcp_recv_error( self, thread, conn );
-        return;
+    if ( ! self->worker_disabled ) {
+        // 启动 worker
+        r = gr_worker_add_tcp( req );
+        if ( 0 != r ) {
+            gr_fatal( "gr_worker_add_tcp return error %d", r );
+            on_tcp_recv_error( self, thread, conn );
+            return;
+        }
+    } else {
+        // 禁用 worker。直接在接收线程处理请求
+        r = gr_worker_process_tcp( req );
+        if ( 0 != r ) {
+            gr_fatal( "gr_worker_process_tcp return error %d", r );
+            on_tcp_recv_error( self, thread, conn );
+            return;
+        }
     }
 
     // 收完了，事后通知
@@ -256,6 +278,52 @@ void on_tcp_recv(
 
     // 收到了一个完整数据包
     on_tcp_full( self, thread, conn, req );
+}
+
+//
+
+static void tcp_io_worker( gr_thread_t * thread )
+{
+#define     TCP_IO_WAIT_TIMEOUT    100
+    int                     count;
+    int                     i;
+    gr_tcp_io_t *           self;
+    gr_poll_event_t *       events;
+    gr_poll_event_t *       e;
+    gr_tcp_conn_item_t *    conn;
+
+    self    = (gr_tcp_io_t *)thread->param;
+
+    events  = (gr_poll_event_t *)gr_malloc( sizeof( gr_poll_event_t ) * self->concurrent );
+    if ( NULL == events ) {
+        gr_fatal( "bad_alloc %d", (int)sizeof( gr_poll_event_t ) * self->concurrent );
+        return;
+    }
+
+    while ( ! thread->is_need_exit ) {
+
+        count = gr_poll_wait( self->poll, events, self->concurrent, TCP_IO_WAIT_TIMEOUT, thread );
+        if ( count < 0 ) {
+            gr_fatal( "gr_poll_wait return %d", count );
+            continue;
+        } else if ( 0 == count ) {
+            continue;
+        }
+
+        for ( i = 0; i < count; ++ i ) {
+            e = & events[ i ];
+
+            conn = (gr_tcp_conn_item_t *)e->data.ptr;
+
+            if ( e->events & GR_POLLIN ) {
+                on_tcp_recv( self, thread, conn );
+            } else if ( e->events & GR_POLLOUT ) {
+                on_tcp_send( self, thread, conn );
+            }
+        }
+    };
+
+    gr_free( events );
 }
 
 #endif // #ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_TCP_IO_H_

@@ -56,14 +56,10 @@
 #include "gr_backend.h"
 #include "gr_module.h"
 #include "gr_socket.h"
-#include <time.h>       // for time()
+#include "gr_http.h"
 #include <signal.h>
 
-int
-gr_server_init(
-    int             argc,
-    char **         argv
-)
+int gr_server_init()
 {
     gr_server_impl_t *  server;
 
@@ -79,12 +75,6 @@ gr_server_init(
         return GR_ERR_BAD_ALLOC;
     }
 
-    // 记录服务器启动时间
-    server->start_time = time( NULL );
-    // 记录命令行参数
-    server->argc = argc;
-    server->argv = argv;
-
     g_ghost_rocket_global.server = server;
     return GR_OK;
 }
@@ -99,18 +89,19 @@ void gr_server_term()
 
 void gr_server_need_exit( gr_server_impl_t * server )
 {
-    server->is_server_stopping = true;
+    g_ghost_rocket_global.server_interface.is_server_stopping = true;
 }
 
-static inline
-void
-do_close()
+void do_close()
 {
     // 做退出动作, 如果主程序在deamon=1时调用此功能,则服务器会重启
-    if ( NULL != g_ghost_rocket_global.server ) {
-        gr_server_impl_t *  server = g_ghost_rocket_global.server;
-        gr_server_need_exit( server );
+    gr_server_impl_t * server = g_ghost_rocket_global.server;
+    if ( NULL == server ) {
+        gr_error( "global.server is NULL" );
+        return;
     }
+
+    gr_server_need_exit( server );
 }
 
 #if defined( WIN32 ) || defined( WIN64 )
@@ -174,7 +165,7 @@ process_signal(
 
 #endif  // signal
 
-static inline
+static_inline
 void init_signal()
 {
 #if defined( WIN32 ) || defined( WIN64 )
@@ -233,7 +224,7 @@ void init_signal()
 #endif
 }
 
-static inline
+static_inline
 bool has_tcp()
 {
     gr_server_t * server_interface = & g_ghost_rocket_global.server_interface;
@@ -247,7 +238,7 @@ bool has_tcp()
     return false;
 }
 
-static inline
+static_inline
 bool has_udp()
 {
     gr_server_t * server_interface = & g_ghost_rocket_global.server_interface;
@@ -261,7 +252,7 @@ bool has_udp()
     return false;
 }
 
-static inline
+static_inline
 int
 server_init(
     gr_server_impl_t * server
@@ -365,7 +356,7 @@ server_init(
     return r;
 }
 
-static inline
+static_inline
 void
 server_term(
     gr_server_impl_t * server
@@ -443,7 +434,7 @@ start_listen(
     return 0;
 }
 
-static inline
+static_inline
 int
 server_loop(
     gr_server_impl_t * server
@@ -455,14 +446,14 @@ server_loop(
         return r;
     }
 
-    while ( ! server->is_server_stopping ) {
+    while ( ! g_ghost_rocket_global.server_interface.is_server_stopping ) {
         sleep_ms( 100 );
     }
 
     return 0;
 }
 
-static inline
+static_inline
 int
 bind_tcp(
     gr_server_impl_t * server,
@@ -518,7 +509,7 @@ bind_tcp(
     return 0;
 }
 
-static inline
+static_inline
 int
 bind_udp(
     gr_server_impl_t * server,
@@ -607,7 +598,7 @@ server_bind_port(
     return 0;
 }
 
-static inline
+static_inline
 int
 server_run(
     gr_server_impl_t * server
@@ -677,13 +668,13 @@ int gr_server_main()
 
     init_signal();
 
-    gr_info( "GRocket Server Started" );
+    gr_info( "[init]GRocket Server Started" );
 
     time( & start );
     r = server_run( server );
     time( & stop );
 
-    gr_info( "GRocket Server will exit(%d), running %d seconds(%d minutes | %d hours)",
+    gr_info( "[term]GRocket Server will exit(%d), running %d seconds(%d minutes | %d hours)",
         r,
         (int)(stop - start),
         (int)(stop - start) / 60,

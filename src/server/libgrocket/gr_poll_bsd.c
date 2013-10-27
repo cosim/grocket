@@ -53,6 +53,9 @@ struct gr_poll_t
     int             kqfd;
 
     const char *    name;
+
+    bool            need_in;
+    bool            need_out;
 };
 
 int gr_poll_raw_buff_for_accept_len()
@@ -85,6 +88,12 @@ gr_poll_t * gr_poll_create(
     gr_poll_t * p;
     int r = 0;
 
+    if ( sizeof( int ) != sizeof( socklen_t ) ) {
+        gr_fatal( "sizeof( int ) %d != sizeof( socklen_t ) %d",
+            (int)sizeof(int), (int)sizeof(socklen_t) );
+        return NULL;
+    }
+
     p = (gr_poll_t *)gr_calloc( 1, sizeof( gr_poll_t ) );
     if ( NULL == p ) {
         gr_fatal( "alloc %d failed", (int)sizeof( gr_poll_t ) );
@@ -95,6 +104,18 @@ gr_poll_t * gr_poll_create(
 
         p->kqfd         = -1;
         p->name         = name;
+
+        if ( EPOLLIN & poll_type ) {
+            p->need_in  = true;
+        }
+        if ( EPOLLOUT & poll_type ) {
+            p->need_out = true;
+        }
+        if ( ! p->need_in && ! p->need_out ) {
+            gr_fatal( "[init][poll_type=%d]invalid poll_type", (int)poll_type );
+            r = -2;
+            break;
+        }
 
         p->kqfd = kqueue();
         if ( -1 == p->kqfd ) {
@@ -145,7 +166,7 @@ int gr_poll_add_listen_fd(
     // 将 accept 加入 kqueue
     EV_SET( & ev,
         fd,                 // ident
-        EVFILT_READ,        // filter
+        poll->need_out ? (　EVFILT_READ | EVFILT_WRITE ) : EVFILT_READ,// filter
         EV_ADD,             // flags
         0,                  // fflags
         0,                  // data
@@ -176,7 +197,7 @@ int gr_poll_add_tcp_recv_fd(
 
     EV_SET( & ev,
         conn->fd,           // ident
-        EVFILT_READ,        // filter
+        poll->need_out ? (　EVFILT_READ | EVFILT_WRITE ) : EVFILT_READ,// filter
         EV_ADD,             // flags
         0,                  // fflags
         0,                  // data
@@ -185,7 +206,8 @@ int gr_poll_add_tcp_recv_fd(
     ts.tv_nsec = 0;
     r = kevent( poll->kqfd, & ev, 1, NULL, 0, & ts );
     if ( -1 == r ) {
-        gr_fatal( "%s kevent return error %d: %d,%s", poll->name, r, errno, strerror( errno ) );
+        gr_fatal( "%s kevent return error %d: %d,%s",
+                 poll->name, r, errno, strerror( errno ) );
         return r;
     }
 
@@ -209,14 +231,15 @@ int gr_poll_add_tcp_send_fd(
 
     EV_SET( & ev,
         conn->fd,           // ident
-        EVFILT_WRITE,       // filter
+        poll->need_out ? (　EVFILT_READ | EVFILT_WRITE ) : EVFILT_WRITE,// filter
         EV_ADD,// flags
         0,                  // fflags
         0,                  // data
         conn );             // udata
     r = kevent( poll->kqfd, & ev, 1, NULL, 0, & ts );
     if ( -1 == r ) {
-        gr_fatal( "%s kevent return error %d: %d,%s", poll->name, r, errno, strerror( errno ) );
+        gr_fatal( "%s kevent return error %d: %d,%s",
+                 poll->name, r, errno, strerror( errno ) );
         return r;
     }
 
@@ -225,7 +248,7 @@ int gr_poll_add_tcp_send_fd(
     return 0;
 }
 
-static inline
+static_inline
 int del_tcp_send_fd(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -260,7 +283,7 @@ int del_tcp_send_fd(
     return r;
 }
 
-static inline
+static_inline
 int del_tcp_recv_fd(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -355,7 +378,7 @@ int gr_poll_accept(
     int *               addrlen
 )
 {
-    return accept( listen_fd, addr, addrlen );
+    return accept( listen_fd, addr, (socklen_t*)addrlen );
 }
 
 int gr_poll_recv(
@@ -387,8 +410,13 @@ int gr_poll_recv(
         );
         if ( 0 == r ) {
             // 客户端关连接
-            gr_debug( "recv return %d, req_push=%d, req_proc=%d, rsp_send=%u", r,
+#ifdef GR_DEBUG_CONN
+            gr_debug( "recv return %d, req_push=%d, req_proc=%d, rsp_send=%llu", r,
                     conn->req_push_count, conn->req_proc_count, conn->rsp_send_count );
+#else
+            gr_debug( "recv return %d, req_push=%d, req_proc=%d", r,
+                    conn->req_push_count, conn->req_proc_count );
+#endif
             conn->close_type        = GR_NEED_CLOSE;
             conn->is_network_error  = true;
             break;
@@ -583,6 +611,25 @@ int gr_poll_del_tcp_send_fd(
         return GR_NOT_FOUND;
     }
     return GR_ERR_SYSTEM_CALL_FAILED;
+}
+
+int gr_pool_replace_from(
+    gr_poll_t *             poll,
+    gr_poll_t *             from_poll
+)
+{
+    int  t;
+
+    if ( -1 == from_poll->kqfd ) {
+        gr_fatal( "from_poll->kqfd is NULL" );
+        return -2;
+    }
+
+    t = poll->kqfd;
+    poll->kqfd = from_poll->kqfd;
+    close( t );
+
+    return 0;
 }
 
 #endif // #if defined( __APPLE__ )

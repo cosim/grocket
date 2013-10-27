@@ -9,6 +9,7 @@
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-13    Created.
+ *       2     zouyueming   2013-10-27    support tcp out disable
  **/
 /* 
  *
@@ -50,9 +51,17 @@ int gr_tcp_close_init();
 
 void gr_tcp_close_term();
 
-void gr_tcp_close_from_in( gr_tcp_conn_item_t * conn );
-void gr_tcp_close_from_out( gr_tcp_conn_item_t * conn );
-void gr_tcp_close_from_worker( gr_tcp_conn_item_t * conn );
+void gr_tcp_close_from_in(
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled );
+
+void gr_tcp_close_from_out(
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled );
+
+void gr_tcp_close_from_worker(
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled );
 
 #ifdef __cplusplus
 }

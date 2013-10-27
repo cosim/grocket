@@ -48,45 +48,38 @@ extern "C" {
 
 typedef struct
 {
+    // server interface
     gr_server_t         server_interface;
 
-    // 开始打日志的级别。级别比该值小的日志不会打
-    gr_log_level_t      log_start_level;
-
-    // 返回数据包对齐字节数
+    // response buffer max length will align up to  this value
     int                 rsp_buf_align;
 
-    // gr_log模块
+    // CPU affinity mask array
+    unsigned long       affinity_masks[ 32 ];
+
+    /////////////////////////////////////////////////////
+
     void *              log;
-    // gr_config模块
     void *              config;
-    // gr_server模块
     void *              server;
-    // gr_module模块
     void *              module;
-    // gr_tcp_accept模块
     void *              tcp_accept;
-    // gr_tcp_in模块
     void *              tcp_in;
-    // gr_tcp_out模块
     void *              tcp_out;
-    // gr_udp_in模块
     void *              udp_in;
-    // gr_udp_out模块
     void *              udp_out;
-    // gr_worker模块
     void *              worker;
-    // gr_backend模块
     void *              backend;
-    // gr_conn模块
     void *              conn;
-    // gr_library模块
     void *              library;
+    void *              http;
 
 } gr_global_t;
 
 // 直接用extern全局变量,目的是防止通过函数调用取该结构导致的函数调用开销
-extern gr_global_t g_ghost_rocket_global;
+extern gr_global_t  g_ghost_rocket_global;
+
+#define g_buildin   g_ghost_rocket_global.server_interface.library->buildin
 
 #ifdef __cplusplus
 }
