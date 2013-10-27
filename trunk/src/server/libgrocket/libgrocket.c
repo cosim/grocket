@@ -40,6 +40,7 @@
  */
 
 #include "libgrocket.h"
+#include <time.h>       // for time()
 #include "gr_errno.h"
 #include "gr_log.h"
 #include "gr_global.h"
@@ -47,6 +48,7 @@
 #include "gr_config.h"
 #include "gr_module.h"
 #include "gr_tools.h"
+#include "gr_thread.h"
 #include "gr_library_impl.h"
 #if defined( _MSC_VER ) && defined( _DEBUG )
     #include <crtdbg.h>
@@ -59,7 +61,7 @@
 // 加extern关键字的目的是性能，不必由于使用 static 关键字而付出取全局变量指针的函数调用时间
 gr_global_t g_ghost_rocket_global;
 
-static inline
+static_inline
 int system_init()
 {
 #if defined( WIN32 ) || defined( WIN64 )
@@ -80,19 +82,23 @@ int system_init()
     }
 #endif
 
+    gr_thread_init();
+
     return 0;
 }
 
-static inline
+static_inline
 void system_term()
 {
+    gr_thread_term();
+
 #if defined( WIN32 ) || defined( WIN64 )
     WSACleanup();
     CoUninitialize();
 #endif
 }
 
-static inline
+static_inline
 int setup_current_directory()
 {
 #if defined( WIN32 ) || defined( WIN64 )
@@ -161,10 +167,12 @@ gr_main(
         // 初始化全局唯一变量
         memset( & g_ghost_rocket_global, 0, sizeof(g_ghost_rocket_global) );
         // 默认从info开始打日志
-        g_ghost_rocket_global.log_start_level = GR_LOG_DEBUG; // GR_LOG_INFO;
+        g_ghost_rocket_global.server_interface.log_level = GR_LOG_DEBUG; // GR_LOG_INFO;
         // argc, argv
         g_ghost_rocket_global.server_interface.argc = argc;
         g_ghost_rocket_global.server_interface.argv = argv;
+        // 记录服务器启动时间
+        g_ghost_rocket_global.server_interface.start_time = time( NULL );
 
         // 设置当前目录，方便模块取当前目录
         r = setup_current_directory();
@@ -193,6 +201,20 @@ gr_main(
         gr_info( "==== grocket server version 1.%d(low compatible 1.%d) ====",
             GR_SERVER_VERSION, GR_SERVER_LOW_VERSION );
 
+        gr_info( "[init]%d processor", gr_processor_count() );
+
+#ifdef ENABLE_DEBUG_LOG
+    #if defined( WIN32 ) || defined( WIN64 )
+        #pragma message( "!!!!ENABLE_DEBUG_LOG defined, performance warning!" )
+    #else
+        #warning "!!!!ENABLE_DEBUG_LOG defined, performance warning!!!!"
+    #endif
+        gr_warning( "[init]!!!!ENABLE_DEBUG_LOG defined, performance warning!" );
+#else
+        gr_info( "[init]ENABLE_DEBUG_LOG not defined, "
+                 "server debug log will not output" );
+#endif
+
         // 初始化配置模块
         r = gr_config_init( ini_content, ini_content_len );
         if ( 0 != r ) {
@@ -210,14 +232,26 @@ gr_main(
         }
 
         if ( gr_config_is_debug() ) {
+#ifdef ENABLE_DEBUG_LOG
             gr_info( "[init] DEBUG model" );
-            g_ghost_rocket_global.log_start_level = GR_LOG_DEBUG;
+#else
+            gr_error( "[init] DEBUG model. but ENABLE_DEBUG_LOG not defined, "
+                      "server debug log will not output" );
+#endif
+            g_ghost_rocket_global.server_interface.log_level = GR_LOG_DEBUG;
         } else {
             // 从配置文件里读取日志级别
-            g_ghost_rocket_global.log_start_level = (gr_log_level_t)
-                gr_config_log_level( g_ghost_rocket_global.log_start_level );
+            g_ghost_rocket_global.server_interface.log_level = (gr_log_level_t)
+                gr_config_log_level( g_ghost_rocket_global.server_interface.log_level );
+            if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_DEBUG ) {
+#ifndef ENABLE_DEBUG_LOG
+                gr_error( "[init] log_level=%d. but ENABLE_DEBUG_LOG not defined, "
+                          "server debug log will not output",
+                    g_ghost_rocket_global.server_interface.log_level );
+#endif
+            }
         }
-        gr_info( "[init] LOG level = %d", g_ghost_rocket_global.log_start_level );
+        gr_info( "[init] LOG level = %d", g_ghost_rocket_global.server_interface.log_level );
 
         // 初始化用户模块
         r = gr_module_init(
@@ -229,7 +263,7 @@ gr_main(
         }
 
         // 初始化服务器
-        r = gr_server_init( argc, argv );
+        r = gr_server_init();
         if ( 0 == r ) {
 
             if ( gr_config_is_daemon() ) {

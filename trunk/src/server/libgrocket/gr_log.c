@@ -120,7 +120,7 @@ void gr_log_on_config_ready()
     }
 }
 
-static inline
+static_inline
 void log_write_file(
     gr_log_t *      log,
     const char *    data,
@@ -129,7 +129,13 @@ void log_write_file(
 {
     //TODO:
 
-    FILE * fp = fopen( log->path, "ab" );
+    FILE * fp;
+
+#ifdef _DEBUG
+    printf( "%s\n", data );
+#endif
+
+    fp = fopen( log->path, "ab" );
     if ( NULL != fp ) {
         fwrite( data, 1, data_len, fp );
         fclose( fp );
@@ -197,7 +203,7 @@ void gr_log_write(
     }
 
     // 日志内容和后面的文件名区分开来
-    #define MIN_LOG_LEN     64
+    #define MIN_LOG_LEN     40
     if ( r < MIN_LOG_LEN ) {
         memset( & buf[ r ], ' ', MIN_LOG_LEN - r );
         r = MIN_LOG_LEN;

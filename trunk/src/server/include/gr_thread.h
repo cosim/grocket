@@ -50,6 +50,9 @@ extern "C" {
     typedef HANDLE      pthread_t;
 #endif
 
+void gr_thread_init();
+void gr_thread_term();
+
 int gr_processor_count();
 
 /**
@@ -57,17 +60,13 @@ int gr_processor_count();
  * @param[out] thread 线程创建成功后返回线程id，由调用者提供内存
  * @param[in] start_routine 线程函数
  * @param[in] arg 线程参数
- * @param[in] cpu_id cpu id, -1 是不绑定CPU
- * @param[in] priority 优先级，0是一般级别，-1是优先级低一个级别，1是优先级高一个级别
  * @return int 成功返回0，失败返回错误码
  */
 int
 gr_thread_create(
     pthread_t * thread,
     void *(*start_routine)(void*),
-    void * arg,
-    int cpu_id,
-    int priority
+    void * arg
 );
 
 /**
@@ -91,6 +90,10 @@ struct gr_thread_t
 
     // 线程标识
     pthread_t       h;
+
+    // 线程的 pid 和 tid
+    int             pid;
+    int             tid;
 
     // 线程启动成功事件
     gr_event_t      event;
@@ -116,8 +119,15 @@ struct gr_thread_t
     volatile bool   is_started;
     volatile bool   is_running;
     volatile bool   is_need_exit;
+
+    bool            enable_thread;
     //
 
+    // CPU亲缘性设置
+    unsigned long   affinity_mask;
+
+    // 优先级，0是一般级别，-1是优先级低一个级别，1是优先级高一个级别
+    int             priority;
 };
 
 typedef struct
@@ -127,6 +137,9 @@ typedef struct
 
 } gr_threads_t;
 
+#define ENABLE_THREAD   true
+#define DISABLE_THREAD  false
+
 int gr_threads_start(
     gr_threads_t *  threads,
     int             thread_count,
@@ -135,6 +148,7 @@ int gr_threads_start(
     void *          param,
     int             cookie_max_bytes,
     bool            wait_for_all_thread_ready,
+    bool            enable_thread,
     const char *    name
 );
 

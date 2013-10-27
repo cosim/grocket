@@ -9,6 +9,7 @@
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-03    Created.
+ *       2     zouyueming   2013-10-27    support tcp out disable
  **/
 /* 
  *
@@ -39,9 +40,7 @@
 
 #include "gr_tcp_out.h"
 #include "tcp_io.h"
-#if defined( WIN32 ) || defined( WIN64 )
 #include "gr_tcp_in.h"
-#endif // #if defined( WIN32 ) || defined( WIN64 )
 
 #if ! defined( WIN32 ) && ! defined( WIN64 )
 
@@ -90,9 +89,26 @@ void tcp_out_worker( gr_thread_t * thread )
 int gr_tcp_out_init()
 {
     gr_tcp_out_t *  p;
-    int thread_count = gr_config_tcp_out_thread_count();
-    int r;
+    bool    tcp_out_disabled= gr_config_tcp_out_disabled();
+    int     thread_count    = gr_config_tcp_out_thread_count();
+    int     tcp_in_count    = gr_config_tcp_in_thread_count();
+    int     udp_in_count    = gr_config_udp_in_thread_count();
+    int     r;
 
+    if ( tcp_in_count < 0 || udp_in_count < 0 ) {
+        gr_fatal( "[init]tcp_in_count %d or udp_in_count %d invalid",
+            tcp_in_count, udp_in_count );
+        return GR_ERR_INVALID_PARAMS;
+    }
+
+#if ! defined( WIN32 ) && ! defined( WIN64 )
+    if ( tcp_out_disabled ) {
+        // 如果禁用 tcp_out，则修改线程数为 UDP 和 TCP 的总和，反正也不启那么多线程。
+        //TODO: 2013-10-26 查了一下HASH算法，和线程数量没关系，那为什么把HASH映射到
+        //      tcp_in_count 和 udp_in_count 的总和而不是它们的最大值?
+        thread_count    = tcp_in_count + udp_in_count;
+    }
+#endif
     if ( thread_count < 1 ) {
         gr_fatal( "[init]tcp_out thread_count invalid" );
         return GR_ERR_INVALID_PARAMS;
@@ -110,16 +126,23 @@ int gr_tcp_out_init()
         return GR_ERR_BAD_ALLOC;
     }
 
-    p->concurrent = gr_config_tcp_out_concurrent();
+    p->concurrent       = gr_config_tcp_out_concurrent();
+    p->worker_disabled  = gr_config_worker_disabled();
+    p->tcp_out_disabled = gr_config_tcp_out_disabled();
 
     r = GR_OK;
 
     do {
 
-        const char * name = "tcp.output";
+        const char * name   = "tcp.output";
 
-        p->poll = gr_poll_create( p->concurrent, thread_count, GR_POLLOUT, name );
+        p->poll = gr_poll_create(
+            p->concurrent,
+            thread_count,
+            p->tcp_out_disabled ? (GR_POLLIN | GR_POLLOUT) : GR_POLLOUT,
+            name );
         if ( NULL == p->poll ) {
+            gr_fatal( "[init]gr_poll_create return NULL" );
             r = GR_ERR_INIT_POLL_FALED;
             break;
         }
@@ -132,10 +155,25 @@ int gr_tcp_out_init()
             (gr_poll_t *)gr_tcp_in_get_poll()
         );
         if ( 0 != r ) {
+            gr_fatal( "[init]gr_pool_replace_from return error %d", r );
             r = GR_ERR_INIT_POLL_FALED;
             break;
         }
-        gr_info( "tcp.in and tcp.out use same IOCP" );
+        gr_info( "[init]tcp.in and tcp.out use same IOCP" );
+#else
+        if ( p->tcp_out_disabled ) {
+            // 如果要禁用tcp_out，则也要让 tcp_out和tcp_in共用 poll
+            r = gr_pool_replace_from(
+                p->poll,
+                (gr_poll_t *)gr_tcp_in_get_poll()
+            );
+            if ( 0 != r ) {
+                gr_fatal( "[init]gr_pool_replace_from return error %d", r );
+                r = GR_ERR_INIT_POLL_FALED;
+                break;
+            }
+            gr_info( "[init]tcp.in and tcp.out use same gr_poll" );
+        }
 #endif
 
         r = gr_threads_start(
@@ -143,19 +181,21 @@ int gr_tcp_out_init()
             thread_count,
             NULL,
 #if defined( WIN32 ) || defined( WIN64 )
-            tcp_io_windows,
+            tcp_io_worker,
 #else
-            tcp_out_worker,
+            p->tcp_out_disabled ? tcp_io_worker : tcp_out_worker,
 #endif
             p,
             gr_poll_raw_buff_for_tcp_out_len(),
             true,
+            p->tcp_out_disabled ? DISABLE_THREAD : ENABLE_THREAD,
             name );
         if ( GR_OK != r ) {
+            gr_fatal( "[init]gr_threads_start return error %d", r );
             break;
         }
 
-        gr_debug( "tcp_out_init OK" );
+        gr_debug( "[init]tcp_out_init OK" );
 
         r = GR_OK;
     } while ( false );

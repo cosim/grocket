@@ -40,6 +40,9 @@
 #ifndef _GHOST_ROCKET_INCLUDE_GRSTDINC_H_
 #define _GHOST_ROCKET_INCLUDE_GRSTDINC_H_
 
+//#define static_inline   static inline
+#define static_inline
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -96,12 +99,11 @@
     #endif
 
     #if defined( __linux )
-    #include <linux/unistd.h>   // __NR_gettid
+        #include <linux/unistd.h>   // __NR_gettid
     #endif
 
-    #include <pthread.h>
     #include <dlfcn.h>
-
+    #include <pthread.h>
     #include <ctype.h>
     #include <stdlib.h>
     #include <stdint.h>

@@ -67,7 +67,7 @@ typedef struct
 // TCP accept
 //
 
-static inline
+static_inline
 void on_tcp_accept(
     gr_accept_t *           self,
     gr_thread_t *           thread,
@@ -111,20 +111,20 @@ void on_tcp_accept(
             gr_socket_close( fd );
             continue;
         }
-
-        // 看模块喜不喜欢这个连接
-        if ( ! gr_module_on_tcp_accept( port_item, fd ) ) {
-            // 不喜欢，关掉就是了
-            gr_error( "gr_module_on_tcp_accept reject" );
-            gr_socket_close( fd );
-            continue;
-        }
  
         // 分配连接对象
         conn = gr_tcp_conn_alloc( port_item, fd );
         if ( NULL == conn ) {
             gr_error( "gr_conn_alloc_tcp failed" );
             gr_socket_close( fd );
+            continue;
+        }
+
+        // 看模块喜不喜欢这个连接
+        if ( ! gr_module_on_tcp_accept( conn ) ) {
+            // 不喜欢，关掉就是了
+            gr_error( "gr_module_on_tcp_accept reject" );
+            gr_tcp_conn_free( conn );
             continue;
         }
 
@@ -230,6 +230,7 @@ int gr_tcp_accept_init()
             p,
             gr_poll_raw_buff_for_accept_len(),
             true,
+            ENABLE_THREAD,
             name );
         if ( GR_OK != r ) {
             break;
@@ -298,8 +299,8 @@ int gr_tcp_accept_add_listen_ports()
                 return -2;
             }
 
-            gr_info( "start listen TCP port %d", item->port );
-            printf( "start listen TCP port %d\n", item->port );
+            gr_info( "[init]start listen TCP port %d", item->port );
+            printf( "[init]start listen TCP port %d\n", item->port );
         }
     }
 

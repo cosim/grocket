@@ -41,6 +41,9 @@
 #include "gr_errno.h"
 #include "gr_log.h"
 #include "gr_global.h"
+#if defined( __APPLE__ )
+    #include <mach/mach_time.h>
+#endif
 
 #if ! defined( __APPLE__ )
 
@@ -180,5 +183,70 @@ is_exists(
     return INVALID_FILE_ATTRIBUTES != GetFileAttributesA( path );
 #else
     return 0 == access( path, R_OK );
+#endif
+}
+
+uint32_t get_tick_count()
+{
+#if defined( WIN32 ) || defined( WIN64 )
+
+    return GetTickCount();
+
+#elif defined( __linux )
+
+    struct timespec ts;
+    if ( 0 != clock_gettime( CLOCK_MONOTONIC, & ts ) ) {
+        gr_error( "clock_gettime failed %d", get_errno() );
+        return (uint32_t)0;
+    }
+
+    // 这个折返的机率和GetTickCount是一样的
+    return (uint32_t)( ts.tv_sec * 1000L + ts.tv_nsec / 1000000L ); 
+
+#elif defined( __APPLE__ )
+
+    /*
+    mach_absolute_time函数返回的值是启动后系统CPU/Bus的clock一个tick数
+    因为这个 GetTickCount 是系统启动后的毫秒数，所以要获得系统启动后的时间需要
+    进行一次转换，还好Apple给出了一个官方的方法
+    Technical Q&A QA1398
+    Mach Absolute Time Units
+    https://developer.apple.com/library/mac/#qa/qa1398/_index.html
+    另外一些关于这个函数的说明文档如下：
+    http://www.macresearch.org/tutorial_performance_and_time
+        mach_absolute_time is a CPU/Bus dependent function that returns a value
+    based on the number of "ticks" since the system started up.
+    uint64_t mach_absolute_time(void);
+        Declared In: <mach/mach_time.h>
+        Dependency: com.apple.kernel.mach
+        This function returns a Mach absolute time value for the current wall
+    clock time in units of uint64_t.
+    https://developer.apple.com/library/mac/#documentation/Performance/Conceptual/LaunchTime/Articles/MeasuringLaunch.html
+        mach_absolute_time reads the CPU time base register and is the basis
+    for other time measurement functions.
+    */
+    static mach_timebase_info_data_t g_info;
+
+    if ( 0 == g_info.denom ) {
+        if ( KERN_SUCCESS != mach_timebase_info( & g_info ) ) {
+            gr_error( "mach_timebase_info failed %d", get_errno() );
+            return (uint32_t)0;
+        }
+    }
+
+    // 这个折返的机率和GetTickCount是一样的，只要乘的时候别溢出就行
+    return (uint32_t)( mach_absolute_time() * g_info.numer / g_info.denom / 1000000L );
+
+#else
+
+    // 这个应该是速度最慢的
+    struct timeval tv;
+    if ( 0 != gettimeofday( & tv, NULL ) ) {
+        gr_error( "gettimeofday failed %d", get_errno() );
+        return (uint32_t)0;
+    }
+
+    //TODO: 折返了怎么办？
+    return (uint32_t)( tv.tv_sec * 1000L + tv.tv_usec / 1000L );    
 #endif
 }

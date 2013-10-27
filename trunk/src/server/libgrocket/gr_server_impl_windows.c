@@ -49,7 +49,9 @@
 
 #include <Tlhelp32.h>
 
-static inline
+void do_close();
+
+static_inline
 bool
 set_service_name(
     gr_server_impl_t * server,
@@ -68,7 +70,7 @@ set_service_name(
     return true;
 }
 
-static inline
+static_inline
 bool
 calc_service_name(
     gr_server_impl_t * server
@@ -94,7 +96,7 @@ calc_service_name(
     return set_service_name( server, name );
 }
 
-static inline
+static_inline
 bool service_report_status(
     DWORD dwCurrentState,
     DWORD dwWin32ExitCode,
@@ -133,7 +135,7 @@ bool service_report_status(
     return fResult;
 }
 
-static inline
+static_inline
 void
 call_service_start(
     int argc,
@@ -150,20 +152,6 @@ call_service_start(
 
     service_report_status( SERVICE_STOPPED, NO_ERROR, 3000 );
 }
-
-static inline
-void do_close()
-{
-    // 做退出动作, 如果主程序在deamon=1时调用此功能,则服务器会重启
-    gr_server_impl_t * server = g_ghost_rocket_global.server;
-    if ( NULL == server ) {
-        gr_error( "global.server is NULL" );
-        return;
-    }
-
-    gr_server_need_exit( server );
-}
-
 
 static
 void WINAPI
@@ -248,7 +236,7 @@ service_main(
     );
 }
 
-static inline
+static_inline
 int
 install_service(
     gr_server_impl_t * server
@@ -308,7 +296,7 @@ install_service(
     return 0;
 }
 
-static inline
+static_inline
 int
 remove_service(
     gr_server_impl_t * server
@@ -388,8 +376,8 @@ int gr_server_daemon_main()
     }
 
     server  = g_ghost_rocket_global.server;
-    argc    = server->argc;
-    argv    = server->argv;
+    argc    = g_ghost_rocket_global.server_interface.argc;
+    argv    = g_ghost_rocket_global.server_interface.argv;
 
     if ( ! calc_service_name( server ) ) {
         gr_error( "calc_service_name failed" );
@@ -491,7 +479,7 @@ dog_process_signal(
                                 // shutting down.
 
         printf( "!!!!!! receive Dog stopping signal %d !!!!!!\n", (int)ctrl_type );
-        server->is_server_stopping = true;
+        g_ghost_rocket_global.server_interface.is_server_stopping = true;
         return TRUE;
 
     default:
@@ -503,7 +491,7 @@ dog_process_signal(
 
 #define SUBPROC_SIGN    "{9F592725-613E-4fd9-AAD1-C31F533FA4E9}"
 
-static inline
+static_inline
 void kill_sub_proc( gr_server_impl_t *  server )
 {
 	HANDLE ps = NULL;
@@ -547,7 +535,7 @@ void kill_sub_proc( gr_server_impl_t *  server )
 	CloseHandle( ps );
 }
 
-static inline
+static_inline
 HINSTANCE create_sub_proc( gr_server_impl_t *  server )
 {
     char cmd[MAX_PATH] = "";
@@ -592,7 +580,7 @@ HINSTANCE create_sub_proc( gr_server_impl_t *  server )
     return pi.hProcess;
 }
 
-static inline
+static_inline
 int dog_main( gr_server_impl_t *  server )
 {
     HANDLE  h;
@@ -606,7 +594,7 @@ int dog_main( gr_server_impl_t *  server )
     r =  gr_module_master_process_init();
     if ( 0 == r ) {
 
-        while( ! server->is_server_stopping )
+        while( ! g_ghost_rocket_global.server_interface.is_server_stopping )
         {
             h = create_sub_proc( server );
             if ( NULL == h ) {
@@ -616,7 +604,7 @@ int dog_main( gr_server_impl_t *  server )
 
             sub_proc_id = GetProcessId( h );
 
-            while( ! server->is_server_stopping ) {
+            while( ! g_ghost_rocket_global.server_interface.is_server_stopping ) {
 
                 DWORD r = WaitForSingleObject( h, 1000 );
                 if ( WAIT_OBJECT_0 == r ) {
@@ -653,8 +641,10 @@ int dog_main( gr_server_impl_t *  server )
 // Windows默认就是两个进程,因为不支持fork,所以只好这样
 int gr_server_console_main()
 {
-    bool    is_dog = true;
+    bool                is_dog = true;
     gr_server_impl_t *  server;
+    int                 argc;
+    char **             argv;
 
     if ( NULL == g_ghost_rocket_global.server ) {
         gr_error( "global.server is NULL" );
@@ -662,8 +652,11 @@ int gr_server_console_main()
     }
     server  = g_ghost_rocket_global.server;
 
-    if (   server->argc > 1
-        && ( 0 == strcmp( server->argv[ 1 ], "-debug" ) || 0 == strcmp( server->argv[ 1 ], "debug" ) ) )
+    argc = g_ghost_rocket_global.server_interface.argc;
+    argv = g_ghost_rocket_global.server_interface.argv;
+
+    if (   argc > 1
+        && ( 0 == strcmp( argv[ 1 ], "-debug" ) || 0 == strcmp( argv[ 1 ], "debug" ) ) )
     {
         // 有debug参数，则不启看门狗进程
         is_dog = false;
@@ -674,13 +667,13 @@ int gr_server_console_main()
         int i;
         char* cmdline;
         char* p;
-        for ( i = 1; i < server->argc; ++ i)
+        for ( i = 1; i < argc; ++ i)
         {
-            if (0 == strcmp(SUBPROC_SIGN, server->argv[i]))
+            if (0 == strcmp(SUBPROC_SIGN, argv[i]))
             {
                 is_dog = false;
                 // 清了防止别人看到
-                memset(server->argv[i], 0, sizeof(SUBPROC_SIGN)-1);
+                memset(argv[i], 0, sizeof(SUBPROC_SIGN)-1);
                 // 把Widnows的命令行也清了
                 cmdline = GetCommandLineA();
                 p = strstr(cmdline, SUBPROC_SIGN);
@@ -689,10 +682,10 @@ int gr_server_console_main()
                     memset(p, 0, sizeof(SUBPROC_SIGN)-1);
                 }
 
-                if ( server->argc > i + 1 ) {
+                if ( argc > i + 1 ) {
                     // 记录父进程ID
                     int idx = i + 1;
-                    const char * sppid = server->argv[ idx ];
+                    const char * sppid = argv[ idx ];
                     if ( * sppid > 0 && isdigit( * sppid ) ) {
                         int ppid = atoi( sppid );
                         server->parent_process = OpenProcess( PROCESS_QUERY_INFORMATION, FALSE, ppid );

@@ -70,11 +70,13 @@ int gr_config_udp_in_thread_count();
 
 int gr_config_tcp_out_thread_count();
 int gr_config_tcp_out_concurrent();
+bool gr_config_tcp_out_disabled();
 
 int gr_config_udp_out_concurrent();
 int gr_config_udp_out_thread_count();
 
 int gr_config_worker_thread_count();
+bool gr_config_worker_disabled();
 
 int gr_config_backend_thread_count();
 

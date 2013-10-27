@@ -41,6 +41,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_HTTP_H_
 
 #include "gr_stdinc.h"
+#include "grocket.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,6 +50,24 @@ extern "C" {
 int gr_http_init();
 
 void gr_http_term();
+
+void
+http_check(
+    const void * data,
+    int len,
+    gr_check_ctxt_t * ctxt,
+    bool * is_error,
+    bool * is_full
+);
+
+void
+http_proc(
+    const char *        buf,
+    int                 len,
+    gr_proc_ctxt_t *    ctxt,
+    gr_conn_buddy_t *   conn_buddy,
+    int *               processed_len
+);
 
 #ifdef __cplusplus
 }

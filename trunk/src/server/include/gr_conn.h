@@ -131,7 +131,7 @@ struct gr_tcp_req_t
     gr_queue_item_compact_t             entry_compact;
 
     // 当前数据包的检查上下文  
-    gr_check_ctxt_t                     check_ctxt;
+    gr_check_base_t                     check_ctxt;
 
 #if defined( WIN32 ) || defined( WIN64 )
     // Windows收, IOCP相关
@@ -173,7 +173,7 @@ struct gr_udp_req_t
     gr_queue_item_compact_t             entry_compact;
 
     // 当前数据包的检查上下文  
-    gr_check_ctxt_t                     check_ctxt;
+    gr_check_base_t                     check_ctxt;
 
 #if defined( WIN32 ) || defined( WIN64 )
     // Windows收, IOCP相关
@@ -216,12 +216,6 @@ struct gr_tcp_conn_item_t
     // 本字段值为0说明req_proc_count和req_push_count在维护，这时的数据是不准确的，不能读
     gr_atomic_t                         req_proc_count;
 
-    // out 线程实际发出的回复包数量, 爱折回就折回, 不管。调试用的。
-    unsigned int                        rsp_send_count;
-
-    // 当前连接的句柄
-    int                                 fd;
-
     // TCP回复单向列表表头。worker线程在压包前操作它，删除已经处理完的请求(是否压包后做删除会更好一点儿?)
     gr_tcp_rsp_t *                      rsp_list_head;
     // TCP回复单向列表表尾。worker线程通过该指针向队尾压包
@@ -236,7 +230,11 @@ struct gr_tcp_conn_item_t
     // 该连接的监听情况
     gr_port_item_t *                    port_item;
 
-    // 在64位系统上, 以上56字节
+    // 给用户存一个指针的空间
+    gr_conn_buddy_t                     buddy;
+
+    // 当前连接的句柄
+    int                                 fd;
 
     // 关闭类型。见 gr_tcp_close_type_t
     unsigned char                       close_type;
@@ -244,22 +242,28 @@ struct gr_tcp_conn_item_t
     // 是否已经检测出连接异常，此值为1，则不允许收发数据
     unsigned char                       is_network_error;
 
-    // 是否在监听接收数据。此值为false才不会收到数据
-    unsigned char                       tcp_in_open;
-
-    // 是否在允许发送状态中。允许发送状态，模块扔一个包，我就得发。必须要模块确认之后才能关闭发送
-    unsigned char                       tcp_out_open;
-
-    // 是否在允许处理状态中。
-    unsigned char                       worker_open;
-
     // 是否正在 worker 的处理过程中
     unsigned char                       worker_locked;
 
+    // 是否在监听接收数据。此值为false才不会收到数据
+    unsigned char                       tcp_in_open     : 1;
+
+    // 是否在允许发送状态中。允许发送状态，模块扔一个包，我就得发。必须要模块确认之后才能关闭发送
+    unsigned char                       tcp_out_open    : 1;
+
+    // 是否在允许处理状态中。
+    unsigned char                       worker_open     : 1;
+
+    unsigned char                       _reserve_5_bits  : 5;
+
+    // 在64位系统上, 以上64字节
+
 #ifdef GR_DEBUG_CONN
+    // out 线程实际发出的回复包数量
+    uint64_t                            rsp_send_count;
     uint64_t                            recv_bytes;
     uint64_t                            send_bytes;
-    char                                reserved[ 40 ];
+    char                                reserved[ 30 ];
 #endif
 
 } __attribute__ ((aligned (64)));
@@ -331,7 +335,8 @@ void gr_tcp_conn_pop_tail_req( gr_tcp_conn_item_t * conn )
 }
 
 void gr_tcp_conn_pop_top_req(
-    gr_tcp_conn_item_t *    conn
+    gr_tcp_conn_item_t *    conn,
+    bool                    tcp_out_disabled
 );
 
 // gr_tcp_req_free 和 gr_udp_req_free 的函数声明与本函数指针必须兼容

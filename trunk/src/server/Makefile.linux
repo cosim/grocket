@@ -2,7 +2,7 @@ CC			= gcc
 INCLUDE		=  -I../include -I./include -I../third/gperftools-2.1/src
 LIB			= -L/usr/lib -lpthread -ldl -lrt
 #CFLAGS		= -mcmodel=large -g -D_FILE_OFFSET_BITS=64
-CFLAGS		= -fPIC -g -D_FILE_OFFSET_BITS=64
+CFLAGS		= -fPIC -O3 -D_FILE_OFFSET_BITS=64
 
 CPPC		= g++
 

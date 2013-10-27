@@ -155,7 +155,7 @@ void gr_poll_destroy( gr_poll_t * poll )
     gr_free( poll );
 }
 
-static inline
+static_inline
 bool accept_ex_with_thread( gr_poll_t * poll, int fd, gr_thread_t * thread )
 {
     per_worker_accept_t *   p   = (per_worker_accept_t *)thread->cookie;
@@ -206,13 +206,13 @@ bool accept_ex_with_thread( gr_poll_t * poll, int fd, gr_thread_t * thread )
     return true;
 }
 
-static inline
+static_inline
 int hash_accept( gr_poll_t * poll, int fd )
 {
     return fd % poll->thread_count;
 }
 
-static inline
+static_inline
 bool accept_ex_with_threads( gr_poll_t * poll, int fd, gr_threads_t * threads )
 {
     int             hash_id = hash_accept( poll, fd );
@@ -249,7 +249,7 @@ int gr_poll_add_listen_fd(
     return 0;
 }
 
-static inline
+static_inline
 bool recv_with_thread(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -297,13 +297,13 @@ bool recv_with_thread(
     return true;
 }
 
-static inline
+static_inline
 int hash_recv( gr_poll_t * poll, int fd )
 {
     return fd % poll->thread_count;
 }
 
-static inline
+static_inline
 bool recv_with_threads(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -336,7 +336,7 @@ int gr_poll_add_tcp_recv_fd(
     return 0;
 }
 
-static inline
+static_inline
 bool send_with_thread(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -386,12 +386,12 @@ bool send_with_thread(
     return true;
 }
 
-static inline int hash_send( gr_poll_t * poll, int fd )
+static_inline int hash_send( gr_poll_t * poll, int fd )
 {
     return fd % poll->thread_count;
 }
 
-static inline
+static_inline
 bool send_with_threads(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
@@ -683,50 +683,6 @@ int gr_pool_replace_from(
     CloseHandle( t );
 
     return 0;
-}
-
-void tcp_io_windows( gr_thread_t * thread )
-{
-#define     TCP_IO_WAIT_TIMEOUT    100
-    int                     count;
-    int                     i;
-    gr_tcp_io_t *           self;
-    gr_poll_event_t *       events;
-    gr_poll_event_t *       e;
-    gr_tcp_conn_item_t *    conn;
-
-    self    = (gr_tcp_io_t *)thread->param;
-
-    events  = (gr_poll_event_t *)gr_malloc( sizeof( gr_poll_event_t ) * self->concurrent );
-    if ( NULL == events ) {
-        gr_fatal( "bad_alloc %d", (int)sizeof( gr_poll_event_t ) * self->concurrent );
-        return;
-    }
-
-    while ( ! thread->is_need_exit ) {
-
-        count = gr_poll_wait( self->poll, events, self->concurrent, TCP_IO_WAIT_TIMEOUT, thread );
-        if ( count < 0 ) {
-            gr_fatal( "gr_poll_wait return %d", count );
-            continue;
-        } else if ( 0 == count ) {
-            continue;
-        }
-
-        for ( i = 0; i < count; ++ i ) {
-            e = & events[ i ];
-
-            conn = (gr_tcp_conn_item_t *)e->data.ptr;
-
-            if ( e->events & GR_POLLIN ) {
-                on_tcp_recv( self, thread, conn );
-            } else if ( e->events & GR_POLLOUT ) {
-                on_tcp_send( self, thread, conn );
-            }
-        }
-    };
-
-    gr_free( events );
 }
 
 int gr_poll_recv_done(

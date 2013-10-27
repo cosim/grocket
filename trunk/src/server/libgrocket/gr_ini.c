@@ -44,7 +44,7 @@
 #include "gr_tools.h"
 #include "gr_mem.h"
 
-static inline
+static_inline
 int
 gr_ini_open2(
     gr_ini * ini
@@ -288,7 +288,7 @@ gr_ini_close(
 }
 
 
-static inline
+static_inline
 gr_ini_section *
 ini_find_section(
     gr_ini * ini,
@@ -315,7 +315,7 @@ ini_find_section(
     return NULL;
 }
 
-static inline
+static_inline
 const char *
 ini_find_in_section(
     gr_ini_section * ini,

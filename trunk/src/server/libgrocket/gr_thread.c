@@ -43,9 +43,189 @@
 #include "gr_tools.h"
 #include "gr_errno.h"
 #include "gr_mem.h"
+#if defined( __linux )
+    #include <sched.h>
+#endif
 
-//#define LINUX_SUPPORT_BIND_CPU
- 
+void gr_thread_init()
+{
+    g_ghost_rocket_global.affinity_masks[ 0 ] = 0x00000001;
+    g_ghost_rocket_global.affinity_masks[ 1 ] = 0x00000002;
+    g_ghost_rocket_global.affinity_masks[ 2 ] = 0x00000004;
+    g_ghost_rocket_global.affinity_masks[ 3 ] = 0x00000008;
+    g_ghost_rocket_global.affinity_masks[ 4 ] = 0x00000010;
+    g_ghost_rocket_global.affinity_masks[ 5 ] = 0x00000020;
+    g_ghost_rocket_global.affinity_masks[ 6 ] = 0x00000040;
+    g_ghost_rocket_global.affinity_masks[ 7 ] = 0x00000080;
+    g_ghost_rocket_global.affinity_masks[ 8 ] = 0x00000100;
+    g_ghost_rocket_global.affinity_masks[ 9 ] = 0x00000200;
+    g_ghost_rocket_global.affinity_masks[10 ] = 0x00000400;
+    g_ghost_rocket_global.affinity_masks[11 ] = 0x00000800;
+    g_ghost_rocket_global.affinity_masks[12 ] = 0x00001000;
+    g_ghost_rocket_global.affinity_masks[13 ] = 0x00002000;
+    g_ghost_rocket_global.affinity_masks[14 ] = 0x00004000;
+    g_ghost_rocket_global.affinity_masks[15 ] = 0x00008000;
+    g_ghost_rocket_global.affinity_masks[16 ] = 0x00010000;
+    g_ghost_rocket_global.affinity_masks[17 ] = 0x00020000;
+    g_ghost_rocket_global.affinity_masks[18 ] = 0x00040000;
+    g_ghost_rocket_global.affinity_masks[19 ] = 0x00080000;
+    g_ghost_rocket_global.affinity_masks[20 ] = 0x00100000;
+    g_ghost_rocket_global.affinity_masks[21 ] = 0x00200000;
+    g_ghost_rocket_global.affinity_masks[22 ] = 0x00400000;
+    g_ghost_rocket_global.affinity_masks[23 ] = 0x00800000;
+    g_ghost_rocket_global.affinity_masks[24 ] = 0x01000000;
+    g_ghost_rocket_global.affinity_masks[25 ] = 0x02000000;
+    g_ghost_rocket_global.affinity_masks[26 ] = 0x04000000;
+    g_ghost_rocket_global.affinity_masks[27 ] = 0x08000000;
+    g_ghost_rocket_global.affinity_masks[28 ] = 0x10000000;
+    g_ghost_rocket_global.affinity_masks[29 ] = 0x20000000;
+    g_ghost_rocket_global.affinity_masks[30 ] = 0x40000000;
+    g_ghost_rocket_global.affinity_masks[31 ] = 0x80000000;
+}
+
+void gr_thread_term()
+{
+}
+
+static_inline
+unsigned long get_cpu_affinity( const char * role, int thread_id, int * priority )
+{
+    // tcp.listen
+    // tcp.input
+    // tcp.output
+    // udp.in
+    // udp.out
+    // svr.worker
+
+    * priority = 0;
+    return 0;
+    /*
+    unsigned long * masks = g_ghost_rocket_global.affinity_masks;
+    int ncpu = gr_processor_count();
+    int ncpu_max = 32;
+
+    * priority = 0;
+
+    //return 0;
+
+    if ( thread_id < 0 || thread_id >= ncpu_max ) {
+        // 爱用哪个核用哪个核
+        return 0;
+    }
+
+    if ( ncpu <= 2 ) {
+        // 2 核
+        if (   strstr( role, "tcp.listen" )
+            || strstr( role, "tcp.input" )
+            || strstr( role, "tcp.output" )
+            || strstr( role, "udp.in" )
+            || strstr( role, "udp.out" ) )
+        {
+            // 所有的收、发在0核
+            return masks[0];
+        }
+
+        if ( strstr( role, "svr.worker" ) ) {
+            // 所有的处理在1核
+            return masks[1];
+        }
+
+        return 0;
+
+    } else if ( ncpu <= 4 ) {
+        // 4 核
+        if (   strstr( role, "tcp.listen" )
+            || strstr( role, "tcp.input" )
+            || strstr( role, "udp.in" ) )
+        {
+            // 所有的收在0核
+            return masks[0];
+        }
+
+        if (   strstr( role, "tcp.output" )
+            || strstr( role, "udp.out" ) )
+        {
+            // 所有的发在1核
+            return masks[1];
+        }
+
+        if ( strstr( role, "svr.worker" ) ) {
+            // 所有的处理在2和3核
+            if ( 0 == ( thread_id % 2 ) ) {
+                return masks[2];
+            }
+
+            return masks[3];
+        }
+
+        return 0;
+
+    } else if ( ncpu <= 8 ) {
+        // 8
+
+        if ( strstr( role, "tcp.listen" ) ) {
+            // 
+            return masks[0 + thread_id % 8];
+        }
+
+        if ( strstr( role, "tcp.input" ) ) {
+            return masks[1 + thread_id % 7];
+        }
+
+        if ( strstr( role, "udp.in" ) ) {
+            return masks[2 + thread_id % 6];
+        }
+
+        if ( strstr( role, "tcp.output" ) ) {
+            return masks[3 + thread_id % 5];
+        }
+
+        if ( strstr( role, "udp.out" ) ) {
+            return masks[4 + thread_id % 4];
+        }
+
+        if ( strstr( role, "svr.worker" ) ) {
+            // 所有的处理在567核
+            return masks[5 + thread_id % 3];
+        }
+
+        return 0;
+
+    } else {
+        // 大于 8 核
+        if ( strstr( role, "tcp.listen" ) ) {
+            // 
+            return masks[0 + thread_id % 2];
+        }
+
+        if ( strstr( role, "tcp.input" ) ) {
+            return masks[2 + thread_id % 4];
+        }
+
+        if ( strstr( role, "udp.in" ) ) {
+            return masks[6];
+        }
+
+        if ( strstr( role, "tcp.output" ) ) {
+            return masks[7 + thread_id % 4];
+        }
+
+        if ( strstr( role, "udp.out" ) ) {
+            return masks[11];
+        }
+
+        if ( strstr( role, "svr.worker" ) ) {
+            // 所有的处理在567核
+            return masks[12 + thread_id % 4];
+        }
+
+        return 0;
+    }
+
+    return 0;
+    */
+}
+
 int gr_processor_count()
 {
     // 我不相信你丫可以热插拔CPU
@@ -67,147 +247,36 @@ int
 gr_thread_create(
     pthread_t * thread,
     void *(*start_routine)(void*),
-    void * arg,
-    int cpu_id,
-    int priority
+    void * arg
 )
 {
 #if defined( WIN32 ) || defined( WIN64 )
     DWORD tid;
-    static DWORD_PTR mask_map[] = {
-        0x00000001, 0x00000002, 0x00000004, 0x00000008,
-        0x00000010, 0x00000020, 0x00000040, 0x00000080,
-        0x00000100, 0x00000200, 0x00000400, 0x00000800,
-        0x00001000, 0x00002000, 0x00004000, 0x00008000,
-        0x00010000, 0x00020000, 0x00040000, 0x00080000,
-        0x00100000, 0x00200000, 0x00400000, 0x00800000,
-        0x01000000, 0x02000000, 0x04000000, 0x08000000,
-        0x10000000, 0x20000000, 0x40000000, 0x80000000
-    };
-
-    if ( cpu_id >= 0 && cpu_id >= COUNT_OF( mask_map ) ) {
-        gr_fatal( "ooh my god! your CPU is pretty cool!!!" );
-        return -1;
-    }
 
     * thread = CreateThread(
 	    0,
         (unsigned int)0,
         (LPTHREAD_START_ROUTINE)start_routine,
         (LPVOID)arg,
-        CREATE_SUSPENDED,
+        0 /*CREATE_SUSPENDED*/,
         & tid
     );
     if ( NULL == * thread ) {
-        gr_fatal( "CreateThread failed: %d", get_errno() );
+        gr_fatal( "[init]CreateThread failed: %d", get_errno() );
         return -2;
     }
 
-    // CPU亲缘性
-    if ( cpu_id >= 0 ) {
-        if ( 0 == SetThreadAffinityMask( * thread, mask_map[ cpu_id ] ) ) {
-            gr_fatal( "SetThreadAffinityMask failed: %d", get_errno() );
-            CloseHandle( * thread );
-            * thread = NULL;
-            return -3;
-        }
-    }
-
-    // 线程优先级
-    switch( priority ) {
-    case -3:
-        priority = THREAD_PRIORITY_IDLE;
-        break;
-    case -2:
-        priority = THREAD_PRIORITY_LOWEST;
-        break;
-    case -1:
-        priority = THREAD_PRIORITY_BELOW_NORMAL;
-        break;
-    case 0:
-        priority = THREAD_PRIORITY_NORMAL;
-        break;
-    case 1:
-        priority = THREAD_PRIORITY_ABOVE_NORMAL;
-        break;
-    case 2:
-        priority = THREAD_PRIORITY_HIGHEST;
-        break;
-    case 3:
-        priority = THREAD_PRIORITY_TIME_CRITICAL;
-        break;
-    default:
-        gr_fatal( "invalid priority: %d", priority );
-        CloseHandle( * thread );
-        * thread = NULL;
-        return -4;
-        break;
-    }
-    if ( ! SetThreadPriority( * thread, priority ) ) {
-        gr_fatal( "SetThreadPriority failed: %d", (int)GetLastError() );
-        CloseHandle( * thread );
-        * thread = NULL;
-        return -5;
-    }
-
-    // 恢复线程运行
-    if ( (DWORD)-1 == ResumeThread( * thread ) ) {
-        gr_fatal( "ResumeThread failed: %d", get_errno() );
-        CloseHandle( * thread );
-        * thread = NULL;
-        return -6;
-    }
-    return 0;
-#elif defined( __APPLE__ )
-    int r;
-    int e;
-    if ( cpu_id > 0 ) {
-        r = pthread_create( thread, NULL, start_routine, arg );
-        e = errno;
-    } else {
-        r = pthread_create( thread, NULL, start_routine, arg );
-        e = errno;
-    }
-    if ( 0 != r ) {
-        gr_fatal( "pthread_create failed: %d,%s", e, strerror(e) );
-        return -2;
-    }
-    return 0;
-#elif defined( __linux )
-    int r;
-    int e;
-    #if defined( LINUX_SUPPORT_BIND_CPU )
-    if ( cpu_id > 0 ) {
-        cpu_set_t cpu_info;
-        pthread_attr_t attr;
-
-        __CPU_ZERO( & cpu_info );
-        __CPU_SET( cpu_id, & cpu_info );
-        pthread_attr_init( & attr );
-
-        r = pthread_attr_setaffinity_np( & attr, sizeof( cpu_set_t ), & cpu_info );
-        if ( 0 != r ) {
-            return -1;
-        }
-
-        r = pthread_create( thread, & attr, start_routine, arg );
-        e = errno;
-
-        pthread_attr_destroy( & attr );
-    } else {
-    #endif // #if defined( LINUX_SUPPORT_BIND_CPU )
-        r = pthread_create( thread, NULL, start_routine, arg );
-        e = errno;
-    #if defined( LINUX_SUPPORT_BIND_CPU )
-    }
-    #endif // #if defined( LINUX_SUPPORT_BIND_CPU )
-    if ( 0 != r ) {
-        gr_fatal( "pthread_create failed: %d,%s", e, strerror(e) );
-        return -2;
-    }
     return 0;
 #else
-    #error unknonw platform
+    int r;
+    int e;
+    r = pthread_create( thread, NULL, start_routine, arg );
+    e = errno;
+    if ( 0 != r ) {
+        gr_fatal( "[init]pthread_create failed: %d,%s", e, strerror(e) );
+        return -2;
+    }
+    return 0;
 #endif
 }
 
@@ -230,23 +299,108 @@ gr_thread_join(
 
 void * gr_thread_runtine( gr_thread_t * thread )
 {
-    int pid = getpid();
-    int tid = gettid();
+    thread->pid = getpid();
+    thread->tid = gettid();
 
-    // 线程启动标记
-    thread->is_running = true;
-    // 初始化
-    if ( NULL != thread->init_routine ) {
-        gr_info( "[pid=%d][tid=%d][name=%s.%d] init thread starting", pid, tid, thread->name, thread->id );
-        thread->init_routine( thread );
-        gr_info( "[pid=%d][tid=%d][name=%s.%d] init thread started", pid, tid, thread->name, thread->id );
-    }
-    // 线程启动事件
-    gr_event_alarm( & thread->event );
-    // 线程用户函数
-    gr_info( "[pid=%d][tid=%d][name=%s.%d] thread routine starting", pid, tid, thread->name, thread->id );
-    thread->routine( thread );
-    gr_info( "[pid=%d][tid=%d][name=%s.%d] thread routine exit", pid, tid, thread->name, thread->id );
+    do {
+
+#if defined( WIN32 ) || defined( WIN64 )
+        {
+            int priority = thread->priority;
+            // CPU亲缘性
+            if ( 0 != thread->affinity_mask ) {
+                if ( 0 == SetThreadAffinityMask( thread->h, (DWORD_PTR)thread->affinity_mask ) ) {
+                    gr_fatal( "[init]SetThreadAffinityMask failed: %d", get_errno() );
+                    break;
+                }
+            }
+            // 优先级
+            switch( priority ) {
+            case -3:
+                priority = THREAD_PRIORITY_IDLE;
+                break;
+            case -2:
+                priority = THREAD_PRIORITY_LOWEST;
+                break;
+            case -1:
+                priority = THREAD_PRIORITY_BELOW_NORMAL;
+                break;
+            case 0:
+                priority = THREAD_PRIORITY_NORMAL;
+                break;
+            case 1:
+                priority = THREAD_PRIORITY_ABOVE_NORMAL;
+                break;
+            case 2:
+                priority = THREAD_PRIORITY_HIGHEST;
+                break;
+            case 3:
+                priority = THREAD_PRIORITY_TIME_CRITICAL;
+                break;
+            default:
+                gr_fatal( "[init]invalid priority: %d", priority );
+                return NULL;
+                break;
+            }
+            if ( THREAD_PRIORITY_NORMAL != priority ) {
+                if ( ! SetThreadPriority( thread->h, priority ) ) {
+                    gr_fatal( "[init]SetThreadPriority failed: %d", (int)GetLastError() );
+                    break;
+                }
+            }
+        }
+
+#elif defined( __linux )
+        if ( 0 != thread->affinity_mask ) {
+            // CPU亲缘性
+            unsigned long   affinity = thread->affinity_mask;
+            cpu_set_t       mask;
+            int             i;
+            int             r;
+
+            CPU_ZERO( & mask );
+            i = 0;
+            do {
+                if ( affinity & 1 ) {
+                    CPU_SET( i, & mask );
+                }
+                ++ i;
+                affinity >>= 1;
+            } while ( affinity );
+
+            r = sched_setaffinity( thread->tid, sizeof( cpu_set_t ), & mask );
+            if ( 0 != r ) {
+                gr_fatal( "[init]sched_setaffinity( %d ) failed, errno=%d:%s",
+                    thread->tid, errno, strerror( errno ) );
+                break;
+            }
+        }
+#endif
+
+        // 线程启动标记
+        thread->is_running = true;
+        // 初始化
+        if ( NULL != thread->init_routine ) {
+            gr_info( "[init][name=%s.%d] thread %d init begining...",
+                thread->name, thread->id, thread->tid );
+            thread->init_routine( thread );
+            gr_info( "[init][name=%s.%d] thread %d init done.",
+                thread->name, thread->id, thread->tid );
+        }
+        // 线程启动事件
+        gr_event_alarm( & thread->event );
+        // 线程用户函数
+        gr_info( "[init][name=%s.%d] thread %d routine running",
+            thread->name, thread->id, thread->tid );
+        thread->routine( thread );
+        gr_info( "[term][name=%s.%d] thread %d routine exit",
+            thread->name, thread->id, thread->tid );
+
+    } while ( false );
+
+    gr_info( "[term][name=%s.%d] thread %d exit",
+        thread->name, thread->id, thread->tid );
+
     // 线程退出标记
     thread->is_running = false;
     // 线程关闭事件
@@ -262,6 +416,7 @@ int gr_threads_start(
     void *          param,
     int             cookie_max_bytes,
     bool            wait_for_all_thread_ready,
+    bool            enable_thread,
     const char *    name
 )
 {
@@ -296,7 +451,7 @@ int gr_threads_start(
             if ( t->cookie_max > 0 ) {
                 t->cookie = (char *)gr_calloc( 1, t->cookie_max );
                 if ( NULL == t->cookie ) {
-                    gr_fatal( "bad_alloc %d", t->cookie_max );
+                    gr_fatal( "[init]bad_alloc %d", t->cookie_max );
                     r = GR_ERR_BAD_ALLOC;
                     break;
                 }
@@ -310,6 +465,8 @@ int gr_threads_start(
             t->id           = i;
             t->is_started   = false;
             t->name         = name;
+            t->affinity_mask= get_cpu_affinity( name, i, & t->priority );
+            t->enable_thread= enable_thread;
 
             ret = gr_event_create( & t->event );
             if ( 0 != ret ) {
@@ -319,19 +476,20 @@ int gr_threads_start(
                 break;
             }
 
-            ret = gr_thread_create(
-                & t->h,
-                (std_thread_routine)gr_thread_runtine,
-                t,
-                -1, 0 );
-            if ( 0 != ret ) {
-                gr_fatal( "[init]gr_thread_create failed" );
-                r = GR_ERR_CREATE_THREAD_FALED;
-                gr_event_destroy( & t->event );
-                break;
-            }
+            if ( enable_thread ) {
+                ret = gr_thread_create(
+                    & t->h,
+                    (std_thread_routine)gr_thread_runtine,
+                    t );
+                if ( 0 != ret ) {
+                    gr_fatal( "[init]gr_thread_create failed" );
+                    r = GR_ERR_CREATE_THREAD_FALED;
+                    gr_event_destroy( & t->event );
+                    break;
+                }
 
-            t->is_started = true;
+                t->is_started = true;
+            }
 
             ++ p->thread_count;
         }
@@ -340,15 +498,19 @@ int gr_threads_start(
         }
 
         // 等所有线程都启动
-        if ( wait_for_all_thread_ready ) {
+        if ( enable_thread && wait_for_all_thread_ready ) {
             for ( i = 0; i < p->thread_count; ++ i ) {
                 gr_thread_t * t = & p->threads[ i ];
                 //TODO: 没判断返回值
                 gr_event_wait( & t->event, GR_EVENT_WAIT_INFINITE );
+
+                if ( ! t->is_running ) {
+                    gr_fatal( "[init] %s thread %d start failed", name, i );
+                    r = GR_ERR_UNKNOWN;
+                    break;
+                }
             }
         }
-
-        r = GR_OK;
     } while ( false );
 
     if ( GR_OK != r ) {
@@ -385,20 +547,19 @@ void gr_threads_close( gr_threads_t * threads )
                 if ( t->is_started ) {
                     gr_thread_join( & t->h );
                     t->is_started = false;
-                    gr_event_destroy( & t->event );
-                    -- threads->thread_count;
                 }
-            }
 
-            // 删所有线程的cookie
-            for ( i = 0; i < threads->thread_count; ++ i ) {
-                t = & threads->threads[ i ];
+                // 删线程的cookie
                 t->cookie_len = 0;
                 t->cookie_max = 0;
                 if ( NULL != t->cookie ) {
                     gr_free( t->cookie );
                     t->cookie = NULL;
                 }
+
+                gr_event_destroy( & t->event );
+
+                -- threads->thread_count;
             }
         }
 

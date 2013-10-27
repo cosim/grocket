@@ -821,7 +821,7 @@ void gr_invoke_void(
     }
 }
 
-static inline
+static_inline
 void push_stack( char * stk, size_t * stk_len, void * data, size_t data_len )
 {
     //TODO: 在这儿做padding

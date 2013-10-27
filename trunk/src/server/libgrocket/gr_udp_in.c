@@ -61,7 +61,7 @@ typedef struct
 
 } gr_udp_in_t;
 
-static inline
+static_inline
 void on_udp_in(
     gr_udp_in_t *       self,
     gr_thread_t *       thread,
@@ -158,6 +158,7 @@ int gr_udp_in_init()
             p,
             gr_poll_raw_buff_for_udp_in_len(),
             true,
+            ENABLE_THREAD,
             "udp.in" );
         if ( GR_OK != r ) {
             break;

@@ -65,7 +65,7 @@ int buildin_library_init(
     gr_library_t *  library
 );
 
-static inline
+static_inline
 void library_impl_destroy( gr_library_impl_t * self )
 {
     uint32_t i;
@@ -193,7 +193,7 @@ void gr_library_impl_term()
 
 ///////////////////////////////////////////////////////////////////////
 
-static inline
+static_inline
 int buildin_library_init(
     gr_library_t *  library
 )

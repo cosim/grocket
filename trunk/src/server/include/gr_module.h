@@ -69,10 +69,8 @@ void gr_module_child_process_term();
 int gr_module_worker_init( int worker_id );
 void gr_module_worker_term( int worker_id );
 
-bool gr_module_on_tcp_accept(
-    gr_port_item_t *    port_item,
-    int                 fd
-);
+bool gr_module_on_tcp_accept( gr_tcp_conn_item_t * conn );
+void gr_module_on_tcp_close( gr_tcp_conn_item_t * conn );
 
 void gr_module_check_tcp(
     gr_tcp_req_t *      req,
@@ -83,6 +81,12 @@ void gr_module_check_tcp(
 void gr_module_proc_tcp(
     gr_tcp_req_t *      req,
     gr_proc_ctxt_t *    ctxt,
+    int *               processed_len
+);
+
+void gr_module_proc_http(
+    gr_http_ctxt_t *    http,
+    gr_conn_buddy_t *   conn_buddy,
     int *               processed_len
 );
 

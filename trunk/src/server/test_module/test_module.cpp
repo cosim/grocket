@@ -46,6 +46,11 @@ gr_i_server_t * g_funcs     = NULL;
 extern "C"
 {
 
+struct conn
+{
+    int check_number;
+};
+
 void gr_version(
     int *               gr_server_version
 )
@@ -172,21 +177,38 @@ void gr_term(
 void gr_tcp_accept(
     int                 port,
     int                 sock,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              need_disconnect
 )
 {
-    // 模块可以有选择的决定是否要关掉这个TCP连接，如果要关掉，就*need_disconnect=true即可。
-    // 模块可以从port参数得到这个连接是从服务器的哪个监听端口连上来的
+    struct conn * cn;
 
     printf( "%d port accepted socket %d\n", port, sock );
+
+    cn = (struct conn *)g_funcs->memory_alloc( g_funcs, sizeof( struct conn ) );
+    if ( NULL == cn ) {
+        * need_disconnect = true;
+        return;
+    }
+    cn->check_number = 0;
+    g_funcs->log( g_funcs, __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO, "[cn=%p][n=%d]", cn, cn->check_number );
+    assert( 0 == cn->check_number );
+
+    conn_buddy->ptr = cn;
 }
 
 void gr_tcp_close(
 	int                 port,
-    int                 sock
+    int                 sock,
+    gr_conn_buddy_t *   conn_buddy
 )
 {
-    // 模块可以从port参数得到这个要断掉的TCP连接是从服务器的哪个监听端口连上来的
+    if ( conn_buddy->ptr ) {
+        struct conn * cn = (struct conn *)conn_buddy->ptr;
+        g_funcs->log( g_funcs, __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO, "[cn=%p][n=%d]", cn, cn->check_number );
+        g_funcs->memory_free( g_funcs, cn );
+        conn_buddy->ptr = NULL;
+    }
 
     printf( "%d port will close socket %d\n", port, sock );
 }
@@ -194,9 +216,8 @@ void gr_tcp_close(
 void gr_check(
     void *              data,
     int                 len,
-    gr_port_item_t *    port_info,
-    int                 sock,
     gr_check_ctxt_t *   ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     bool *              is_error,
     bool *              is_full
 )
@@ -258,7 +279,6 @@ void gr_check(
         *is_error = false;
         // 但不是完整包，让服务器框架继续收
         *is_full = false;
-        printf( "not full\n" );
         return;
     }
 
@@ -271,7 +291,6 @@ void gr_check(
     // 必须填写完整包长度
 
     ctxt->cc_package_length = len;
-    printf( "full\n" );
     // 看，实际上我们只用了data和len两个参数判断数据包，给了那么多参数，
     // 实际是为了方便模块编写者根据不同的场景、环境做不同的处理。
 
@@ -281,19 +300,22 @@ void gr_proc(
     const char *        data,
     int                 len,
     gr_proc_ctxt_t *    ctxt,
+    gr_conn_buddy_t *   conn_buddy,
     int *               processed_len
 )
 {
-    static int      g_last_n = 0;
+    struct conn *   cn = (struct conn *)conn_buddy->ptr;
     gr_i_server_t * o = g_funcs;
     char *          rsp;
     int             n;
+
+    assert( cn );
+    //o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO, "[cn=%p][n=%d]", cn, cn->check_number );
 
     if ( len <= 1 ) {
         o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
             "invalid len %d", len );
         * processed_len = -1;
-        g_last_n = 0;
         return;
     }
 
@@ -301,7 +323,6 @@ void gr_proc(
         o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
             "invalid data=\"%s\", len=%d", data, len );
         * processed_len = -1;
-        g_last_n = 0;
         return;
     }
     n = atoi( data );
@@ -309,19 +330,17 @@ void gr_proc(
         o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
             "invalid data=\"%s\", len=%d", data, len );
         * processed_len = -1;
-        g_last_n = 0;
         return;
     }
 
-    if ( n != g_last_n + 1 ) {
+    if ( n != cn->check_number + 1 ) {
         o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
-            "invalid data=\"%s\", len=%d, last=%d, now=%d", data, len, g_last_n, n );
+            "invalid data=\"%s\", len=%d, last=%d, now=%d", data, len, cn->check_number, n );
         * processed_len = -1;
-        g_last_n = 0;
         return;
     }
 
-    printf( "process %d byte user data\n", len );
+    //printf( "process %d byte user data\n", len );
 
     // 确认服务器框架填充的默认值
     assert( * processed_len == len );
@@ -334,7 +353,6 @@ void gr_proc(
         o->log( o, __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,
             "set_max_response %d failed", len );
         * processed_len = -1;
-        g_last_n = 0;
         return;
     }
 
@@ -344,11 +362,13 @@ void gr_proc(
     // 记录实际写入的数据字节数
     ctxt->pc_result_buf_len = len;
 
-    g_last_n = n;
+    cn->check_number = n;
 }
 
 void gr_proc_http(
-    gr_http_ctxt_t *    http
+    gr_http_ctxt_t *    http,
+    gr_conn_buddy_t *   conn_buddy,
+    int *               processed_len
 )
 {
     // 是的，你没猜错，当服务器收到了一个HTTP数据包时，就会调用该函数。
@@ -420,6 +440,11 @@ void gr_proc_http(
     printf( "\n" );
     // 数据区
     printf( "%s\n", http->hc_body );
+
+    {
+        char buf[] = "hello world";
+        g_funcs->http_send( g_funcs, http, buf, sizeof( buf ) - 1, "text/plain" );
+    }
 }
 
 } // extern "C"
