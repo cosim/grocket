@@ -40,6 +40,8 @@
 #ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_GR_ERRNO_H_
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_ERRNO_H_
 
+#include "gr_compiler_switch.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -41,6 +41,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_WORK_H_
 
 #include "gr_conn.h"
+#include "gr_compiler_switch.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -41,14 +41,12 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_LOG_H_
 
 #include "gr_stdinc.h"
+#include "gr_compiler_switch.h"
 #include "grocket.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// 定义它启动DEBUG日志，不定义它禁用DEBUG日志。为了减少日志对性能的影响
-//#define ENABLE_DEBUG_LOG
 
 int gr_log_open( const char * log_name );
 
@@ -61,16 +59,23 @@ void gr_log_write(
     int             line,
     const char *    func,
     gr_log_level_t  level,
+    bool            is_user_log,
     const char * fmt,
     ...
 );
 
-#define gr_fatal(str, ...)      if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_FATAL )   { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_FATAL,   str, ##__VA_ARGS__); }
-#define gr_error(str, ...)      if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_ERROR )   { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,   str, ##__VA_ARGS__); }
-#define gr_warning(str, ...)    if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_WARNING ) { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_WARNING, str, ##__VA_ARGS__); }
-#define gr_info(str, ...)       if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_INFO )    { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO,    str, ##__VA_ARGS__); }
+const char *
+gr_log_level_2_str(
+    gr_log_level_t  level
+);
+
+
+#define gr_fatal(str, ...)      if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_FATAL )   { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_FATAL,   false, str, ##__VA_ARGS__); }
+#define gr_error(str, ...)      if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_ERROR )   { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_ERROR,   false, str, ##__VA_ARGS__); }
+#define gr_warning(str, ...)    if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_WARNING ) { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_WARNING, false, str, ##__VA_ARGS__); }
+#define gr_info(str, ...)       if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_INFO )    { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO,    false, str, ##__VA_ARGS__); }
 #ifdef ENABLE_DEBUG_LOG
-#define gr_debug(str, ...)      if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_DEBUG )   { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_DEBUG,   str, ##__VA_ARGS__); }
+#define gr_debug(str, ...)      if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_DEBUG )   { gr_log_write( __FILE__, __LINE__, __FUNCTION__, GR_LOG_DEBUG,   false, str, ##__VA_ARGS__); }
 #else
 #define gr_debug(str, ...)
 #endif

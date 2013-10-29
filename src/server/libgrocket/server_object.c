@@ -203,8 +203,8 @@ void server_class_log(
         }
 
         va_start( vl, fmt );
-        vsnprintf( buf, sizeof(buf), fmt, vl );
-        gr_log_write( file, line, func, level, "%s", buf );
+        vsnprintf( buf, sizeof( buf ), fmt, vl );
+        gr_log_write( file, line, func, level, true, "%s", buf );
     }
 }
 

@@ -114,6 +114,15 @@ int gr_conn_init()
         }
     }
 
+#ifdef GR_DEBUG_CONN
+    #if defined( WIN32 ) || defined( WIN64 )
+        #pragma message( "!!!!GR_DEBUG_CONN defined, performance warning!" )
+    #else
+        #warning "!!!!GR_DEBUG_CONN defined, performance warning!!!!"
+    #endif
+        gr_warning( "[init]!!!!GR_DEBUG_CONN defined, performance warning!" );
+#endif
+
     p = (gr_conn_engine_t *)g_ghost_rocket_global.conn;
     if ( NULL != p ) {
         gr_fatal( "gr_conn_init called" );
@@ -223,7 +232,7 @@ void gr_tcp_conn_free(
         gr_info( "[req.push=%d][req.proc=%d][rsp.send=%llu]free tcp_conn %p",
             conn->req_push_count, conn->req_proc_count, conn->rsp_send_count, conn );
 #else
-        gr_info( "[req.push=%d][req.proc=%d]free tcp_conn %p",
+        gr_debug( "[req.push=%d][req.proc=%d]free tcp_conn %p",
             conn->req_push_count, conn->req_proc_count, conn );
 #endif
         if ( -1 != conn->fd ) {
@@ -515,7 +524,7 @@ gr_tcp_req_t * gr_tcp_req_alloc(
         }
     }
 
-    gr_debug( "alloc req %p, conn %p", req, parent );
+    gr_debug( "[fd=%d][cn=%p]alloc req %p", parent->fd, parent, req );
 
     return req;
 }
@@ -534,7 +543,7 @@ void gr_tcp_req_free(
         req->buf = NULL;
     }
 
-    gr_debug( "free req %p, conn %p", req, req->parent );
+    gr_debug( "[fd=%d][cn=%p]free req %p, conn %p", req->parent->fd, req->parent, req );
 
     gr_free( req );
 }
@@ -614,10 +623,9 @@ gr_tcp_rsp_t * gr_tcp_rsp_alloc(
         }
     }
 
-    gr_debug( "gr_tcp_rsp_alloc %p", rsp );
+    gr_debug( "[fd=%d][cn=%p]alloc rsp %p", parent->fd, parent, rsp );
     return rsp;
 }
-
 
 void gr_tcp_rsp_free(
     gr_tcp_rsp_t *      rsp
@@ -633,6 +641,8 @@ void gr_tcp_rsp_free(
         gr_free( rsp->buf );
         rsp->buf = NULL;
     }
+
+    gr_debug( "[fd=%d][cn=%p]free rsp %p, conn %p", rsp->parent->fd, rsp->parent, rsp );
 
     gr_free( rsp );
 }

@@ -684,7 +684,7 @@ bool gr_config_worker_disabled()
 
 bool gr_config_tcp_out_disabled()
 {
-    static const bool def = false;
+    static const bool def = true;
     return config_get_bool( g_ghost_rocket_global.config, "server", "tcp.out.disabled", def );
 }
 

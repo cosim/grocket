@@ -42,12 +42,45 @@
 #include "gr_errno.h"
 #include "gr_mem.h"
 #include "gr_config.h"
+#include <assert.h>
 
 typedef struct
 {
     char    path[ MAX_PATH ];
     bool    enable_tid;
 } gr_log_t;
+
+typedef struct
+{
+    const char * levels[ 2 ];
+
+} level_item_t;
+
+const char *
+gr_log_level_2_str(
+    gr_log_level_t  level
+)
+{
+    switch( level )
+    {
+    case GR_LOG_ALL:
+        return "ALL";
+    case GR_LOG_DEBUG:
+        return "DEBUG";
+    case GR_LOG_INFO:
+        return "INFO";
+    case GR_LOG_WARNING:
+        return "WARNING";
+    case GR_LOG_ERROR:
+        return "ERROR";
+    case GR_LOG_FATAL:
+        return "FATAL";
+    case GR_LOG_NONE:
+        return "NO_LOG";
+    default:
+        return "INVALID_LOG_LEVEL";
+    }
+}
 
 int gr_log_open( const char * log_name )
 {
@@ -147,6 +180,7 @@ void gr_log_write(
     int             line,
     const char *    func,
     gr_log_level_t  level,
+    bool            is_user_log,
     const char *    fmt,
     ...
 )
@@ -158,6 +192,32 @@ void gr_log_write(
     int             r;
     int             r2;
     gr_log_t *      log_obj = (gr_log_t *)g_ghost_rocket_global.log;
+    static const level_item_t levels[ GR_LOG_LEVEL_COUNT ] =
+    {
+        // GR_LOG_ALL      = 0,
+        { "all   |", "all  *|" },
+
+        // GR_LOG_DEBUG    = 1,
+        { "debug |", "debug*|" },
+
+        // GR_LOG_INFO     = 2,
+        { "info  |", "info *|" },
+
+        // GR_LOG_WARNING  = 3,
+        { "warn  |", "warn *|" },
+
+        // GR_LOG_ERROR    = 4,
+        { "error |", "error*|" },
+
+        // GR_LOG_FATAL    = 5,
+        { "fatal |", "fatal*|" },
+
+        // GR_LOG_NONE     = 6,
+        { "?     |", "?     |" }
+    };
+    assert( 1 == is_user_log || 0 == is_user_log );
+    assert( level >= 0 && level < GR_LOG_LEVEL_COUNT );
+    #define LEADDING_BYTES  7
 
 #if defined( WIN32 ) || defined( WIN64 )
     // windows 的 vsnprintf 在缓冲区不足时会直接返回 -1,
@@ -165,25 +225,13 @@ void gr_log_write(
     memset( buf, 0, sizeof( buf ) );
 #endif
 
-    if ( GR_LOG_FATAL == level )
-        level_s = "fatal  |";
-    else if ( GR_LOG_ERROR == level )
-        level_s = "error  |";
-    else if ( GR_LOG_WARNING == level )
-        level_s = "warning|";
-    else if ( GR_LOG_INFO == level )
-        level_s = "info   |";
-    else if ( GR_LOG_DEBUG == level )
-        level_s = "debug  |";
-    else
-        level_s = "unknown|";
+    level_s = levels[ level ].levels[ is_user_log ];
 
     p = strrchr( file, S_PATH_SEP_C );
     if ( p ) {
         file = p + 1;
     }
 
-    #define LEADDING_BYTES  8
     // 将日志内容打印出来
     va_start( ap, fmt );
     r = vsnprintf( & buf[ LEADDING_BYTES ], sizeof( buf ) - LEADDING_BYTES, fmt, ap );
@@ -211,11 +259,23 @@ void gr_log_write(
     buf[ r ] = '\0';
 
     if ( level >= GR_LOG_WARNING || NULL == log_obj || log_obj->enable_tid ) {
-        r2 = snprintf( & buf[ r ], sizeof( buf ) - r, " | [pid=%d][tid=%d][%s:%d:%s]",
-            getpid(), gettid(), file, (int)line, func);
+        r2 = snprintf( & buf[ r ], sizeof( buf ) - r, " | [pid=%d][tid=%d][err=%d][%s:%d:%s]",
+            getpid(), gettid(),
+#if defined( WIN32 ) || defined( WIN64 )
+            (int)GetLastError(),
+#else
+            errno,
+#endif
+            file, (int)line, func);
     } else {
-        r2 = snprintf( & buf[ r ], sizeof( buf ) - r, " | [pid=%d][%s:%d:%s]",
-            getpid(), file, (int)line, func);
+        r2 = snprintf( & buf[ r ], sizeof( buf ) - r, " | [pid=%d][err=%d][%s:%d:%s]",
+            getpid(),
+#if defined( WIN32 ) || defined( WIN64 )
+            (int)GetLastError(),
+#else
+            errno,
+#endif
+            file, (int)line, func);
     }
     if ( r2 >= (int)sizeof( buf ) - r ) {
         // 缓冲区不足. 这是给非 Windows准备的

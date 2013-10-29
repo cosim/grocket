@@ -136,8 +136,8 @@ process_signal(
     case CTRL_SHUTDOWN_EVENT:   // A signal that the system sends to all
                                 // console processes when the system is
                                 // shutting down.
-        printf( "!!!!!! receive server stopping signal %d !!!!!!\n", (int)ctrl_type );
-        gr_info( "receive server stopping signal %d", (int)ctrl_type );
+        printf( "!!!!!! stopping signal %d !!!!!!\n", (int)ctrl_type );
+        gr_info( "[signal][sig=%d]stopping signal", (int)ctrl_type );
         do_close();
 
         return TRUE;
@@ -158,8 +158,8 @@ process_signal(
 )
 {
     signal( sig, process_signal );
-    printf( "!!!!!! receive server stopping signal %d !!!!!!\n", sig );
-    gr_info( "receive server stopping signal %d", sig );
+    printf( "!!!!!! stopping signal %d !!!!!!\n", sig );
+    gr_info( "[signal][sig=%d]stopping signal", sig );
     do_close();
 }
 
@@ -408,7 +408,7 @@ start_listen(
             if ( item->is_tcp ) {
                 // listen
                 if ( -1 == listen( item->fd, listen_backlog ) ) {
-                    gr_error( "listen for port %d failed: %d", item->port, get_errno() );
+                    gr_error( "[init]listen for port %d failed: %d", item->port, get_errno() );
                     r = -1;
                     break;
                 }
@@ -416,9 +416,8 @@ start_listen(
         }
 
         r = gr_tcp_accept_add_listen_ports();
-        //r = gr_tcp_in_add_listen_ports();
         if ( 0 != r ) {
-            gr_error( "gr_tcp_accept_add_listen_ports() return %d", r );
+            gr_error( "[init]gr_tcp_accept_add_listen_ports() return %d", r );
             r = -2;
         }
     }
@@ -426,7 +425,7 @@ start_listen(
     if ( has_udp() ) {
         r = gr_udp_in_add_listen_ports();
         if ( 0 != r ) {
-            gr_error( "gr_udp_in_add_listen_ports() return %d", r );
+            gr_error( "[init]gr_udp_in_add_listen_ports() return %d", r );
             r = -3;
         }
     }
@@ -442,7 +441,7 @@ server_loop(
 {
     int r = start_listen( server );
     if ( 0 != r ) {
-        gr_error( "start_listen() return %d", -1 );
+        gr_error( "[init]start_listen() return %d", -1 );
         return r;
     }
 
@@ -463,7 +462,7 @@ bind_tcp(
     int r = 0;
     item->fd = (int)socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
     if ( -1 == item->fd ) {
-        gr_error( "socket invalid, errno = %d", get_errno() );
+        gr_error( "[init]socket invalid, errno = %d", get_errno() );
         return -1;
     }
 
@@ -472,12 +471,12 @@ bind_tcp(
 
         // 发送缓冲区
         if ( ! gr_socket_set_send_buf( item->fd, gr_config_tcp_accept_send_buf() ) ) {
-            gr_warning( "gr_socket_set_send_buf failed, ignore" );
+            gr_warning( "[init]gr_socket_set_send_buf failed, ignore" );
         }
 
         // 接收缓冲区
         if ( ! gr_socket_set_recv_buf( item->fd, gr_config_tcp_accept_recv_buf() ) ) {
-            gr_warning( "gr_socket_set_recv_buf failed, ignore" );
+            gr_warning( "[init]gr_socket_set_recv_buf failed, ignore" );
         }
 
         // 非阻塞
@@ -491,7 +490,7 @@ bind_tcp(
 
         // bind
         if ( -1 == bind( item->fd, (struct sockaddr*)& item->addr, item->addr_len ) ) {
-            gr_error( "bind tcp port %d failed: %d", item->port, get_errno() );
+            gr_error( "[init]bind tcp port %d failed: %d", item->port, get_errno() );
             r = -6;
             break;
         }
@@ -500,7 +499,7 @@ bind_tcp(
     } while( 0 );
 
     if ( 0 != r ) {
-        gr_error( "bind_tcp failed" );
+        gr_error( "[init]bind_tcp failed" );
         gr_socket_close( item->fd );
         item->fd = -1;
         return r;
@@ -519,7 +518,7 @@ bind_udp(
     int r = 0;
     item->fd = (int)socket( PF_INET, SOCK_DGRAM, IPPROTO_UDP );
     if ( -1 == item->fd ) {
-        gr_error( "socket invalid, errno = %d", get_errno() );
+        gr_error( "[init]socket invalid, errno = %d", get_errno() );
         return -1;
     }
 
@@ -549,7 +548,7 @@ bind_udp(
 
         // bind
         if ( -1 == bind( item->fd, (struct sockaddr*)& item->addr, item->addr_len ) ) {
-            gr_error( "bind udp port %d failed: %d", item->port, get_errno() );
+            gr_error( "[init]bind udp port %d failed: %d", item->port, get_errno() );
             r = -6;
             break;
         }
@@ -558,7 +557,7 @@ bind_udp(
     } while( 0 );
 
     if ( 0 != r ) {
-        gr_error( "bind_udp failed" );
+        gr_error( "[init]bind_udp failed" );
         gr_socket_close( item->fd );
         item->fd = -1;
         return r;
@@ -583,13 +582,13 @@ server_bind_port(
         if ( item->is_tcp ) {
             r = bind_tcp( server, item );
             if ( 0 != r ) {
-                gr_error( "listen_tcp return %d", r );
+                gr_error( "[init]listen_tcp return %d", r );
                 return -1;
             }
         } else {
             r = bind_udp( server, item );
             if ( 0 != r ) {
-                gr_error( "listen_udp return %d", r );
+                gr_error( "[init]listen_udp return %d", r );
                 return -2;
             }
         }
@@ -635,7 +634,7 @@ server_run(
 
         // 服务器主循环
         r = server_loop( server );
-        gr_info( "[init]server_loop return %d", r );
+        gr_info( "[term]server_loop return %d", r );
 
     } while ( false );
 

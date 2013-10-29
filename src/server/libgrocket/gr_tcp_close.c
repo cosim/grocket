@@ -216,7 +216,7 @@ void gr_tcp_close_from_out(
     }
 
     if ( conn->tcp_in_open || conn->worker_open ) {
-        gr_debug( "in_open = %d, out_open = %d, worker_open = %d, ignore",
+        gr_debug( "[tcp.output]in_open = %d, out_open = %d, worker_open = %d, ignore",
             (int)conn->tcp_in_open, (int)conn->tcp_out_open, (int)conn->worker_open );
         return;
     }

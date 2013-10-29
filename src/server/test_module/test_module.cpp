@@ -191,7 +191,8 @@ void gr_tcp_accept(
         return;
     }
     cn->check_number = 0;
-    g_funcs->log( g_funcs, __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO, "[cn=%p][n=%d]", cn, cn->check_number );
+    g_funcs->log( g_funcs, __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO,
+        "[fd=%d[cn=%p][n=%d]]", sock, cn, cn->check_number );
     assert( 0 == cn->check_number );
 
     conn_buddy->ptr = cn;
@@ -205,7 +206,8 @@ void gr_tcp_close(
 {
     if ( conn_buddy->ptr ) {
         struct conn * cn = (struct conn *)conn_buddy->ptr;
-        g_funcs->log( g_funcs, __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO, "[cn=%p][n=%d]", cn, cn->check_number );
+        g_funcs->log( g_funcs, __FILE__, __LINE__, __FUNCTION__, GR_LOG_INFO,
+            "[fd=%d][cn=%p][n=%d]", sock, cn, cn->check_number );
         g_funcs->memory_free( g_funcs, cn );
         conn_buddy->ptr = NULL;
     }

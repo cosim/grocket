@@ -41,6 +41,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_CONN_H_
 
 #include "gr_stdinc.h"
+#include "gr_compiler_switch.h"
 #include "grocket.h"
 #include "gr_atomic.h"
 #include "gr_log.h"
@@ -49,8 +50,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define GR_DEBUG_CONN
 
         struct gr_conn_t;
 typedef struct gr_conn_t                gr_conn_t;

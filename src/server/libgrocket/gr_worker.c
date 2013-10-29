@@ -158,7 +158,7 @@ void worker_queue_push(
         while ( NULL != worker->head && worker->head != curr ) {
             t = worker->head;
             // 向后移动worker->head指针
-            gr_debug( "[to_del=%p][next=%p][curr=%p] will del req",
+            gr_debug( "[svr.worker][to_del=%p][next=%p][curr=%p] will del req",
                 worker->head, worker->head->next, curr );
             worker->head = worker->head->next;
 
@@ -173,12 +173,12 @@ void worker_queue_push(
     if ( NULL == worker->head ) {
         // 前面说的应该为NULL的worker->tail被一块儿赋了值
         worker->head = worker->tail = item;
-        gr_debug( "insert req %p to empty", item );
+        gr_debug( "[svr.worker]insert req %p to empty", item );
     } else if ( worker->head == worker->tail ) {
         // 更新尾节点
         worker->tail = item;
         worker->head->next = item;
-        gr_debug( "insert req %p to single node list, head=%p, tail=%p",
+        gr_debug( "[svr.worker]insert req %p to single node list, head=%p, tail=%p",
             item, worker->head, worker->tail );
     } else {
         // 记住当前链表尾节点
@@ -187,12 +187,12 @@ void worker_queue_push(
         worker->tail = item;
         // 将原先尾节点的指针指向新增节点
         t->next = item;
-        gr_debug( "insert req %p to after %p, head = %p", item, t, worker->head );
+        gr_debug( "[svr.worker]insert req %p to after %p, head = %p", item, t, worker->head );
     }
 
     if ( QUEUE_ALL_DONE == worker->curr ) {
         // 如果发现工作线程已经处理完了, 则重置 worker->curr 指针
-        gr_debug( "[head=%p]req reset worker->curr to worker->head", worker->head );
+        gr_debug( "[svr.worker][head=%p]req reset worker->curr to worker->head", worker->head );
         worker->curr = worker->head;
         // 如果 in_event 为 false, 这儿就可能已经在处理刚压进去的节点了
 
@@ -273,11 +273,13 @@ gr_queue_item_compact_t * worker_queue_top(
 #ifdef GR_DEBUG_CONN
         ++ worker->non_event_wait_ok_count;
 #endif
-        gr_debug( "top req %p", p );
+        gr_debug( "[svr.worker]top req %p", p );
         return p;
     }
 
+#ifdef GR_DEBUG_CONN
     ++ worker->non_event_wait_timeout_count;
+#endif
     return NULL;
 }
 
@@ -300,7 +302,7 @@ void worker_queue_pop_top(
         worker->curr = next;
     }
 
-    gr_debug( "[before_pop_curr=%p][next=%p][after_pop_curr=%p]pop req", curr, next, worker->curr );
+    gr_debug( "[svr.worker][before_pop_curr=%p][next=%p][after_pop_curr=%p]pop req", curr, next, worker->curr );
 }
 
 static_inline
@@ -335,8 +337,8 @@ void process_tcp(
     // 检查模块处理函数处理结果
     if ( processed_len < 0 ) {
         // processed_len 小于0表示需要服务器断掉连接，返回数据包也不要发
-        gr_warning( "[req=%p][buf_len=%d]processed_len = %d, we want close connection",
-            req, req->buf_len, processed_len );
+        gr_warning( "[%s][req=%p][buf_len=%d]processed_len = %d, we want close connection",
+            thread->name, req, req->buf_len, processed_len );
         ctxt->pc_result_buf_len    = 0;
 
         if ( req->parent->close_type > GR_NEED_CLOSE ) {
@@ -344,14 +346,14 @@ void process_tcp(
         }
     } else if ( 0 == processed_len ) {
         // processed_len 等于0表示需要服务器断掉连接,但当前返回数据包继续发
-        gr_warning( "[req=%p]processed_len = %d, we want close connection",
-            req, processed_len );
+        gr_warning( "[%s][req=%p]processed_len = %d, we want close connection",
+            thread->name, req, processed_len );
         if ( req->parent->close_type > GR_NEED_CLOSE ) {
             req->parent->close_type = GR_NEED_CLOSE;
         }
     } else {
-        gr_debug( "[req=%p]gr_module_proc_tcp rsp %d",
-            req, ctxt->pc_result_buf_len );
+        gr_debug( "[%s][req=%p]gr_module_proc_tcp rsp %d",
+            thread->name, req, ctxt->pc_result_buf_len );
     }
 
     do {
@@ -376,7 +378,7 @@ void process_tcp(
         rsp = gr_tcp_rsp_alloc( req->parent, 0 );
         if ( NULL == rsp ) {
             // 把数据长度清0即可，等下次用。
-            gr_error( "gr_tcp_rsp_alloc failed" );
+            gr_error( "[%s]gr_tcp_rsp_alloc failed", thread->name );
             ctxt->pc_result_buf_len = 0;
             if ( req->parent->close_type > GR_NEED_CLOSE ) {
                 req->parent->close_type = GR_NEED_CLOSE;
@@ -397,7 +399,7 @@ void process_tcp(
         // 将rsp放入tcp_out中发送
         r = gr_tcp_out_add( rsp );
         if ( 0 != r ) {
-            gr_fatal( "gr_tcp_out_add faiiled" );
+            gr_fatal( "[%s]gr_tcp_out_add faiiled", thread->name );
             //TODO: 按理说，这个地方出错了应该断连接了。但这儿应该是机制出错了，不是断连接这么简单，可能需要重启服务器才能解决。
             // 所以干脆不处理了。理论上这种可能性出现的概率为0
             break;
@@ -557,17 +559,17 @@ void worker_routine( gr_thread_t * thread )
     };
 
 #ifdef GR_DEBUG_CONN
-    gr_info( "[wait=%lu][wait.ok=%lu][wait.timeout=%lu][wait.alarm=%lu]"
+    gr_info( "[%s][wait=%lu][wait.ok=%lu][wait.timeout=%lu][wait.alarm=%lu]"
              "[nonwait.ok=%lu][nonwait.timeout=%lu]"
              "worker thread %d will exit"
-             , item->event_wait_count, item->event_wait_ok_count
+             , thread->name, item->event_wait_count, item->event_wait_ok_count
              , item->event_wait_timeout_count, item->event_alarm_count
              , item->non_event_wait_ok_count, item->non_event_wait_timeout_count
              , thread->id );
 #else
-    gr_info( "[wait=%lu][wait.ok=%lu][wait.timeout=%lu][wait.alarm=%lu]"
+    gr_info( "[%s][wait=%lu][wait.ok=%lu][wait.timeout=%lu][wait.alarm=%lu]"
              "worker thread %d will exit"
-             , item->event_wait_count, item->event_wait_ok_count
+             , thread->name, item->event_wait_count, item->event_wait_ok_count
              , item->event_wait_timeout_count, item->event_alarm_count
              , thread->id );
 #endif
@@ -626,7 +628,7 @@ int gr_worker_init()
         p->items = (gr_worker_item_t *)gr_calloc( 1,
             sizeof( gr_worker_item_t ) * thread_count );
         if ( NULL == p->items ) {
-            gr_fatal( "gr_calloc %d bytes failed: %d",
+            gr_fatal( "[init]gr_calloc %d bytes failed: %d",
                 (int)sizeof( gr_worker_item_t ) * thread_count,
                 get_errno() );
             r = GR_ERR_BAD_ALLOC;
@@ -649,11 +651,17 @@ int gr_worker_init()
             p->worker_disabled ? DISABLE_THREAD : ENABLE_THREAD,
             name );
         if ( GR_OK != r ) {
-            gr_fatal( "gr_threads_start return error %d", r );
+            gr_fatal( "[init]gr_threads_start return error %d", r );
             break;
         }
 
-        gr_debug( "worker_init OK" );
+        if ( p->worker_disabled ) {
+            gr_info( "[init]worker.disabled = true" );
+        } else {
+            gr_info( "[init]worker.disabled = false, worker.thread_count = %d", thread_count );
+        }
+
+        gr_debug( "[init]worker_init OK" );
 
         r = GR_OK;
     } while ( false );
@@ -729,7 +737,7 @@ int prepare_add_tcp_req(
         // 分配个新的请求对象，将剩余数据拷贝到新分配的请求对象中。如果如果剩余的字节数较小会比较划算。
         * new_req = gr_tcp_req_alloc( req->parent, req->buf_max );
         if ( NULL == * new_req ) {
-            gr_fatal( "gr_tcp_req_alloc failed" );
+            gr_fatal( "[tcp.input ]gr_tcp_req_alloc failed" );
             return -2;
         }
 
@@ -769,7 +777,7 @@ int gr_worker_add_tcp(
 
     r = prepare_add_tcp_req( req, & new_req, & package_len, & left_len );
     if ( 0 != r ) {
-        gr_fatal( "prepare_add_tcp_req failed" );
+        gr_fatal( "[tcp.input ]prepare_add_tcp_req failed" );
         return -2;
     }
 
@@ -780,6 +788,7 @@ int gr_worker_add_tcp(
     }
 
     // 向worker中压包失败
+    gr_error( "[tcp.input ]gr_worker_add return error %d", r );
 
     // 要将请求从请求列表尾重新摘出来
     gr_tcp_conn_pop_tail_req( req->parent );
@@ -824,7 +833,7 @@ int gr_worker_process_tcp( gr_tcp_req_t * req )
     self = (gr_worker_t *)g_ghost_rocket_global.worker;
     r = prepare_add_tcp_req( req, & new_req, & package_len, & left_len );
     if ( 0 != r ) {
-        gr_fatal( "prepare_add_tcp_req failed" );
+        gr_fatal( "[svr.worker]gr_worker_addprepare_add_tcp_req failed" );
         return -2;
     }
 

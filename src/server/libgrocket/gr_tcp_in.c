@@ -54,9 +54,11 @@ void tcp_in_worker( gr_thread_t * thread )
     gr_poll_event_t *       e;
     gr_server_t *           server;
     gr_tcp_conn_item_t *    conn;
+    gr_poll_t *             poll;
 
     server  = & g_ghost_rocket_global.server_interface;
     self    = (gr_tcp_in_t *)thread->param;
+    poll    = self->polls[ thread->id ];
 
     events  = (gr_poll_event_t *)gr_malloc( sizeof( gr_poll_event_t ) * self->concurrent );
     if ( NULL == events ) {
@@ -66,7 +68,7 @@ void tcp_in_worker( gr_thread_t * thread )
 
     while ( ! thread->is_need_exit ) {
 
-        count = gr_poll_wait( self->poll, events, self->concurrent, TCP_IN_WAIT_TIMEOUT, thread );
+        count = gr_poll_wait( poll, events, self->concurrent, TCP_IN_WAIT_TIMEOUT, thread );
         if ( count < 0 ) {
             gr_fatal( "gr_poll_wait return %d", count );
             continue;
@@ -76,10 +78,9 @@ void tcp_in_worker( gr_thread_t * thread )
 
         for ( i = 0; i < count; ++ i ) {
             e = & events[ i ];
-
-            // TCP数据流
+            // TCP recv
             conn = (gr_tcp_conn_item_t *)e->data.ptr;
-            on_tcp_recv( self, thread, conn );
+            on_tcp_recv( self, poll, thread, conn );
         }
     };
 
@@ -90,10 +91,12 @@ void tcp_in_worker( gr_thread_t * thread )
 
 int gr_tcp_in_init()
 {
-    gr_tcp_in_t *  p;
-    int thread_count = gr_config_tcp_in_thread_count();
-    int r;
+    gr_tcp_in_t *   p;
+    int             thread_count;
+    int             r;
+    int             i;
 
+    thread_count = gr_config_tcp_in_thread_count();
     if ( thread_count < 1 ) {
         gr_fatal( "[init]tcp_in thread_count invalid" );
         return GR_ERR_INVALID_PARAMS;
@@ -121,14 +124,27 @@ int gr_tcp_in_init()
 
         const char * name = "tcp.input ";
 
-        p->poll = gr_poll_create(
-            p->concurrent,
-            thread_count,
-            p->tcp_out_disabled ? (GR_POLLIN | GR_POLLOUT) : GR_POLLIN,
-            name );
-        if ( NULL == p->poll ) {
-            gr_fatal( "[init]gr_poll_create return NULL" );
+        p->polls = (gr_poll_t**)gr_calloc( 1, sizeof( gr_poll_t * ) * thread_count );
+        if ( NULL == p->polls ) {
+            gr_fatal( "[init]gr_calloc %d bytes failed",
+                (int)sizeof( gr_poll_t * ) * thread_count );
             r = GR_ERR_INIT_POLL_FALED;
+            break;
+        }
+
+        for ( i = 0; i < thread_count; ++ i ) {
+            p->polls[ i ] = gr_poll_create(
+                p->concurrent,
+                thread_count,
+                p->tcp_out_disabled ? (GR_POLLIN | GR_POLLOUT) : GR_POLLIN,
+                name );
+            if ( NULL == p->polls[ i ] ) {
+                gr_fatal( "[init]gr_poll_create return NULL" );
+                r = GR_ERR_INIT_POLL_FALED;
+                break;
+            }
+        }
+        if ( GR_OK != r ) {
             break;
         }
 
@@ -151,7 +167,8 @@ int gr_tcp_in_init()
             break;
         }
 
-        gr_debug( "[init]tcp_in_init OK, poll = %p", p->poll );
+        gr_info( "[init]tcp.in init OK, thread_count=%d, worker.disabled=%d, tcp.out.disabled=%d",
+            thread_count, (int)p->worker_disabled, (int)p->tcp_out_disabled );
 
         r = GR_OK;
     } while ( false );
@@ -160,9 +177,18 @@ int gr_tcp_in_init()
 
         gr_threads_close( & p->threads );
 
-        if ( NULL != p->poll ) {
-            gr_poll_destroy( p->poll );
-            p->poll = NULL;
+        if ( p->polls ) {
+            for ( i = 0; i < thread_count; ++ i ) {
+                if ( NULL != p->polls[ i ] ) {
+                    if ( p->polls[ i ] ) {
+                        gr_poll_destroy( p->polls[ i ] );
+                        p->polls[ i ] = NULL;
+                    }
+                }
+            }
+
+            gr_free( p->polls );
+            p->polls = NULL;
         }
 
         gr_free( p );
@@ -178,11 +204,21 @@ void gr_tcp_in_term()
     gr_tcp_in_t *  p = (gr_tcp_in_t *)g_ghost_rocket_global.tcp_in;
     if ( NULL != p ) {
 
+        int i;
+        int thread_count = p->threads.thread_count;
+
         gr_threads_close( & p->threads );
 
-        if ( NULL != p->poll ) {
-            gr_poll_destroy( p->poll );
-            p->poll = NULL;
+        if ( p->polls ) {
+            for ( i = 0; i < thread_count; ++ i ) {
+                if ( NULL != p->polls[ i ] ) {
+                    gr_poll_destroy( p->polls[ i ] );
+                    p->polls[ i ] = NULL;
+                }
+            }
+
+            gr_free( p->polls );
+            p->polls = NULL;
         }
 
         gr_free( p );
@@ -190,16 +226,29 @@ void gr_tcp_in_term()
     }
 }
 
+static_inline
+size_t
+tcp_in_hash(
+    gr_tcp_in_t *           self,
+    gr_tcp_conn_item_t *    conn
+)
+{
+    return conn->fd % self->threads.thread_count;
+}
+
 int gr_tcp_in_add_conn( gr_tcp_conn_item_t * conn )
 {
     int             r;
     gr_tcp_in_t *   self;
-    
+    gr_poll_t *     poll;
+
     self = (gr_tcp_in_t *)g_ghost_rocket_global.tcp_in;
     if ( NULL == self ) {
         gr_fatal( "gr_tcp_in_init never call" );
         return -1;
     }
+
+    poll = self->polls[ tcp_in_hash( self, conn ) ];
 
     // 该标记表示连接已经在数据收线程里
     conn->tcp_in_open = true;
@@ -210,12 +259,12 @@ int gr_tcp_in_add_conn( gr_tcp_conn_item_t * conn )
 
     // 将该socket加到poll里
     r = gr_poll_add_tcp_recv_fd(
-        self->poll,
+        poll,
         conn,
         & self->threads
     );
     if ( 0 != r ) {
-        gr_fatal( "gr_poll_add_tcp_recv_fd return %d", r );
+        gr_fatal( "[tcp.input ]gr_poll_add_tcp_recv_fd return %d", r );
         //gr_atomic_add( -1, & conn->thread_refs );
         conn->tcp_in_open = false;
         return -2;
@@ -226,37 +275,40 @@ int gr_tcp_in_add_conn( gr_tcp_conn_item_t * conn )
 
 int gr_tcp_in_del_tcp_conn( gr_tcp_conn_item_t * conn )
 {
-    int                     r;
-    gr_tcp_in_t *           self;
-    
+    int             r;
+    gr_tcp_in_t *   self;
+    gr_poll_t *     poll;
+
     self = (gr_tcp_in_t *)g_ghost_rocket_global.tcp_in;
     if ( NULL == self ) {
-        gr_fatal( "gr_tcp_in_init never call" );
+        gr_fatal( "[tcp.input ]gr_tcp_in_init never call" );
         return -1;
     }
 
+    poll = self->polls[ tcp_in_hash( self, conn ) ];
+
     r = gr_poll_del_tcp_recv_fd(
-        self->poll,
+        poll,
         conn,
         & self->threads
     );
     if ( 0 != r ) {
-        gr_fatal( "gr_poll_del_tcp_rec_fd return %d", r );
+        gr_fatal( "[tcp.input ]gr_poll_del_tcp_rec_fd return %d", r );
         return -3;
     }
 
     return 0;
 }
 
-void * gr_tcp_in_get_poll()
+void ** gr_tcp_in_get_polls( int * count )
 {
     gr_tcp_in_t *   self;
     
     self = (gr_tcp_in_t *)g_ghost_rocket_global.tcp_in;
-    if ( NULL == self ) {
-        gr_fatal( "gr_tcp_in_init never call" );
-        return NULL;
-    }
+    assert( self );
 
-    return self->poll;
+    assert( count );
+    * count = self->threads.thread_count;
+
+    return (void**)self->polls;
 }

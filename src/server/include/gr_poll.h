@@ -41,6 +41,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_POLL_H_
 
 #include "gr_stdinc.h"
+#include "gr_compiler_switch.h"
 #include "grocket.h"
 #include "gr_thread.h"
 #include "gr_conn.h"
@@ -107,7 +108,7 @@ int gr_poll_add_listen_fd(
 );
 
 int gr_poll_add_tcp_recv_fd(
-    gr_poll_t *             poll,
+    gr_poll_t *             polls,
     gr_tcp_conn_item_t *    conn,
     gr_threads_t *          threads
 );
@@ -119,7 +120,7 @@ int gr_poll_add_tcp_send_fd(
 );
 
 int gr_poll_del_tcp_recv_fd(
-    gr_poll_t *             poll,
+    gr_poll_t *             polls,
     gr_tcp_conn_item_t *    conn,
     gr_threads_t *          threads
 );

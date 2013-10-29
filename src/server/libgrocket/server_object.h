@@ -41,6 +41,7 @@
 #define _server_object_h_
 
 #include "gr_stdinc.h"
+#include "gr_compiler_switch.h"
 #include "grocket.h"
 
 // 服务器对象
