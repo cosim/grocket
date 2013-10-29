@@ -38,6 +38,10 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+
+#define THREAD_COUNT    10
+#define REQ_PER_THREAD  0
+
 #include "gr_stdinc.h"
 #if defined( __APPLE__ )
     #include <mach/mach_time.h>
@@ -493,7 +497,13 @@ int tcp_main( int argc, char ** argv, int thread_id )
 
     start = get_tick_count();
 
+#if REQ_PER_THREAD > 0
+    printf( "%s will loop %d times\n", __FUNCTION__, REQ_PER_THREAD );
+    for ( i = 0; i < REQ_PER_THREAD; ++ i ) {
+#else
+    printf( "%s will loop always\n", __FUNCTION__ );
     for ( i = 0; ; ++ i ) {
+#endif
 
         char id[ 32 ];
         int len = sprintf( id, "%d ", i + 1 );
@@ -541,6 +551,8 @@ int tcp_main( int argc, char ** argv, int thread_id )
         }
     }
 
+    printf( "%s will exit\n", __FUNCTION__ );
+
     gr_socket_close( fd );
 
     free( rsp );
@@ -570,7 +582,7 @@ int main( int argc, char ** argv )
     g_argc = argc;
     g_argv = argv;
 
-    thread_count = 10;
+    thread_count = THREAD_COUNT;
 
     threads = (pthread_t *)calloc( 1, sizeof( pthread_t ) * thread_count );
     if ( NULL == threads ) {

@@ -83,6 +83,7 @@
     <ClInclude Include="..\..\third\gperftools-2.1\src\windows\gperftools\tcmalloc.h" />
     <ClInclude Include="..\include\gr_atomic.h" />
     <ClInclude Include="..\include\gr_backend.h" />
+    <ClInclude Include="..\include\gr_compiler_switch.h" />
     <ClInclude Include="..\include\gr_config.h" />
     <ClInclude Include="..\include\gr_conn.h" />
     <ClInclude Include="..\include\gr_dll.h" />

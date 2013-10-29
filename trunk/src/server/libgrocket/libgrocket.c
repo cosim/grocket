@@ -233,9 +233,9 @@ gr_main(
 
         if ( gr_config_is_debug() ) {
 #ifdef ENABLE_DEBUG_LOG
-            gr_info( "[init] DEBUG model" );
+            gr_info( "[init]DEBUG model" );
 #else
-            gr_error( "[init] DEBUG model. but ENABLE_DEBUG_LOG not defined, "
+            gr_error( "[init]DEBUG model. but ENABLE_DEBUG_LOG not defined, "
                       "server debug log will not output" );
 #endif
             g_ghost_rocket_global.server_interface.log_level = GR_LOG_DEBUG;
@@ -245,13 +245,14 @@ gr_main(
                 gr_config_log_level( g_ghost_rocket_global.server_interface.log_level );
             if ( g_ghost_rocket_global.server_interface.log_level <= GR_LOG_DEBUG ) {
 #ifndef ENABLE_DEBUG_LOG
-                gr_error( "[init] log_level=%d. but ENABLE_DEBUG_LOG not defined, "
+                gr_error( "[init]log_level=%s. but ENABLE_DEBUG_LOG not defined, "
                           "server debug log will not output",
-                    g_ghost_rocket_global.server_interface.log_level );
+                          gr_log_level_2_str( g_ghost_rocket_global.server_interface.log_level ) );
 #endif
             }
         }
-        gr_info( "[init] LOG level = %d", g_ghost_rocket_global.server_interface.log_level );
+        gr_info( "[init]LOG level = %s",
+            gr_log_level_2_str( g_ghost_rocket_global.server_interface.log_level ) );
 
         // 初始化用户模块
         r = gr_module_init(

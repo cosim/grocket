@@ -41,6 +41,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_MODULE_H_
 
 #include "gr_stdinc.h"
+#include "gr_compiler_switch.h"
 #include "grocket.h"
 #include "gr_conn.h"
 

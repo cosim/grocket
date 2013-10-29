@@ -41,6 +41,7 @@
 #define	_GHOST_ROCKET_SERVER_LIBGROCKET_GR_EVENT_H_
 
 #include "gr_stdinc.h"
+#include "gr_compiler_switch.h"
 
 #if defined( __APPLE__ )
 	#include <pthread.h>

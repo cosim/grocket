@@ -1,15 +1,15 @@
 /**
- * @file include/gr_tcp_close.h
+ * @file server/include/gr_compiler_switch.h
  * @author zouyueming(da_ming at hotmail.com)
- * @date 2013/10/13
+ * @date 2013/10/29
  * @version $Revision$ 
- * @brief   TCP Close module
+ * @brief compiler switch
+ *
  * Revision History
  *
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
- *       1     zouyueming   2013-10-13    Created.
- *       2     zouyueming   2013-10-27    support tcp out disable
+ *       1     zouyueming   2013-10-29    Created.
  **/
 /* 
  *
@@ -37,35 +37,17 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#ifndef _GHOST_ROCKET_SERVER_INCLUDE_GR_COMPILER_SWITCH_H_
+#define _GHOST_ROCKET_SERVER_INCLUDE_GR_COMPILER_SWITCH_H_
 
-#ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_GR_TCP_CLOSE_H_
-#define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_TCP_CLOSE_H_
+// 要达到最佳性能，还要在 Makefile 里去掉 -g 加 -O3
 
-#include "gr_conn.h"
-#include "gr_compiler_switch.h"
+//#define GR_DEBUG_CONN
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+//#define static_inline   static inline
+#define static_inline   static
 
-int gr_tcp_close_init();
+// 定义它启动DEBUG日志，不定义它禁用DEBUG日志。为了减少日志对性能的影响
+//#define ENABLE_DEBUG_LOG
 
-void gr_tcp_close_term();
-
-void gr_tcp_close_from_in(
-    gr_tcp_conn_item_t *    conn,
-    bool                    tcp_out_disabled );
-
-void gr_tcp_close_from_out(
-    gr_tcp_conn_item_t *    conn,
-    bool                    tcp_out_disabled );
-
-void gr_tcp_close_from_worker(
-    gr_tcp_conn_item_t *    conn,
-    bool                    tcp_out_disabled );
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // #ifndef _GHOST_ROCKET_SERVER_LIBGROCKET_GR_TCP_CLOSE_H_
+#endif // #ifndef _GHOST_ROCKET_SERVER_INCLUDE_GR_COMPILER_SWITCH_H_

@@ -47,6 +47,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_ATOMIC_H_
 
 #include "gr_stdinc.h"
+#include "gr_compiler_switch.h"
 #if defined( __APPLE__ )
 //zouyueming 2013-10-26 19:58 苹果真泥码贱！
 // 从10.9 开始在OSAtomic.h头文件里加 __header_always_inline 关键字干屁呢？  

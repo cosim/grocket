@@ -52,11 +52,13 @@
 #include "gr_tcp_in.h"
 
 // gr_tcp_accept_t 已经是外部接口回调函数声明了, 我只能换一个名字 gr_accept_t
+//TODO: 目前一个端口只由一个监听线程听，防止epoll的惊群现象出现。对于处理短连接的服务器，这肯定要改。  
+
 typedef struct
 {
     gr_threads_t    threads;
 
-    gr_poll_t *     poll;
+    gr_poll_t **    polls;
 
     int             concurrent;
 
@@ -83,13 +85,17 @@ void on_tcp_accept(
         struct sockaddr     u;
     } addr;
     int                     addr_len;
+    gr_poll_t *             poll;
     
+    poll = self->polls[ thread->id ];
+    assert( poll );
+
     while ( true ) {
 
         // accept
         addr_len = (int)sizeof( addr.v6 );
         fd = gr_poll_accept(
-            self->poll,
+            poll,
             thread,
             port_item->fd,
             & addr.u, & addr_len );       // 这个阶段我根本不想要对方地址，爱谁谁
@@ -97,17 +103,16 @@ void on_tcp_accept(
             if ( EAGAIN == errno ) {
                 return;
             }
-
-            gr_error( "gr_poll_accept failed: %d,%s", errno, strerror( errno ) );
+            gr_error( "[%s]gr_poll_accept failed: %d,%s", thread->name, errno, strerror( errno ) );
             return;
         }
 
-        gr_debug( "tcp_in accept( %d ) return fd %d, addr=%s:%d",
-            port_item->fd, fd, inet_ntoa(addr.v4.sin_addr), ntohs(addr.v4.sin_port) );
+        gr_debug( "[%s]tcp_in accept( %d ) return fd %d, addr=%s:%d",
+            thread->name, port_item->fd, fd, inet_ntoa(addr.v4.sin_addr), ntohs(addr.v4.sin_port) );
 
         // 设成异步socket
         if ( ! gr_socket_set_block( fd, false ) ) {
-            gr_error( "gr_socket_set_block failed: %d", get_errno() );
+            gr_error( "[%s]gr_socket_set_block failed: %d", thread->name, get_errno() );
             gr_socket_close( fd );
             continue;
         }
@@ -115,7 +120,7 @@ void on_tcp_accept(
         // 分配连接对象
         conn = gr_tcp_conn_alloc( port_item, fd );
         if ( NULL == conn ) {
-            gr_error( "gr_conn_alloc_tcp failed" );
+            gr_error( "[%s]gr_conn_alloc_tcp failed", thread->name );
             gr_socket_close( fd );
             continue;
         }
@@ -123,7 +128,7 @@ void on_tcp_accept(
         // 看模块喜不喜欢这个连接
         if ( ! gr_module_on_tcp_accept( conn ) ) {
             // 不喜欢，关掉就是了
-            gr_error( "gr_module_on_tcp_accept reject" );
+            gr_error( "[%s]gr_module_on_tcp_accept reject" );
             gr_tcp_conn_free( conn );
             continue;
         }
@@ -131,7 +136,7 @@ void on_tcp_accept(
         // 将该socket加到tcp_in里
         r = gr_tcp_in_add_conn( conn );
         if ( 0 != r ) {
-            gr_fatal( "gr_tcp_accept_add_conn return %d", r );
+            gr_fatal( "[%s]gr_tcp_accept_add_conn return %d", thread->name, r );
             gr_tcp_conn_free( conn );
             continue;
         }
@@ -148,22 +153,23 @@ void tcp_accept_worker( gr_thread_t * thread )
     gr_poll_event_t *       e;
     gr_server_t *           server;
     gr_port_item_t *        port_item;
-    //gr_tcp_conn_item_t *    conn;
+    gr_poll_t *             poll;
 
     server = & g_ghost_rocket_global.server_interface;
     self    = (gr_accept_t *)thread->param;
+    poll    = self->polls[ thread->id ];
 
     events  = (gr_poll_event_t *)gr_malloc( sizeof( gr_poll_event_t ) * self->concurrent );
     if ( NULL == events ) {
-        gr_fatal( "bad_alloc %d", (int)sizeof( gr_poll_event_t ) * self->concurrent );
+        gr_fatal( "[%s]bad_alloc %d", thread->name, (int)sizeof( gr_poll_event_t ) * self->concurrent );
         return;
     }
 
     while ( ! thread->is_need_exit ) {
 
-        count = gr_poll_wait( self->poll, events, self->concurrent, TCP_ACCEPT_WAIT_TIMEOUT, thread );
+        count = gr_poll_wait( poll, events, self->concurrent, TCP_ACCEPT_WAIT_TIMEOUT, thread );
         if ( count < 0 ) {
-            gr_fatal( "gr_poll_wait return %d", count );
+            gr_fatal( "[%s]gr_poll_wait return %d", thread->name, count );
             continue;
         }
 
@@ -187,10 +193,12 @@ void tcp_accept_worker( gr_thread_t * thread )
 
 int gr_tcp_accept_init()
 {
-    gr_accept_t *  p;
-    int thread_count = gr_config_tcp_accept_thread_count();
-    int r;
+    gr_accept_t *   p;
+    int             thread_count;
+    int             r;
+    int             i;
 
+    thread_count = gr_config_tcp_accept_thread_count();
     if ( thread_count < 1 ) {
         gr_fatal( "[init]tcp_accept thread_count invalid" );
         return GR_ERR_INVALID_PARAMS;
@@ -216,9 +224,27 @@ int gr_tcp_accept_init()
 
         const char * name = "tcp.listen";
 
-        p->poll = gr_poll_create( p->concurrent, thread_count, GR_POLLIN, name );
-        if ( NULL == p->poll ) {
+        p->polls = (gr_poll_t**)gr_calloc( 1, sizeof( gr_poll_t * ) * thread_count );
+        if ( NULL == p->polls ) {
+            gr_fatal( "[init]gr_calloc %d bytes failed",
+                (int)sizeof( gr_poll_t * ) * thread_count );
             r = GR_ERR_INIT_POLL_FALED;
+            break;
+        }
+
+        for ( i = 0; i < thread_count; ++ i ) {
+            p->polls[ i ] = gr_poll_create(
+                p->concurrent,
+                thread_count,
+                GR_POLLIN,
+                name );
+            if ( NULL == p->polls[ i ] ) {
+                gr_fatal( "[init]gr_poll_create return NULL" );
+                r = GR_ERR_INIT_POLL_FALED;
+                break;
+            }
+        }
+        if ( GR_OK != r ) {
             break;
         }
 
@@ -245,9 +271,16 @@ int gr_tcp_accept_init()
 
         gr_threads_close( & p->threads );
 
-        if ( NULL != p->poll ) {
-            gr_poll_destroy( p->poll );
-            p->poll = NULL;
+        if ( p->polls ) {
+            for ( i = 0; i < thread_count; ++ i ) {
+                if ( NULL != p->polls[ i ] ) {
+                    gr_poll_destroy( p->polls[ i ] );
+                    p->polls[ i ] = NULL;
+                }
+            }
+
+            gr_free( p->polls );
+            p->polls = NULL;
         }
 
         gr_free( p );
@@ -263,26 +296,51 @@ void gr_tcp_accept_term()
     gr_accept_t *  p = (gr_accept_t *)g_ghost_rocket_global.tcp_accept;
     if ( NULL != p ) {
 
+        int thread_count = p->threads.thread_count;
+
         gr_threads_close( & p->threads );
 
         // 线程停了就可以把全局变量清掉了
         g_ghost_rocket_global.tcp_accept = NULL;
 
-        if ( NULL != p->poll ) {
-            gr_poll_destroy( p->poll );
-            p->poll = NULL;
+        if ( p->polls ) {
+            int i;
+
+            for ( i = 0; i < thread_count; ++ i ) {
+                if ( NULL != p->polls[ i ] ) {
+                    gr_poll_destroy( p->polls[ i ] );
+                    p->polls[ i ] = NULL;
+                }
+            }
+
+            gr_free( p->polls );
+            p->polls = NULL;
         }
 
         gr_free( p );
     }
 }
 
+static_inline
+size_t
+listen_hash(
+    gr_accept_t *       self,
+    gr_port_item_t *    port_info
+)
+{
+    return port_info->fd % self->threads.thread_count;
+}
+
 int gr_tcp_accept_add_listen_ports()
 {
     int             i;
     int             r               = 0;
-    gr_server_t *   server_interface= & g_ghost_rocket_global.server_interface;
-    gr_accept_t *   self            = (gr_accept_t *)g_ghost_rocket_global.tcp_accept;
+    gr_server_t *   server_interface;
+    gr_accept_t *   self;
+    gr_poll_t *     poll;
+
+    server_interface    = & g_ghost_rocket_global.server_interface;
+    self                = (gr_accept_t *)g_ghost_rocket_global.tcp_accept;
 
     if ( NULL == self ) {
         gr_fatal( "[init]tcp_accept is NULL" );
@@ -293,7 +351,10 @@ int gr_tcp_accept_add_listen_ports()
         gr_port_item_t * item = & server_interface->ports[ i ];
 
         if ( item->is_tcp ) {
-            r = gr_poll_add_listen_fd( self->poll, item->is_tcp, item->fd, item, & self->threads );
+
+            poll = self->polls[ listen_hash( self, item ) ];
+
+            r = gr_poll_add_listen_fd( poll, item->is_tcp, item->fd, item, & self->threads );
             if ( 0 != r ) {
                 gr_fatal( "[init]gr_poll_add_listen_fd return %d", r );
                 return -2;

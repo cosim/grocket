@@ -287,6 +287,9 @@
     <ClInclude Include="..\include\gr_atomic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\gr_compiler_switch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gr_tools_mac.m">

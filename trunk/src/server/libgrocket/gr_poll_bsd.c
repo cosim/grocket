@@ -54,6 +54,7 @@ struct gr_poll_t
 
     const char *    name;
 
+    // 因为在 kqueue 里，READ 和 WRITE 就是可以分开关的，所以在禁用 tcp out 时不会有问题
     bool            need_in;
     bool            need_out;
 };
@@ -411,11 +412,11 @@ int gr_poll_recv(
         if ( 0 == r ) {
             // 客户端关连接
 #ifdef GR_DEBUG_CONN
-            gr_debug( "recv return %d, req_push=%d, req_proc=%d, rsp_send=%llu", r,
-                    conn->req_push_count, conn->req_proc_count, conn->rsp_send_count );
+            gr_warning( "[%s][req.push=%d][req.proc=%d][rsp.sent=%llu]recv return 0",
+                        poll->name, conn->req_push_count, conn->req_proc_count, conn->rsp_send_count, r );
 #else
-            gr_debug( "recv return %d, req_push=%d, req_proc=%d", r,
-                    conn->req_push_count, conn->req_proc_count );
+            gr_warning( "[%s][req.push=%d][req.proc=%d]recv return 0",
+                        poll->name, conn->req_push_count, conn->req_proc_count );
 #endif
             conn->close_type        = GR_NEED_CLOSE;
             conn->is_network_error  = true;
@@ -425,7 +426,13 @@ int gr_poll_recv(
                 continue;
             } else if ( ECONNRESET == errno ) {
                 // Connection reset by peer
-                gr_warning( "recv return %d, errno = %d(ECONNRESET)", r, errno );
+#ifdef GR_DEBUG_CONN
+                gr_warning( "[%s][e=ECONNRESET][req.push=%d][req.proc=%d][rsp.sent=%llu]recv return %d",
+                            poll->name, conn->req_push_count, conn->req_proc_count, conn->rsp_send_count, r );
+#else
+                gr_warning( "[%s][e=ECONNRESET][req.push=%d][req.proc=%d]recv return %d",
+                            poll->name, conn->req_push_count, conn->req_proc_count, r );
+#endif
                 conn->close_type        = GR_NEED_CLOSE;
                 conn->is_network_error  = true;
             } else if ( EAGAIN == errno ) {
