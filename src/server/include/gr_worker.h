@@ -41,6 +41,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_WORK_H_
 
 #include "gr_conn.h"
+#include "gr_thread.h"
 #include "gr_compiler_switch.h"
 
 #ifdef __cplusplus
@@ -62,6 +63,9 @@ int gr_worker_add_udp(
 int gr_worker_process_tcp(
     gr_tcp_req_t *  req
 );
+
+gr_thread_t * gr_worker_get_thread( bool is_tcp, int thread_id );
+gr_thread_t * gr_worker_get_thread_by_tcp_conn( gr_tcp_conn_item_t * conn );
 
 #ifdef __cplusplus
 }

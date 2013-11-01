@@ -52,6 +52,7 @@
     // 是的，linux是亲爹养的，其它系统都是后爹养的。
     #define EPOLLIN     0x001
     #define EPOLLOUT    0x004
+    #define EPOLLERR    0x008
 #endif
 
 #ifdef __cplusplus
@@ -69,7 +70,7 @@ typedef enum
 {
     GR_POLLIN   = EPOLLIN,
     GR_POLLOUT  = EPOLLOUT,
-
+    GR_POLLERR  = EPOLLERR,
 } GR_POLL_EVENT;
 
 // 在Linux下，本节构必须和epoll一模一样
@@ -115,6 +116,12 @@ int gr_poll_add_tcp_recv_fd(
 
 int gr_poll_add_tcp_send_fd(
     gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+);
+
+int gr_poll_del_tcp_fd(
+    gr_poll_t *             polls,
     gr_tcp_conn_item_t *    conn,
     gr_threads_t *          threads
 );

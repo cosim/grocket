@@ -42,52 +42,6 @@
 #include "tcp_io.h"
 #include "gr_tcp_in.h"
 
-#if ! defined( WIN32 ) && ! defined( WIN64 )
-
-static
-void tcp_out_worker( gr_thread_t * thread )
-{
-#define     TCP_OUT_WAIT_TIMEOUT    100
-    int                     count;
-    int                     i;
-    gr_tcp_out_t *          self;
-    gr_poll_event_t *       events;
-    gr_poll_event_t *       e;
-    gr_tcp_conn_item_t *    conn;
-    gr_poll_t *             poll;
-
-    self    = (gr_tcp_out_t *)thread->param;
-    poll    = self->polls[ thread->id ];
-
-    events  = (gr_poll_event_t *)gr_malloc( sizeof( gr_poll_event_t ) * self->concurrent );
-    if ( NULL == events ) {
-        gr_fatal( "bad_alloc %d", (int)sizeof( gr_poll_event_t ) * self->concurrent );
-        return;
-    }
-
-    while ( ! thread->is_need_exit ) {
-
-        count = gr_poll_wait( poll, events, self->concurrent, TCP_OUT_WAIT_TIMEOUT, thread );
-        if ( count < 0 ) {
-            gr_fatal( "gr_poll_wait return %d", count );
-            continue;
-        } else if ( 0 == count ) {
-            continue;
-        }
-
-        for ( i = 0; i < count; ++ i ) {
-            e = & events[ i ];
-
-            conn = (gr_tcp_conn_item_t *)e->data.ptr;
-            on_tcp_send( self, poll, thread, conn );
-        }
-    };
-
-    gr_free( events );
-}
-
-#endif // #if ! defined( WIN32 ) && ! defined( WIN64 )
-
 int gr_tcp_out_init()
 {
     gr_tcp_out_t *  p;
@@ -127,6 +81,7 @@ int gr_tcp_out_init()
     }
 
     p->concurrent       = gr_config_tcp_out_concurrent();
+    p->is_tcp_in        = false;
     p->worker_disabled  = gr_config_worker_disabled();
     p->tcp_out_disabled = gr_config_tcp_out_disabled();
 
@@ -210,11 +165,7 @@ int gr_tcp_out_init()
             & p->threads,
             thread_count,
             NULL,
-#if defined( WIN32 ) || defined( WIN64 )
             tcp_io_worker,
-#else
-            p->tcp_out_disabled ? tcp_io_worker : tcp_out_worker,
-#endif
             p,
             gr_poll_raw_buff_for_tcp_out_len(),
             true,
@@ -364,14 +315,26 @@ int gr_tcp_out_del_tcp_conn( gr_tcp_conn_item_t * conn )
 
     poll = self->polls[ tcp_out_hash( self, conn ) ];
 
-    r = gr_poll_del_tcp_send_fd(
-        poll,
-        conn,
-        & self->threads
-    );
-    if ( 0 != r ) {
-        gr_fatal( "[tcp.output]gr_poll_del_tcp_send_fd return %d", r );
-        return -3;
+    if ( self->tcp_out_disabled ) {
+        r = gr_poll_del_tcp_fd(
+            poll,
+            conn,
+            & self->threads
+        );
+        if ( 0 != r ) {
+            gr_fatal( "[tcp.output]gr_poll_del_tcp_fd return %d", r );
+            return -3;
+        }
+    } else {
+        r = gr_poll_del_tcp_send_fd(
+            poll,
+            conn,
+            & self->threads
+        );
+        if ( 0 != r ) {
+            gr_fatal( "[tcp.output]gr_poll_del_tcp_send_fd return %d", r );
+            return -3;
+        }
     }
 
     return 0;

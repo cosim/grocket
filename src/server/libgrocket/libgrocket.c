@@ -215,6 +215,26 @@ gr_main(
                  "server debug log will not output" );
 #endif
 
+#ifndef ENABLE_INLINE_FUNCTION
+    #if defined( WIN32 ) || defined( WIN64 )
+        #pragma message( "!!!!ENABLE_INLINE_FUNCTION not defined, performance warning!" )
+    #else
+        #warning "!!!!ENABLE_INLINE_FUNCTION not defined, performance warning!!!!"
+    #endif
+        gr_warning( "[init]!!!!ENABLE_INLINE_FUNCTION not defined, performance warning!" );
+#else
+        gr_info( "[init]ENABLE_INLINE_FUNCTION defined" );
+#endif
+
+#ifdef GR_DEBUG_CONN
+    #if defined( WIN32 ) || defined( WIN64 )
+        #pragma message( "!!!!GR_DEBUG_CONN defined, performance warning!" )
+    #else
+        #warning "!!!!GR_DEBUG_CONN defined, performance warning!!!!"
+    #endif
+        gr_warning( "[init]!!!!GR_DEBUG_CONN defined, performance warning!" );
+#endif
+
         // 初始化配置模块
         r = gr_config_init( ini_content, ini_content_len );
         if ( 0 != r ) {

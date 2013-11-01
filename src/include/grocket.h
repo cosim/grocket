@@ -68,6 +68,7 @@ typedef enum
     GR_LOG_FATAL    = 5,
     // disable log
     GR_LOG_NONE     = 6,
+    GR_LOG_LEVEL_COUNT    = 7
 } gr_log_level_t;
 
 typedef enum

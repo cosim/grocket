@@ -396,7 +396,7 @@ int gr_poll_recv(
     while ( true ) {
 
         // 准备req收数据
-        req = gr_tcp_conn_prepare_recv( conn );
+        req = gr_tcp_conn_prepare_recv( conn, thread );
         if ( NULL == req ) {
             gr_fatal( "gr_tcp_conn_prepare_recv return NULL" );
             return -1;
@@ -468,6 +468,7 @@ int gr_poll_send(
     int                 r;
     int                 sent_bytes = 0;
     int                 e;
+    int                 need_send;
 
 RETRY:
 
@@ -480,10 +481,11 @@ RETRY:
 
         while ( rsp->buf_sent < rsp->buf_len ) {
             
+            need_send = rsp->buf_len - rsp->buf_sent;
             r = send(
                 conn->fd,
                 & rsp->buf[ rsp->buf_sent ],
-                rsp->buf_len - rsp->buf_sent,
+                need_send,
                 MSG_NOSIGNAL
             );
 
@@ -494,6 +496,12 @@ RETRY:
                 conn->send_bytes += r;
 #endif
                 gr_debug( "send %d bytes", r );
+
+                if ( r < need_send ) {
+                    // 缓冲区发满了, 没出错。不要再调一次 send 了，如果进系统调用后发现不能发就赔了  
+                    return sent_bytes;
+                }
+
                 continue;
             }
 
@@ -595,10 +603,44 @@ int gr_poll_del_tcp_recv_fd(
     }
 
     if ( ENOENT == e ) {
-        return GR_NOT_FOUND;
+        return GR_ERR_NOT_FOUND;
     }
 
     return GR_ERR_SYSTEM_CALL_FAILED;
+}
+
+int gr_poll_del_tcp_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+)
+{
+    struct kevent   ev;
+    struct timespec ts;
+    int             r;
+
+    ts.tv_sec = 0;
+    ts.tv_nsec = 0;
+    EV_SET( & ev,
+        conn->fd,                   // ident
+        EVFILT_READ | EVFILT_WRITE, // filter
+        EV_DELETE,          // flags
+        0,                  // fflags
+        0,                  // data
+        conn );             // udata
+    r = kevent( poll->kqfd, & ev, 1, NULL, 0, & ts );
+    if ( 0 != r ) {
+        int e = errno;
+        gr_warning( "%s kevent EV_DELETE return error %d: %d,%s", poll->name, r, e, strerror( e ) );
+        if ( ENOENT == e ) {
+            return GR_ERR_NOT_FOUND;
+        }
+
+        return GR_ERR_SYSTEM_CALL_FAILED;
+    } else {
+        gr_info( "%s kevent EV_DELETE for EVFILT_READ ok", poll->name );
+        return GR_OK;
+    }
 }
 
 int gr_poll_del_tcp_send_fd(
@@ -615,7 +657,7 @@ int gr_poll_del_tcp_send_fd(
         return GR_OK;
     }
     if ( ENOENT == e ) {
-        return GR_NOT_FOUND;
+        return GR_ERR_NOT_FOUND;
     }
     return GR_ERR_SYSTEM_CALL_FAILED;
 }

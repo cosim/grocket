@@ -72,6 +72,7 @@ typedef struct
     gr_poll_t **    polls;
 
     int             concurrent;
+    bool            is_tcp_in;
     bool            worker_disabled;
     bool            tcp_out_disabled;
 
@@ -84,6 +85,35 @@ typedef gr_tcp_io_t gr_tcp_out_t;
 //
 // below should be tcp_out's private code
 //
+
+static_inline
+void on_tcp_send_error(
+    gr_tcp_out_t *          self,
+    gr_poll_t *             poll,
+    gr_thread_t *           thread,
+    gr_tcp_conn_item_t *    conn
+)
+{
+    if ( ! conn->is_network_error ) {
+        conn->is_network_error = true;
+    }
+
+    if ( conn->close_type > GR_NEED_CLOSE ) {
+        conn->close_type = GR_NEED_CLOSE;
+    }
+
+    // 网络异常时已经不可能有返回数据包被压过来，完全可以把返回数据包列表删了
+    // 为什么要加这句话呢？因为代码(1)处只在 NULL == conn->rsp_list_head 时才删连接
+    // 希望走到本分支时，在(1)处可以走到删除连接的逻辑。
+    gr_tcp_conn_clear_rsp_list( conn );
+
+    if ( self->tcp_out_disabled ) {
+        // 如果 tcp_out 已经禁用，则 tcp_out 退出，tcp_in 就已经退出了
+        conn->tcp_in_open = false;
+    }
+    // 关连接，然后退出
+    gr_tcp_close_from_out( conn, self->tcp_out_disabled );
+}
 
 static_inline
 void on_tcp_send(
@@ -286,6 +316,7 @@ void on_tcp_recv(
 
 static void tcp_io_worker( gr_thread_t * thread )
 {
+    // 现在收、发线程都调这个线程函数了  
 #define     TCP_IO_WAIT_TIMEOUT    100
     int                     count;
     int                     i;
@@ -324,6 +355,12 @@ static void tcp_io_worker( gr_thread_t * thread )
                 on_tcp_recv( self, poll, thread, conn );
             } else if ( e->events & GR_POLLOUT ) {
                 on_tcp_send( self, poll, thread, conn );
+            } else if ( e->events & GR_POLLERR ) {
+                if ( self->is_tcp_in ) {
+                    on_tcp_recv_error( self, poll, thread, conn );
+                } else {
+                    on_tcp_send_error( self, poll, thread, conn );
+                }
             }
         }
     };

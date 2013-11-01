@@ -40,9 +40,6 @@
 #ifndef _GHOST_ROCKET_INCLUDE_GRSTDINC_H_
 #define _GHOST_ROCKET_INCLUDE_GRSTDINC_H_
 
-//#define static_inline   static inline
-#define static_inline
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -333,7 +330,7 @@ extern "C" {
 #ifndef __cplusplus
     // Mac OS & iOS defined bool, so we add #ifndef bool #define bool ... #endif
     #ifndef bool
-        #define	bool    char
+        #define	bool    unsigned char
     #endif
     #define	true        1
     #define	false       0

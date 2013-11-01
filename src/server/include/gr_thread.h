@@ -42,10 +42,14 @@
 
 #include "gr_event.h"
 #include "gr_compiler_switch.h"
+//#include "gr_conn.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// forward declare
+struct gr_tcp_req_t;
 
 #if defined( WIN32 ) || defined( WIN64 )
     typedef HANDLE      pthread_t;
@@ -88,6 +92,9 @@ struct gr_thread_t
 {
     // 线程名
     const char *    name;
+
+    // 已经释放的请求对象,将来重用。本功能只在禁用worker线程时使用
+    struct gr_tcp_req_t *  free_tcp_req_list;
 
     // 线程标识
     pthread_t       h;

@@ -41,7 +41,9 @@
 #include "gr_log.h"
 #include "gr_global.h"
 #include "gr_tools.h"
+#include "gr_config.h"
 #include "gr_errno.h"
+#include "gr_conn.h"
 #include "gr_mem.h"
 #if defined( __linux )
     #include <sched.h>
@@ -97,133 +99,62 @@ unsigned long get_cpu_affinity( const char * role, int thread_id, int * priority
     // udp.out
     // svr.worker
 
-    * priority = 0;
-    return 0;
-    /*
-    unsigned long * masks = g_ghost_rocket_global.affinity_masks;
-    int ncpu = gr_processor_count();
-    int ncpu_max = 32;
 
-    * priority = 0;
+    unsigned long *  masks = g_ghost_rocket_global.affinity_masks;
+    int              ncpu = gr_processor_count();
+    static const int ncpu_max = 32;
 
-    //return 0;
-
-    if ( thread_id < 0 || thread_id >= ncpu_max ) {
-        // 爱用哪个核用哪个核
-        return 0;
+    if ( ncpu > ncpu_max ) {
+        ncpu = ncpu_max;
     }
 
-    if ( ncpu <= 2 ) {
-        // 2 核
-        if (   strstr( role, "tcp.listen" )
-            || strstr( role, "tcp.input" )
-            || strstr( role, "tcp.output" )
-            || strstr( role, "udp.in" )
-            || strstr( role, "udp.out" ) )
-        {
-            // 所有的收、发在0核
-            return masks[0];
-        }
+    do {
 
-        if ( strstr( role, "svr.worker" ) ) {
-            // 所有的处理在1核
-            return masks[1];
-        }
+        if ( thread_id >= 0 ) {
+            if ( strstr( role, "tcp.input" ) ) {
+                const char *    affinity;
+                size_t          i;
+                unsigned long   masks;
+                char            cpu_bind[ 1024 ] = "";
+                char            t[ 32 ];
+                char            c;
+                
+                affinity = gr_config_tcp_in_thread_affinity( thread_id );
+                if ( NULL == affinity || '\0' == * affinity ) {
+                    gr_info( "[init][tcp.input %d][affinity=NONE]", thread_id );
+                    break;
+                }
 
-        return 0;
+                masks = 0;
+                for (   i = 0;
+                        i < COUNT_OF( g_ghost_rocket_global.affinity_masks ) && i < ncpu;
+                        ++ i )
+                {
+                    c = affinity[ i ];
+                    if ( '1' != c && '0' != c ) {
+                        break;
+                    }
+                    if ( '0' == c ) {
+                        continue;
+                    }
+                    masks |= g_ghost_rocket_global.affinity_masks[ i ];
 
-    } else if ( ncpu <= 4 ) {
-        // 4 核
-        if (   strstr( role, "tcp.listen" )
-            || strstr( role, "tcp.input" )
-            || strstr( role, "udp.in" ) )
-        {
-            // 所有的收在0核
-            return masks[0];
-        }
-
-        if (   strstr( role, "tcp.output" )
-            || strstr( role, "udp.out" ) )
-        {
-            // 所有的发在1核
-            return masks[1];
-        }
-
-        if ( strstr( role, "svr.worker" ) ) {
-            // 所有的处理在2和3核
-            if ( 0 == ( thread_id % 2 ) ) {
-                return masks[2];
+                    //TODO: 我知道这儿有缓冲区溢出漏洞, 你丫自己能害你自己?  
+                    sprintf( t, "%d", i );
+                    if ( '\0' != cpu_bind[ 0 ] ) {
+                        strcat( cpu_bind, "," );
+                    }
+                    strcat( cpu_bind, t );
+                }
+                gr_info( "[init][tcp.input %d][affinity=%s]",
+                    thread_id, cpu_bind );
             }
-
-            return masks[3];
         }
+    } while ( false );
 
-        return 0;
-
-    } else if ( ncpu <= 8 ) {
-        // 8
-
-        if ( strstr( role, "tcp.listen" ) ) {
-            // 
-            return masks[0 + thread_id % 8];
-        }
-
-        if ( strstr( role, "tcp.input" ) ) {
-            return masks[1 + thread_id % 7];
-        }
-
-        if ( strstr( role, "udp.in" ) ) {
-            return masks[2 + thread_id % 6];
-        }
-
-        if ( strstr( role, "tcp.output" ) ) {
-            return masks[3 + thread_id % 5];
-        }
-
-        if ( strstr( role, "udp.out" ) ) {
-            return masks[4 + thread_id % 4];
-        }
-
-        if ( strstr( role, "svr.worker" ) ) {
-            // 所有的处理在567核
-            return masks[5 + thread_id % 3];
-        }
-
-        return 0;
-
-    } else {
-        // 大于 8 核
-        if ( strstr( role, "tcp.listen" ) ) {
-            // 
-            return masks[0 + thread_id % 2];
-        }
-
-        if ( strstr( role, "tcp.input" ) ) {
-            return masks[2 + thread_id % 4];
-        }
-
-        if ( strstr( role, "udp.in" ) ) {
-            return masks[6];
-        }
-
-        if ( strstr( role, "tcp.output" ) ) {
-            return masks[7 + thread_id % 4];
-        }
-
-        if ( strstr( role, "udp.out" ) ) {
-            return masks[11];
-        }
-
-        if ( strstr( role, "svr.worker" ) ) {
-            // 所有的处理在567核
-            return masks[12 + thread_id % 4];
-        }
-
-        return 0;
-    }
-
+    // 返回0，爱用哪个核用哪个核
+    * priority = 0;
     return 0;
-    */
 }
 
 int gr_processor_count()
@@ -299,6 +230,7 @@ gr_thread_join(
 
 void * gr_thread_runtine( gr_thread_t * thread )
 {
+    thread->free_tcp_req_list = NULL;
     thread->pid = getpid();
     thread->tid = gettid();
 
@@ -381,24 +313,31 @@ void * gr_thread_runtine( gr_thread_t * thread )
         thread->is_running = true;
         // 初始化
         if ( NULL != thread->init_routine ) {
-            gr_info( "[init][name=%s.%d] thread %d init begining...",
+            gr_info( "[init][%s%d][tid=%d]init enter",
                 thread->name, thread->id, thread->tid );
             thread->init_routine( thread );
-            gr_info( "[init][name=%s.%d] thread %d init done.",
+            gr_info( "[init][%s%d][tid=%d]init leave",
                 thread->name, thread->id, thread->tid );
         }
         // 线程启动事件
         gr_event_alarm( & thread->event );
         // 线程用户函数
-        gr_info( "[init][name=%s.%d] thread %d routine running",
+        gr_info( "[init][%s%d][tid=%d]runtine enter",
             thread->name, thread->id, thread->tid );
         thread->routine( thread );
-        gr_info( "[term][name=%s.%d] thread %d routine exit",
+        gr_info( "[term][%s%d][tid=%d]runtine leave",
             thread->name, thread->id, thread->tid );
 
     } while ( false );
 
-    gr_info( "[term][name=%s.%d] thread %d exit",
+    // 释放 tcp_req pool
+    while ( thread->free_tcp_req_list ) {
+        gr_tcp_req_t * next = (gr_tcp_req_t *)thread->free_tcp_req_list->entry.next;
+        gr_tcp_req_free( thread->free_tcp_req_list, false );
+        thread->free_tcp_req_list = next;
+    }
+
+    gr_info( "[term][%s%d][tid=%d] exit",
         thread->name, thread->id, thread->tid );
 
     // 线程退出标记

@@ -41,6 +41,7 @@
 #define _GHOST_ROCKET_SERVER_LIBGROCKET_GR_TCP_IN_H_
 
 #include "gr_conn.h"
+#include "gr_thread.h"
 #include "gr_compiler_switch.h"
 
 #ifdef __cplusplus
@@ -56,6 +57,8 @@ int gr_tcp_in_add_conn( gr_tcp_conn_item_t * conn );
 int gr_tcp_in_del_tcp_conn( gr_tcp_conn_item_t * conn );
 
 void ** gr_tcp_in_get_polls( int * count );
+
+gr_thread_t * gr_tcp_in_get_thread( int thread_id );
 
 #ifdef __cplusplus
 }

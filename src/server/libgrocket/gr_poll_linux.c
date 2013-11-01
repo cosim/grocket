@@ -427,6 +427,7 @@ int gr_poll_send(
     int                 r;
     int                 sent_bytes = 0;
     int                 e;
+    int                 need_send;
 
 RETRY:
 
@@ -439,10 +440,11 @@ RETRY:
 
         while ( rsp->buf_sent < rsp->buf_len ) {
             
+            need_send = rsp->buf_len - rsp->buf_sent;
             r = send(
                 conn->fd,
                 & rsp->buf[ rsp->buf_sent ],
-                rsp->buf_len - rsp->buf_sent,
+                need_send,
                 MSG_NOSIGNAL
             );
 
@@ -453,7 +455,16 @@ RETRY:
                 conn->send_bytes += r;
 #endif
                 gr_debug( "[%s][rsp=%p][conn=%p][poll=%p][epfd=%d] send %d bytes",
-                          poll->name, rsp, conn, poll, poll->epfd, r )
+                          poll->name, rsp, conn, poll, poll->epfd, r );
+
+                if ( r < need_send ) {
+                    // 缓冲区发满了, 没出错。不要再调一次 send 了，如果进系统调用后发现不能发就赔了  
+                    if ( 0 == r ) {
+                        gr_warning( "sent return 0, err = %d:%s!!!!!!!!!!!!!", errno, strerror( errno ) );
+                    }
+                    return sent_bytes;
+                }
+
                 continue;
             }
 
@@ -554,11 +565,38 @@ int gr_poll_del_tcp_recv_fd(
         return GR_OK;
     }
     if ( ENOENT == e ) {
-        return GR_NOT_FOUND;
+        return GR_ERR_NOT_FOUND;
     }
 
     gr_error( "[%s]del_tcp_recv_fd failed: %d,%s", poll->name, e, strerror( e ) );
     return GR_ERR_SYSTEM_CALL_FAILED;
+}
+
+int gr_poll_del_tcp_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+)
+{
+    int                 r;
+    struct epoll_event  ev;
+
+    ev.data.ptr         = conn;
+    ev.events           = 0;
+    poll->already_out   = false;
+    r = epoll_ctl( poll->epfd, EPOLL_CTL_DEL, conn->fd, & ev );
+    if ( 0 != r ) {
+        int e = errno;
+        if ( ENOENT == e ) {
+            gr_fatal( "[%s]epoll_ctl + DEL not found", poll->name );
+            return GR_ERR_NOT_FOUND;
+        } else {
+            gr_fatal( "[%s]epoll_ctl + DEL failed: %d,%s", poll->name, e, strerror( e ) );
+            return GR_ERR_SYSTEM_CALL_FAILED;
+        }
+    }
+
+    return GR_OK;
 }
 
 int gr_poll_del_tcp_send_fd(
@@ -575,7 +613,7 @@ int gr_poll_del_tcp_send_fd(
         return GR_OK;
     }
     if ( ENOENT == e ) {
-        return GR_NOT_FOUND;
+        return GR_ERR_NOT_FOUND;
     }
     gr_error( "[%s]del_tcp_recv_fd failed: %d,%s", poll->name, e, strerror( e ) );
     return GR_ERR_SYSTEM_CALL_FAILED;

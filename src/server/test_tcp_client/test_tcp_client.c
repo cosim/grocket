@@ -41,8 +41,10 @@
 
 #define THREAD_COUNT    10
 #define REQ_PER_THREAD  0
+#define RECV_TIMEOUT    2000
 
 #include "gr_stdinc.h"
+#include "gr_atomic.h"
 #if defined( __APPLE__ )
     #include <mach/mach_time.h>
 #endif
@@ -50,6 +52,15 @@
 #if defined( WIN32 ) || defined( WIN64 )
     #pragma comment( lib, "ws2_32.lib" )
 #endif
+
+typedef struct
+{
+    uint64_t exam_unit_total;
+    uint32_t exam_unit;
+    uint32_t exam_count;
+    uint32_t exam_time_sum;
+
+} thread_data;
 
 int
 get_errno()
@@ -418,7 +429,7 @@ gr_thread_join(
 #endif
 }
 
-int tcp_main( int argc, char ** argv, int thread_id )
+int tcp_main( int argc, char ** argv, int thread_id, thread_data * data )
 {
 #if defined( WIN32 ) || defined( WIN64 )
 	WSADATA wsaData;
@@ -440,9 +451,10 @@ int tcp_main( int argc, char ** argv, int thread_id )
     uint32_t start = 0;
     uint32_t stop = 0;
 
-    uint32_t exam_unit = 100000;
-    uint32_t exam_count = 0;
-    uint32_t exam_time_sum = 0;
+    data->exam_unit_total = 0;
+    data->exam_unit = 100000;
+    data->exam_count = 0;
+    data->exam_time_sum = 0;
 
 #if defined( WIN32 ) || defined( WIN64 )
     // 加载 Winsock 2.2
@@ -513,7 +525,7 @@ int tcp_main( int argc, char ** argv, int thread_id )
 
         strcpy( req, id );
 
-        if ( ! gr_socket_send_all( fd, rreq, (int)rreq_len, false, 1000 ) ) {
+        if ( ! gr_socket_send_all( fd, rreq, (int)rreq_len, false, RECV_TIMEOUT ) ) {
             printf( "thread %d: send %d bytes failed\n", thread_id, (int)rreq_len );
             break;
         }
@@ -533,18 +545,24 @@ int tcp_main( int argc, char ** argv, int thread_id )
             break;
         }
 
-        if ( 0 != i && 0 == (i % exam_unit) ) {
+        if ( 0 != i && 0 == (i % data->exam_unit) ) {
+            int n;
+
             stop = get_tick_count();
 
-            ++ exam_count;
-            exam_time_sum += stop - start;
+            data->exam_unit_total += data->exam_unit;
+            ++ data->exam_count;
+            data->exam_time_sum += stop - start;
 
-            printf( "thread %d: %d kiss package, send %llu bytes, recv %llu bytes. "
-                    "%u package use %d ms, avg: %u/%u=%u ms, %d REQ/MS\t\n",
-                    thread_id, i + 1, sent, recved,
-                    exam_unit, stop - start,
-                    exam_time_sum, exam_count, exam_time_sum / exam_count,
-                    exam_unit / (exam_time_sum / exam_count) );
+            n = data->exam_unit_total / data->exam_time_sum;
+            printf( "thread %2d: [%3d REQ/MS][kiss=%d][unit=%u][exam_count=%u][send=%llu][recv=%llu]"
+                    "[use_time=%d]\n",
+                    thread_id,
+                    n,
+                    i + 1, data->exam_unit, data->exam_count,
+                    sent, recved,
+                    stop - start,
+                    data->exam_time_sum, data->exam_count, data->exam_time_sum / data->exam_count );
             fflush( stdout );
 
             start = get_tick_count();
@@ -560,24 +578,27 @@ int tcp_main( int argc, char ** argv, int thread_id )
     return 0;
 }
 
-static int      g_argc  = 0;
-static char **  g_argv  = NULL;
+static int              g_argc  = 0;
+static char **          g_argv  = NULL;
+static thread_data *    g_data = NULL;
 
 void * tcp_thread( void * params )
 {
     int thread_id = (int)params;
 
-    tcp_main( g_argc, g_argv, thread_id );
+    tcp_main( g_argc, g_argv, thread_id, & g_data[ thread_id ] );
 
     return NULL;
 }
 
 int main( int argc, char ** argv )
 {
-    pthread_t * threads;
-    int         thread_count;
-    int         i;
-    int         r = 0;
+    pthread_t *     threads;
+    int             thread_count;
+    int             i;
+    int             r = 0;
+    uint32_t start = 0;
+    uint32_t stop = 0;
 
     g_argc = argc;
     g_argv = argv;
@@ -590,7 +611,19 @@ int main( int argc, char ** argv )
         return -1;
     }
 
+    g_data = (thread_data*)calloc( 1, sizeof( thread_data ) * thread_count );
+    if ( NULL == g_data ) {
+        printf( "calloc failed\n" );
+        return -2;
+    }
+
     do {
+        uint64_t exam_unit_total;
+        uint64_t exam_unit_total_last = 0;
+        uint64_t exam_unit;
+        uint64_t exam_count;
+        uint64_t exam_time_sum;
+
         for ( i = 0; i < thread_count; ++ i ) {
             r = gr_thread_create( & threads[ i ], tcp_thread, (void*)i );
             if ( 0 != r ) {
@@ -602,12 +635,59 @@ int main( int argc, char ** argv )
             break;
         }
 
+        start = get_tick_count();
+
+        while ( true ) {
+
+            int n;
+
+            stop = get_tick_count();
+
+            exam_unit_total = 0;
+            exam_unit = 0;
+            exam_count = 0;
+            exam_time_sum = 0;
+            for ( i = 0; i < thread_count; ++ i ) {
+                exam_unit_total += g_data[ i ].exam_unit_total;
+                exam_unit += g_data[ i ].exam_unit;
+                exam_count += g_data[ i ].exam_count;
+                exam_time_sum += g_data[ i ].exam_time_sum;
+            }
+
+            if ( 0 == exam_count || 0 == exam_time_sum ) {
+                continue;
+            }
+
+            if ( 0 == start ) {
+                continue;
+            }
+
+            n = (exam_unit_total - exam_unit_total_last) / (stop - start);
+
+            start = get_tick_count();
+
+            exam_unit_total_last = exam_unit_total;
+
+            printf( "[AVG: %3d REQ/MS][unit=%llu][count=%llu][unit_total=%llu][time_sum=%llu]\n",
+                    n, exam_unit, exam_count, exam_unit_total, exam_time_sum );
+
+            fflush( stdout );
+
+
+#if defined( WIN32 ) || defined( WIN64 )
+            Sleep( 5000 );
+#else
+            sleep( 5 );
+#endif
+        }
+
         for ( i = 0; i < thread_count; ++ i ) {
             gr_thread_join( & threads[ i ] );
         }
 
     } while ( false );
 
+    free( g_data );
     free( threads );
 
     printf( "will exit, press any key to exit\n" );
