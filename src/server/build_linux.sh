@@ -12,6 +12,9 @@ rm -fr gperftools-2.1
 tar -zxvf gperftools-2.1.tar.gz
 cd gperftools-2.1
 sh ./configure
+cat src/config.h | grep -v "HAVE_FORK" > src/config.h.daming.linux.new
+rm -fr src/config.h
+mv src/config.h.daming.linux.new src/config.h
 cd ..
 cd ..
 

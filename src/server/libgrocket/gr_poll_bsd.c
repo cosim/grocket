@@ -396,7 +396,7 @@ int gr_poll_recv(
     while ( true ) {
 
         // 准备req收数据
-        req = gr_tcp_conn_prepare_recv( conn, thread );
+        req = gr_tcp_conn_prepare_recv( conn );
         if ( NULL == req ) {
             gr_fatal( "gr_tcp_conn_prepare_recv return NULL" );
             return -1;

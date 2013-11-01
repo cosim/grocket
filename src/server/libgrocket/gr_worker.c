@@ -113,12 +113,10 @@ struct gr_worker_item_t
     volatile bool               in_event;
 };
 
-gr_thread_t * gr_worker_get_thread( bool is_tcp, int thread_id )
+static inline
+bool is_worker_disabled()
 {
-    //TODO: UDP not implement
-    gr_worker_t * p = (gr_worker_t *)g_ghost_rocket_global.worker;
-    assert( thread_id >= 0 && thread_id < p->threads.thread_count );
-    return & p->threads.threads[ thread_id ];
+    return ((gr_worker_t *)g_ghost_rocket_global.worker)->worker_disabled;
 }
 
 static_inline
@@ -127,7 +125,7 @@ void worker_free_queue_item( int thread_id, gr_queue_item_t * queue_item )
     if ( queue_item->is_tcp ) {
         gr_worker_t *   self;
         self = (gr_worker_t *)g_ghost_rocket_global.worker;
-        gr_tcp_req_free( (gr_tcp_req_t *)queue_item, true );
+        gr_tcp_req_free( (gr_tcp_req_t *)queue_item, is_worker_disabled() );
     } else {
         gr_udp_req_free( (gr_udp_req_t *)queue_item );
     }
@@ -915,7 +913,7 @@ int gr_worker_add_tcp(
         req->buf_len = package_len + left_len;
 
         // 删除刚刚分配的请求包
-        gr_tcp_req_free( new_req, true );
+        gr_tcp_req_free( new_req, is_worker_disabled() );
     }
     req->parent->req = req;
 
@@ -952,17 +950,18 @@ int gr_worker_process_tcp( gr_tcp_req_t * req )
     }
 
     process_tcp( self, & self->threads.threads[ hash_id ], req );
-
-    gr_tcp_req_free(
-        req,
-        gr_worker_get_thread( true, hash_id )
-    );
+    gr_tcp_req_free( req, is_worker_disabled() );
     return 0;
 }
 
 gr_thread_t * gr_worker_get_thread_by_tcp_conn( gr_tcp_conn_item_t * conn )
 {
-    return & ((gr_worker_t *)g_ghost_rocket_global.worker)->threads.threads[
-        hash_worker_tcp_by_conn( conn )
-    ];
+    gr_worker_t * self = (gr_worker_t *)g_ghost_rocket_global.worker;
+    if ( self->worker_disabled ) {
+        return & self->threads.threads[ hash_worker_tcp_by_conn( conn ) ];
+    }
+
+    // 如果Worker没禁用，则conn和线程没有必然的关系。
+    // 在 tcp_in 线程分配，在worker线程释放，总觉得有点儿蛋疼，更何况最快的模型是禁用worker
+    return NULL;
 }
