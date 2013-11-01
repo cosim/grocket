@@ -261,7 +261,7 @@ bool recv_with_thread(
     per_worker_io_t *   p   = (per_worker_io_t *)thread->cookie;
 
     // 准备req收数据
-    req = gr_tcp_conn_prepare_recv( conn, gr_worker_get_thread( true, thread->id ) );
+    req = gr_tcp_conn_prepare_recv( conn );
     if ( NULL == req ) {
         gr_fatal( "gr_tcp_conn_prepare_recv return NULL" );
         return false;
