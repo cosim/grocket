@@ -40,14 +40,23 @@
 #ifndef _GHOST_ROCKET_SERVER_INCLUDE_GR_COMPILER_SWITCH_H_
 #define _GHOST_ROCKET_SERVER_INCLUDE_GR_COMPILER_SWITCH_H_
 
-// Òª´ïµ½×î¼ÑĞÔÄÜ£¬»¹ÒªÔÚ Makefile ÀïÈ¥µô -g ¼Ó -O3
+// è¦è¾¾åˆ°æœ€ä½³æ€§èƒ½ï¼Œè¿˜è¦åœ¨ Makefile é‡Œå»æ‰ -g åŠ  -O3
 
+// å®šä¹‰å®ƒè°ƒè¯•è¿æ¥å¯¹è±¡ï¼Œæ€§èƒ½ä¼šé™ä½
 //#define GR_DEBUG_CONN
 
-//#define static_inline   static inline
-#define static_inline   static
-
-// ¶¨ÒåËüÆô¶¯DEBUGÈÕÖ¾£¬²»¶¨ÒåËü½ûÓÃDEBUGÈÕÖ¾¡£ÎªÁË¼õÉÙÈÕÖ¾¶ÔĞÔÄÜµÄÓ°Ïì
+// å®šä¹‰å®ƒå¯åŠ¨DEBUGæ—¥å¿—ï¼Œä¸å®šä¹‰å®ƒç¦ç”¨DEBUGæ—¥å¿—ã€‚ä¸ºäº†å‡å°‘æ—¥å¿—å¯¹æ€§èƒ½çš„å½±å“
 //#define ENABLE_DEBUG_LOG
+
+// æ˜¯å¦å…è®¸ inlineï¼Œå¦‚æœ inline äº†ï¼Œè·‘ valgrind å°±ä¸æ¸…æ¥šè°çš„å¼€é”€æœ€å¤§äº†
+#define ENABLE_INLINE_FUNCTION
+
+///////////////////////////////////////////////////////////////////////
+
+#ifdef ENABLE_INLINE_FUNCTION
+    #define static_inline   static inline
+#else
+    #define static_inline   static
+#endif
 
 #endif // #ifndef _GHOST_ROCKET_SERVER_INCLUDE_GR_COMPILER_SWITCH_H_

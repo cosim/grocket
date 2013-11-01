@@ -48,25 +48,25 @@
 extern "C" {
 #endif
 
-static inline
+static_inline
 void * gr_malloc( size_t n )
 {
     return tc_malloc( n );
 }
 
-static inline
+static_inline
 void gr_free( void * p )
 {
     tc_free( p );
 }
 
-static inline
+static_inline
 void * gr_calloc( size_t item_size, size_t item_count )
 {
     return tc_calloc( item_size, item_count );
 }
 
-static inline
+static_inline
 void* gr_realloc( void * ptr, size_t size )
 {
     return tc_realloc( ptr, size );

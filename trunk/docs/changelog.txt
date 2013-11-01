@@ -1,19 +1,99 @@
 
+邹月明 20131101-05:05
+======================
+1. libgrocket
+   已经把 tcp_req 的分配与释放简单的优化了一下。
+2. 将性能测试客户端的统计错误改了一下，
+   现在能达到48万请求每秒，20个线程，客户端也在本机
+             46万请求每秒，10个线程，客户端也在本机
+   
+邹月明 20131031-06:12
+======================
+1. libgrocket
+   第一步准备优化tcp_req的分配与释放，在代码中已经在分配和释放tcp_req的地方以参数的形式将线程指针传过来了。
+
+   10个服务器线程, 20个客户端连接的统计结果似乎让人怀疑是不是统计算法错了? 76万每秒?
+   [AVG: 760 REQ/MS][unit=2000000][count=44][time_sum=115792]
+
+邹月明 20131030-05:55
+======================
+1. libgrocket
+   设置了一下CPU亲缘性，感觉连接性能将比昨天又有大幅提升，超过40W应该是没问题的。
+
+2. 19:30
+   早上的调整用处不大，结果发现是CS和SY值过大，又试着改了另一个地方：
+   optimize single connection performance
+   add try_to_send_tcp_rsp function，将发返回包的尝试放在处理线程直接做，发不出去了
+   再用EPOLLOUT，这回有明显的性能提升了！峰值54万每秒
+	thread  0: [ 54 REQ/MS][kiss=100001][unit=100000][send=4400044][recv=4400044][use_time=1821][avg:1821/1=1821]
+	thread  6: [ 43 REQ/MS][kiss=100001][unit=100000][send=4400044][recv=4400044][use_time=2287][avg:2287/1=2287]
+	thread  7: [ 43 REQ/MS][kiss=100001][unit=100000][send=4400044][recv=4400044][use_time=2299][avg:2299/1=2299]
+	thread  1: [ 43 REQ/MS][kiss=100001][unit=100000][send=4400044][recv=4400044][use_time=2300][avg:2300/1=2300]
+	thread  4: [ 42 REQ/MS][kiss=100001][unit=100000][send=4400044][recv=4400044][use_time=2340][avg:2340/1=2340]
+
+    24核的机器，服务器开了20个线程，客户端20个线程。是的，CPU会有竟争，cs会比较大。
+
+	现在的主要问题是cs比较高，由于sy列也高，所以cs高的主要原因应该是系统调用的原因
+	procs -----------memory---------- ---swap-- -----io---- --system-- ----cpu----
+	 r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa
+	 0  0      0 1467912 428580 60358896    0    0     0     8 25177  4497  0  0 99  0
+	28  0      0 1469044 428580 60358920    0    0     0     0 25582 290412  3 14 83  0
+	29  0      0 1467808 428580 60358932    0    0     0     0 25228 1470195 13 72 14  0
+	22  0      0 1472784 428580 60358936    0    0     0     0 25280 1468366 14 72 14  0
+
+	但用 strace 看一眼，已经优化到实在没什么可优化的程度了，发包都没用EPOLLOUT
+	epoll_wait(7, {{EPOLLIN, {u32=4034275136, u64=140363565508416}}}, 10000, 100) = 1
+	recvfrom(42, "71351 \0AAAAAAAAAAAAAAAAAAAAAAAAA"..., 255, MSG_NOSIGNAL, NULL, NULL) = 44
+	recvfrom(42, 0x7fa8f0644b2c, 211, 16384, 0, 0) = -1 EAGAIN (Resource temporarily unavailable)
+	sendto(42, "71351 \0AAAAAAAAAAAAAAAAAAAAAAAAA"..., 44, MSG_NOSIGNAL, NULL, 0) = 44
+	epoll_wait(7, {{EPOLLIN, {u32=4034275136, u64=140363565508416}}}, 10000, 100) = 1
+	recvfrom(42, "71352 \0AAAAAAAAAAAAAAAAAAAAAAAAA"..., 255, MSG_NOSIGNAL, NULL, NULL) = 44
+	recvfrom(42, 0x7fa8f0644b2c, 211, 16384, 0, 0) = -1 EAGAIN (Resource temporarily unavailable)
+	sendto(42, "71352 \0AAAAAAAAAAAAAAAAAAAAAAAAA"..., 44, MSG_NOSIGNAL, NULL, 0) = 44
+	epoll_wait(7, {{EPOLLIN, {u32=4034275136, u64=140363565508416}}}, 10000, 100) = 1
+	recvfrom(42, "71353 \0AAAAAAAAAAAAAAAAAAAAAAAAA"..., 255, MSG_NOSIGNAL, NULL, NULL) = 44
+	recvfrom(42, 0x7fa8f0644b2c, 211, 16384, 0, 0) = -1 EAGAIN (Resource temporarily unavailable)
+	sendto(42, "71353 \0AAAAAAAAAAAAAAAAAAAAAAAAA"..., 44, MSG_NOSIGNAL, NULL, 0) = 44
+
+	所以基本判断，目前的sy值是正常的，cs还要用不超CPU核数的线程（客户端＋服务器线程数不超）再跑一下。
+
+邹月明 20131029-11:55
+======================
+1. libgrocket
+   为了避免 epoll 可能产生的惊群行为，在tcp_in和tcp_out中为每个线程创建一个epoll句柄。
+   似乎性能又有一点儿提升，因为在epoll句柄中增删SOCKET过程中的并发少了。
+2. 增加 compiler_switch.h 头文件，把一些编译选项拿到一个统计的地方了，在需要服务器测试
+   性能时可以在一个地方关掉所有影响性能的开关。
+3. 日志输出 errno 或 GetLastError()
+4. 简单跑了一下，tcp.in.thread_count = 10，test_tcp_client 用 10 个连接。一秒钟可以跑 40 万请求。
+   这说明单连接的处理能力基本已经及格了，再剩下的事情就可以开始尝试调试大并发的性能了。
+    thread 4: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2412 ms, avg: 9809/4=2452 ms, 40 REQ/MS
+    thread 0: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2336 ms, avg: 9816/4=2454 ms, 40 REQ/MS
+    thread 3: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2564 ms, avg: 9952/4=2488 ms, 40 REQ/MS
+    thread 2: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2517 ms, avg: 10040/4=2510 ms, 39 REQ/MS
+    thread 8: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2498 ms, avg: 10042/4=2510 ms, 39 REQ/MS
+    thread 1: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2410 ms, avg: 10044/4=2511 ms, 39 REQ/MS
+    thread 6: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2591 ms, avg: 10099/4=2524 ms, 39 REQ/MS
+    thread 5: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2432 ms, avg: 10210/4=2552 ms, 39 REQ/MS
+    thread 7: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2554 ms, avg: 10219/4=2554 ms, 39 REQ/MS
+    thread 9: 400001 kiss package, send 17600044 bytes, recv 17600044 bytes. 100000 package use 2558 ms, avg: 10237/4=2559 ms, 39 REQ/MS
+5. 私有 revision 120 对应 grocket revision 12
+
 邹月明 20131027-10:32
 ======================
 1. libgrocket
-   在配置文件里增加了 tcp_out.disabled 配置项，默认为 true。此值为 true 比此值为
-   false 时性能提升明显。
+   在配置文件里增加了 tcp_out.disabled 配置项，默认为 true。此值为 true  时性能提升明显。
 
    1) 正常情况下，应该将 worker.disabled 设为 true，这会达到服务器的最高性能；
    2) 但如果下行数据要做流控，如多媒体数据等，将  worker.disabled 设为
       false 让发送在单独的线程，不会让发送的流控阻塞数据包接收和处理。
+2. 17:51
+   私有 revision 106 对应 grocket revision 11。
 
 邹月明 20131026-07:53
 ======================
 1. libgrocket
-   在配置文件里增加了 worker.disabled 配置项，默认为 true。此值为 true 比此值为
-   false 时性能提升明显。
+   在配置文件里增加了 worker.disabled 配置项，默认为 true。此值为 true  时性能提升明显。
 
    1) 如果处理数据包比请求来包速度快而且处理速度平均，应该将 worker.disabled
       设为 true，这会达到服务器的最高性能；  

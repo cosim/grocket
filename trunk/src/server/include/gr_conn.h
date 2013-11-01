@@ -46,6 +46,7 @@
 #include "gr_atomic.h"
 #include "gr_log.h"
 #include "gr_global.h"
+#include "gr_thread.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,8 +60,8 @@ typedef struct gr_tcp_conn_item_t       gr_tcp_conn_item_t;
 typedef struct gr_tcp_req_t             gr_tcp_req_t;
         struct gr_udp_req_t;
 typedef struct gr_udp_req_t             gr_udp_req_t;
-        struct gr_queue_item_compact_t;
-typedef struct gr_queue_item_compact_t  gr_queue_item_compact_t;
+        struct gr_queue_item_t;
+typedef struct gr_queue_item_t  gr_queue_item_t;
 
 #if ! defined( WIN32 ) && ! defined( WIN64 )
     #ifdef GR_DEBUG_CONN
@@ -96,10 +97,10 @@ typedef enum
 } gr_tcp_close_type_t;
 
 // 关于该结构的细节，见gr_queue.h文件中的gr_queue_t和gr_queue_item_t
-struct gr_queue_item_compact_t
+struct gr_queue_item_t
 {
     // single link table
-    gr_queue_item_compact_t *   next;
+    gr_queue_item_t *   next;
 
     // process thread set true to indicate this item is processed,
     // processed item will be delete on next SwSrQueuePush or SwSrQueueDestroy called
@@ -127,7 +128,7 @@ struct gr_tcp_req_t
     // 要么以请求的身份在work的队列里，所以一个就够了
 
     // 由于gr_queue_item_t有好大的空洞可以用来存东西，所以我们内部可以用这个。
-    gr_queue_item_compact_t             entry_compact;
+    gr_queue_item_t             entry;
 
     // 当前数据包的检查上下文  
     gr_check_base_t                     check_ctxt;
@@ -169,7 +170,7 @@ struct gr_udp_req_t
     // 该成员必须在最前面
 
     // 由于gr_queue_item_t有好大的空洞可以用来存东西，所以我们内部使用可以用这个。
-    gr_queue_item_compact_t             entry_compact;
+    gr_queue_item_t             entry;
 
     // 当前数据包的检查上下文  
     gr_check_base_t                     check_ctxt;
@@ -287,6 +288,15 @@ void gr_tcp_conn_del_receiving_req(
     gr_tcp_conn_item_t *    conn
 );
 
+static_inline
+bool gr_tcp_conn_has_pending_rsp(
+    gr_tcp_conn_item_t *    conn
+)
+{
+    return NULL != conn->rsp_list_head
+        && QUEUE_ALL_DONE != conn->rsp_list_curr;
+}
+
 void gr_tcp_conn_clear_rsp_list(
     gr_tcp_conn_item_t *    conn
 );
@@ -300,7 +310,7 @@ void gr_tcp_conn_add_rsp(
     gr_tcp_rsp_t *          rsp
 );
 
-static inline
+static_inline
 gr_tcp_rsp_t * gr_tcp_conn_top_rsp(
     gr_tcp_conn_item_t *    conn
 )
@@ -319,14 +329,14 @@ int gr_tcp_conn_pop_top_rsp(
     gr_tcp_rsp_t *          confirm_rsp
 );
 
-static inline
+static_inline
 void gr_tcp_conn_add_req( gr_tcp_conn_item_t * conn )
 {
     ++ (conn)->req_push_count;
     gr_debug( "add req_push_count %d", (conn)->req_push_count );
 }
 
-static inline
+static_inline
 void gr_tcp_conn_pop_tail_req( gr_tcp_conn_item_t * conn )
 {
     -- (conn)->req_push_count;
@@ -341,16 +351,16 @@ void gr_tcp_conn_pop_top_req(
 // gr_tcp_req_free 和 gr_udp_req_free 的函数声明与本函数指针必须兼容
 typedef void ( * gr_func_req_free_t )( void * req );
 
-
 ///////////////////////////////////////////////////////////////////////
 
 gr_tcp_req_t * gr_tcp_req_alloc(
-    gr_tcp_conn_item_t *    parent,
+    gr_tcp_conn_item_t *    conn,
     int                     buf_max
 );
 
 void gr_tcp_req_free(
-    gr_tcp_req_t *          req
+    gr_tcp_req_t *          req,
+    bool                    is_recycle
 );
 
 /*int gr_tcp_req_add_refs(
@@ -368,7 +378,7 @@ void gr_tcp_req_set_buf(
     int                     buf_len
 );
 
-static inline
+static_inline
 int
 gr_tcp_req_package_length(
     gr_tcp_req_t *          req
@@ -395,7 +405,14 @@ void gr_tcp_rsp_free(
     gr_tcp_rsp_t *          rsp
 );
 
-#define gr_tcp_rsp_set_buf  gr_tcp_req_set_buf
+void gr_tcp_rsp_set_buf(
+    gr_tcp_rsp_t *  rsp,
+    void *          buf,
+    int             buf_max,
+    int             buf_len,
+    int             sent
+);
+
 ///////////////////////////////////////////////////////////////////////
 
 gr_udp_req_t * gr_udp_req_alloc(
@@ -406,7 +423,7 @@ void gr_udp_req_free(
     gr_udp_req_t *          req
 );
 
-static inline
+static_inline
 int
 gr_udp_req_package_length(
     gr_udp_req_t *          req

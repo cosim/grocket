@@ -66,6 +66,7 @@ int gr_config_tcp_accept_thread_count();
 int gr_config_tcp_in_concurrent();
 int gr_config_tcp_in_thread_count();
 int gr_config_udp_in_concurrent();
+const char * gr_config_tcp_in_thread_affinity( int thread_id );
 
 int gr_config_udp_in_thread_count();
 

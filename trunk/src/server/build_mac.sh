@@ -4,7 +4,7 @@ cd ../third
 rm -fr gperftools-2.1
 tar -zxvf gperftools-2.1.tar.gz
 cd gperftools-2.1
-./configure
+sh ./configure
 cd ..
 cd ..
 

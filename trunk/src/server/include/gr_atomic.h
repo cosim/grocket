@@ -70,13 +70,13 @@ extern "C" {
 
     #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ > 1) || (__GNUC__ == 4 && __GNUC_MINOR__ == 1 && __GNUC_PATCHLEVEL__ >= 2)
         // GCC 从 4.1.2 开始内置 __sync_fetch_and_add 函数
-        static inline int gr_atomic_add( int v, volatile int * dst )
+        static_inline int gr_atomic_add( int v, volatile int * dst )
         {
             return __sync_fetch_and_add( dst, v );
         }
     #elif defined( __x86_64 )
         // 64 位 X86 CPU
-        static inline int gr_atomic_add( int v, volatile int * dst )
+        static_inline int gr_atomic_add( int v, volatile int * dst )
         {
             asm volatile("addl %1,%0"
                             : "+m" (*dst)

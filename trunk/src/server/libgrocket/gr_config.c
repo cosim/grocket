@@ -524,7 +524,7 @@ int config_get_int(
 
 static_inline
 const char * config_get_string(
-    gr_ini *  ini,
+    gr_ini *            ini,
     const char *        section,
     const char *        name,
     const char *        def
@@ -569,12 +569,52 @@ int gr_config_tcp_in_concurrent()
 int gr_config_tcp_in_thread_count()
 {
     static const int def = 1;
-    int n = config_get_int( g_ghost_rocket_global.config, "server", "tcp.in.thread_count", def );
+    int n = config_get_int( (gr_ini *)g_ghost_rocket_global.config, "server", "tcp.in.thread_count", def );
     if ( n < def ) {
         n = def;
     }
 
     return n;
+}
+
+const char * gr_config_tcp_in_thread_affinity( int thread_id )
+{
+    // 10000000001000000000 01000000000100000000 00100000000010000000 00010000000001000000 00001000000000010000 00000100000000010000 00000010000000001000 00000001000000000100 00000000100000000010 00000000010000000001
+    const char *    s;
+    const char *    s2;
+    int             i;
+    
+    if ( thread_id < 0 ) {
+        return NULL;
+    }
+
+    s = config_get_string(
+        (gr_ini *)g_ghost_rocket_global.config,
+        "server",
+        "tcp.in.thread_affinity",
+        NULL );
+    if ( NULL == s || '\0' == * s ) {
+        return s;
+    }
+
+    if ( 0 == thread_id ) {
+        return s;
+    }
+
+    // 找到对应的CPU亲缘性设置段  
+    for ( i = 0; i < thread_id; ++ i ) {
+        s2 = strchr( s, ' ' );
+        if ( NULL == s2 ) {
+            return NULL;
+        }
+        s = s2 + 1;
+    }
+
+    if ( '\0' == * s ) {
+        return NULL;
+    }
+
+    return s;
 }
 
 int gr_config_udp_out_concurrent()

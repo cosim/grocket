@@ -58,7 +58,7 @@ enum
 
     GR_ERR_WRONG_CALL_ORDER             = -4,
 
-    GR_NOT_FOUND                        = -5,
+    GR_ERR_NOT_FOUND                    = -5,
 
     GR_ERR_WRONG_VERSION                = -6,
 

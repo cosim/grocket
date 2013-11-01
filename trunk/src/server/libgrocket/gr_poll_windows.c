@@ -261,7 +261,7 @@ bool recv_with_thread(
     per_worker_io_t *   p   = (per_worker_io_t *)thread->cookie;
 
     // 准备req收数据
-    req = gr_tcp_conn_prepare_recv( conn );
+    req = gr_tcp_conn_prepare_recv( conn, gr_worker_get_thread( true, thread->id ) );
     if ( NULL == req ) {
         gr_fatal( "gr_tcp_conn_prepare_recv return NULL" );
         return false;
@@ -479,7 +479,7 @@ int gr_poll_wait(
         }
 
         req = OFFSET_RECORD( pol, gr_tcp_req_t, iocp_overlapped );
-        if ( req->entry_compact.is_req ) {
+        if ( req->entry.is_req ) {
             events[ 0 ].events          = GR_POLLIN;
         } else {
             events[ 0 ].events          = GR_POLLOUT;
@@ -723,6 +723,15 @@ int gr_poll_del_tcp_recv_fd(
 }
 
 int gr_poll_del_tcp_send_fd(
+    gr_poll_t *             poll,
+    gr_tcp_conn_item_t *    conn,
+    gr_threads_t *          threads
+)
+{
+    return GR_OK;
+}
+
+int gr_poll_del_tcp_fd(
     gr_poll_t *             poll,
     gr_tcp_conn_item_t *    conn,
     gr_threads_t *          threads

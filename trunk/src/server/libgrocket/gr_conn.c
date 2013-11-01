@@ -9,7 +9,7 @@
  * @if  ID       Author       Date          Major Change       @endif
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-05    Created.
- *       2     zouyueming   2013-10-22    add entry_compact field is first member check in runtime.
+ *       2     zouyueming   2013-10-22    add entry field is first member check in runtime.
  *       3     zouyueming   2013-10-27    support tcp out disable
  **/
 /* 
@@ -48,6 +48,7 @@
 #include "gr_config.h"
 #include "gr_tcp_close.h"
 #include "gr_module.h"
+#include "gr_worker.h"
 
 #define GR_REQ_PUSH_COUNT_HI_WALTER     1500000000
 
@@ -98,30 +99,21 @@ int gr_conn_init()
 
     {
         gr_tcp_req_t                req;
-        gr_queue_item_compact_t *   entry = & req.entry_compact;
-        if ( & req != OFFSET_RECORD( entry, gr_tcp_req_t, entry_compact ) ) {
-            gr_fatal( "entry_compact must be first member in gr_tcp_req_t" );
+        gr_queue_item_t *   entry = & req.entry;
+        if ( & req != OFFSET_RECORD( entry, gr_tcp_req_t, entry ) ) {
+            gr_fatal( "entry must be first member in gr_tcp_req_t" );
             return -1;
         }
     }
 
     {
         gr_tcp_rsp_t                rsp;
-        gr_queue_item_compact_t *   entry = & rsp.entry_compact;
-        if ( & rsp != OFFSET_RECORD( entry, gr_tcp_rsp_t, entry_compact ) ) {
-            gr_fatal( "entry_compact must be first member in gr_tcp_rsp_t" );
+        gr_queue_item_t *   entry = & rsp.entry;
+        if ( & rsp != OFFSET_RECORD( entry, gr_tcp_rsp_t, entry ) ) {
+            gr_fatal( "entry must be first member in gr_tcp_rsp_t" );
             return -1;
         }
     }
-
-#ifdef GR_DEBUG_CONN
-    #if defined( WIN32 ) || defined( WIN64 )
-        #pragma message( "!!!!GR_DEBUG_CONN defined, performance warning!" )
-    #else
-        #warning "!!!!GR_DEBUG_CONN defined, performance warning!!!!"
-    #endif
-        gr_warning( "[init]!!!!GR_DEBUG_CONN defined, performance warning!" );
-#endif
 
     p = (gr_conn_engine_t *)g_ghost_rocket_global.conn;
     if ( NULL != p ) {
@@ -176,12 +168,12 @@ gr_tcp_conn_alloc(
     conn->port_item     = port_item;
     conn->fd            = fd;
 
-    conn->req = gr_tcp_req_alloc( conn, 0 );
+    /* conn->req = gr_tcp_req_alloc( conn, 0 );
     if ( NULL == conn->req ) {
         gr_fatal( "gr_tcp_req_alloc failed" );
         gr_free( conn );
         return NULL;
-    }
+    } */
 
     // req_proc_count 值为0说明req_proc_count和req_push_count在维护，这时的数据是不准确的，不能读
     // 所以要小心初始化顺序
@@ -203,7 +195,7 @@ void gr_tcp_conn_clear_rsp_list(
     conn->rsp_list_tail = NULL;
     conn->rsp_list_curr = NULL;
     while ( NULL != rsp ) {
-        next_rsp = (gr_tcp_rsp_t *)rsp->entry_compact.next;
+        next_rsp = (gr_tcp_rsp_t *)rsp->entry.next;
         gr_tcp_rsp_free( rsp );
         rsp = next_rsp;
     }
@@ -216,7 +208,7 @@ void gr_tcp_conn_del_receiving_req(
     if ( NULL != conn->req ) {
         gr_tcp_req_t * req = conn->req;
         conn->req = NULL;
-        gr_tcp_req_free( req );
+        gr_tcp_req_free( req, false );
     }
 }
 
@@ -263,7 +255,7 @@ gr_tcp_req_t * gr_tcp_conn_prepare_recv(
     gr_tcp_conn_item_t *    conn
 )
 {
-    gr_conn_engine_t *  self   = NULL;
+    gr_conn_engine_t * self   = NULL;
     self = (gr_conn_engine_t *)g_ghost_rocket_global.conn;
     if ( NULL == self ) {
         gr_fatal( "gr_conn_init never call" );
@@ -345,19 +337,19 @@ void gr_tcp_conn_add_rsp(
             t = conn->rsp_list_head;
             // 向后移动conn->rsp_list_head指针
             gr_debug( "[from=%p][to=%p]move conn->rsp_list_head",
-                conn->rsp_list_head, conn->rsp_list_head->entry_compact.next );
-            conn->rsp_list_head = (gr_tcp_rsp_t *)conn->rsp_list_head->entry_compact.next;
+                conn->rsp_list_head, conn->rsp_list_head->entry.next );
+            conn->rsp_list_head = (gr_tcp_rsp_t *)conn->rsp_list_head->entry.next;
         }
         // 把最后一个表项的next设为NULL, 这样 will_del 就是一个要删除的单链表了
         if ( NULL != t ) {
-            t->entry_compact.next = NULL;
+            t->entry.next = NULL;
             gr_debug( "[last=%p]will del tail node", t );
         }
         // 注意,如果conn->rsp_list_head为NULL,则此时conn->rsp_list_tail还非NULL呢
     }
 
     // 将节点插入队列
-    rsp->entry_compact.next = NULL;
+    rsp->entry.next = NULL;
     if ( NULL == conn->rsp_list_head ) {
         // 前面说的应该为NULL的worker->tail被一块儿赋了值
         conn->rsp_list_head = conn->rsp_list_tail = rsp;
@@ -365,7 +357,7 @@ void gr_tcp_conn_add_rsp(
     } else if ( conn->rsp_list_head == conn->rsp_list_tail ) {
         // 更新尾节点
         conn->rsp_list_tail = rsp;
-        conn->rsp_list_head->entry_compact.next = (gr_queue_item_compact_t *)rsp;
+        conn->rsp_list_head->entry.next = (gr_queue_item_t *)rsp;
         gr_debug( "insert rsp %p to single node list, head=%p, tail=%p",
             rsp, conn->rsp_list_head, conn->rsp_list_tail );
     } else {
@@ -374,7 +366,7 @@ void gr_tcp_conn_add_rsp(
         // 更新尾节点
         conn->rsp_list_tail = rsp;
         // 将原先尾节点的指针指向新增节点
-        t->entry_compact.next = (gr_queue_item_compact_t *)rsp;
+        t->entry.next = (gr_queue_item_t *)rsp;
         gr_debug( "insert rsp %p to after %p, head = %p", rsp, t, conn->rsp_list_head );
     }
 
@@ -388,7 +380,7 @@ void gr_tcp_conn_add_rsp(
     // 到现在输出线程已经接着干活了, 我可以安心的删除节点了
     while ( NULL != will_del && will_del != curr ) {
         t = will_del;
-        will_del = (gr_tcp_rsp_t *)will_del->entry_compact.next;
+        will_del = (gr_tcp_rsp_t *)will_del->entry.next;
         gr_debug( "[del=%p][next=%p][insert=%p] del processed node", t, will_del, rsp );
         assert( t != rsp );
         gr_tcp_rsp_free( t );
@@ -405,8 +397,8 @@ int gr_tcp_conn_pop_top_rsp(
     // 从队列中删除
     assert( conn->rsp_list_curr == confirm_rsp );
     gr_debug( "[rsp=%p][next=%p]will pop rsp",
-        conn->rsp_list_curr, conn->rsp_list_curr->entry_compact.next );
-    next = (gr_tcp_rsp_t *)conn->rsp_list_curr->entry_compact.next;
+        conn->rsp_list_curr, conn->rsp_list_curr->entry.next );
+    next = (gr_tcp_rsp_t *)conn->rsp_list_curr->entry.next;
 
     if ( NULL == next ) {
         conn->rsp_list_curr = QUEUE_ALL_DONE;
@@ -490,32 +482,75 @@ void gr_tcp_conn_pop_top_req(
 ///////////////////////////////////////////////////////////////////////
 
 gr_tcp_req_t * gr_tcp_req_alloc(
-    gr_tcp_conn_item_t *    parent,
+    gr_tcp_conn_item_t *    conn,
     int                     buf_max
 )
 {
     gr_tcp_req_t *  req;
+    gr_thread_t *   thread;
 
-    if ( NULL == parent || buf_max < 0 ) {
-        return NULL;
-    }
-
-    req = (gr_tcp_req_t *)gr_calloc( 1, sizeof( gr_tcp_req_t ) );
-    if ( NULL == req ) {
+    if ( NULL == conn || buf_max < 0 ) {
         gr_fatal( "gr_calloc %d failed: %d", (int)sizeof( gr_tcp_req_t ), get_errno() );
         return NULL;
     }
 
-    // 标记字段，必须为1
-    req->entry_compact.is_tcp   = true;
-    // 引用计数为1
-    //req->entry_compact.refs     = 1;
-    // 打个请求标记
-    req->entry_compact.is_req   = true;
+    // 用worker的线程去分配请求对象
+    thread = gr_worker_get_thread_by_tcp_conn( conn );
 
-    req->parent = parent;
-    req->buf_max = buf_max;
-    if ( req->buf_max > 0 ) {
+    if ( thread ) {
+        // 从线程 free list 里直接取，不需要分配
+        req = thread->free_tcp_req_list;
+        if ( req ) {
+            thread->free_tcp_req_list = (gr_tcp_req_t *)req->entry.next;
+
+#if defined( WIN32 ) || defined( WIN64 )
+            memset( req, 0, sizeof( gr_tcp_req_t ) );
+#else
+            //gr_queue_item_t             entry;
+            //gr_check_base_t                     check_ctxt;
+            //gr_tcp_req_t *                      req_list_next;
+            //gr_tcp_conn_item_t *                parent;
+            //char *                              buf;
+            assert( 0 == req->buf_len );
+            assert( 0 == req->buf_sent );
+#endif
+#ifdef GR_DEBUG_CONN
+            gr_info( ">>>>>Reborn req %p from thread is %s%d", req, thread->name, thread->id );
+#endif
+        } else {
+            req = (gr_tcp_req_t *)gr_calloc( 1, sizeof( gr_tcp_req_t ) );
+            if ( NULL == req ) {
+                gr_fatal( "gr_calloc %d failed: %d", (int)sizeof( gr_tcp_req_t ), get_errno() );
+                return NULL;
+            }
+#ifdef GR_DEBUG_CONN
+            gr_info( "====Alloc req %p from memory, thread is %s%d", req, thread->name, thread->id );
+#endif
+        }
+    } else {
+        req = (gr_tcp_req_t *)gr_calloc( 1, sizeof( gr_tcp_req_t ) );
+        if ( NULL == req ) {
+            gr_fatal( "gr_calloc %d failed: %d", (int)sizeof( gr_tcp_req_t ), get_errno() );
+            return NULL;
+        }
+#ifdef GR_DEBUG_CONN
+        gr_info( "====Alloc req %p from memory, thread invalid", req );
+#endif
+    }
+
+    // 标记字段，必须为1
+    req->entry.is_tcp   = true;
+    // 引用计数为1
+    //req->entry.refs     = 1;
+    // 打个请求标记
+    req->entry.is_req   = true;
+
+    req->parent = conn;
+
+    if ( buf_max > req->buf_max ) {
+        gr_free( req->buf );
+
+        req->buf_max = buf_max;
         req->buf = (char *)gr_malloc( req->buf_max );
         if ( NULL == req->buf ) {
             gr_fatal( "gr_malloc %d failed: %d", req->buf_max, get_errno() );
@@ -524,40 +559,64 @@ gr_tcp_req_t * gr_tcp_req_alloc(
         }
     }
 
-    gr_debug( "[fd=%d][cn=%p]alloc req %p", parent->fd, parent, req );
+    gr_debug( "[fd=%d][cn=%p]alloc req %p", req->parent->fd, req->parent, req );
 
     return req;
 }
 
 void gr_tcp_req_free(
-    gr_tcp_req_t *      req
+    gr_tcp_req_t *  req,
+    bool            is_recycle
 )
 {
+    gr_thread_t *           thread;
+
     // 为安全起见, 已经在合适的时候把 parent 设成 NULL 了
     assert( NULL != req /*&& NULL != req->parent*/ );
 
-    req->buf_len = 0;
-    req->buf_max = 0;
-    if ( NULL != req->buf ) {
-        gr_free( req->buf );
-        req->buf = NULL;
+    // 用worker的线程去存放不再需要的请求对象
+    if ( is_recycle ) {
+        thread = gr_worker_get_thread_by_tcp_conn( req->parent );
+    } else {
+        thread = NULL;
     }
 
-    gr_debug( "[fd=%d][cn=%p]free req %p, conn %p", req->parent->fd, req->parent, req );
+    req->buf_len = 0;
+    req->buf_sent = 0;
 
-    gr_free( req );
+    if ( thread ) {
+        // 把它放入线程的 free list 里
+        req->entry.next = (gr_queue_item_t *)thread->free_tcp_req_list;
+        thread->free_tcp_req_list = req;
+#ifdef GR_DEBUG_CONN
+        gr_info( ">>>>>F [fd=%d][cn=%p]free req %p. to thread %s%d free list",
+            req->parent->fd, req->parent, req, thread->name, thread->id );
+#endif
+    } else {
+        req->buf_max = 0;
+        if ( NULL != req->buf ) {
+            gr_free( req->buf );
+            req->buf = NULL;
+        }
+
+#ifdef GR_DEBUG_CONN
+        gr_info( "====F [fd=%d][cn=%p]free req %p", req->parent->fd, req->parent, req );
+#endif
+
+        gr_free( req );
+    }
 }
 
 /*int gr_tcp_req_add_refs(
     gr_tcp_req_t *          req
 )
 {
-    if ( NULL == req || req->entry_compact.refs >= CHAR_MAX ) {
+    if ( NULL == req || req->entry.refs >= CHAR_MAX ) {
         gr_fatal( "inalid refs" );
         return -1;
     }
 
-    ++ req->entry_compact.refs;
+    ++ req->entry.refs;
     return 0;
 }*/
 
@@ -566,7 +625,7 @@ void gr_tcp_req_free(
 )
 {
     // 将它改成false，就是回复了
-    req->entry_compact.is_req = false;
+    req->entry.is_req = false;
 }*/
 
 void gr_tcp_req_set_buf(
@@ -606,11 +665,11 @@ gr_tcp_rsp_t * gr_tcp_rsp_alloc(
     }
 
     // 标记字段，必须为1
-    rsp->entry_compact.is_tcp   = true;
+    rsp->entry.is_tcp   = true;
     // 引用计数为1
-    //rsp->entry_compact.refs     = 1;
+    //rsp->entry.refs     = 1;
     // 打个返回标记
-    rsp->entry_compact.is_req   = false;
+    rsp->entry.is_req   = false;
 
     rsp->parent = parent;
     rsp->buf_max = buf_max;
@@ -647,6 +706,24 @@ void gr_tcp_rsp_free(
     gr_free( rsp );
 }
 
+void gr_tcp_rsp_set_buf(
+    gr_tcp_rsp_t *  rsp,
+    void *          buf,
+    int             buf_max,
+    int             buf_len,
+    int             sent
+)
+{
+    if ( rsp->buf && rsp->buf != buf ) {
+        gr_free( rsp->buf );
+    }
+
+    rsp->buf       = buf;
+    rsp->buf_max   = buf_max;
+    rsp->buf_len   = buf_len;
+    rsp->buf_sent  = sent;
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 gr_udp_req_t * gr_udp_req_alloc(
@@ -665,9 +742,9 @@ gr_udp_req_t * gr_udp_req_alloc(
     }
 
     // 标记字段，必须为0
-    req->entry_compact.is_tcp   = false;
+    req->entry.is_tcp   = false;
     // 引用计数为1
-    //req->entry_compact.refs     = 1;
+    //req->entry.refs     = 1;
 
     req->buf_max = buf_max;
     if ( req->buf_max > 0 ) {
@@ -685,11 +762,11 @@ void gr_udp_req_free(
     gr_udp_req_t *          req
 )
 {
-    assert( NULL != req /*&& req->entry_compact.refs > 0*/ );
+    assert( NULL != req /*&& req->entry.refs > 0*/ );
 
-    //-- req->entry_compact.refs;
+    //-- req->entry.refs;
 
-    //if ( 0 == req->entry_compact.refs ) {
+    //if ( 0 == req->entry.refs ) {
 
         req->buf_len = 0;
         req->buf_max = 0;

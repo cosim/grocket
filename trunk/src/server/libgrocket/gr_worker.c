@@ -10,6 +10,8 @@
  *  ---------+------------+------------+------------------------------+
  *       1     zouyueming   2013-10-05    Created.
  *       2     zouyueming   2013-10-26    support disabled worker thread
+ *       3     zouyueming   2013-10-30    optimize single connection performance
+ *                                        add try_to_send_tcp_rsp function
  **/
 /* 
  *
@@ -50,6 +52,7 @@
 #include "gr_config.h"
 #include "gr_module.h"
 #include "gr_conn.h"
+#include "gr_tcp_in.h"
 #include "gr_tcp_out.h"
 #include "gr_udp_out.h"
 #include "gr_event.h"
@@ -83,11 +86,11 @@ struct gr_worker_t
 struct gr_worker_item_t
 {
     // 待处理请求队列头，压入方写
-    gr_queue_item_compact_t *   head;
+    gr_queue_item_t *   head;
     // 待处理请求队列尾，压入方写
-    gr_queue_item_compact_t *   tail;
+    gr_queue_item_t *   tail;
     // 待处理请求队列中，下一次即将处理的请求，处理方写，压入方重置
-    gr_queue_item_compact_t *   curr;
+    gr_queue_item_t *   curr;
 
 #ifdef GR_DEBUG_CONN
     // 不用事件方式等，等到事件次数
@@ -110,18 +113,24 @@ struct gr_worker_item_t
     volatile bool               in_event;
 };
 
-static_inline
-void worker_free_queue_item( gr_queue_item_compact_t * queue_item )
+gr_thread_t * gr_worker_get_thread( bool is_tcp, int thread_id )
 {
-    static gr_func_req_free_t  free_queue_item_funcs[ 2 ] =
-    {
-        (gr_func_req_free_t)gr_udp_req_free,
-        (gr_func_req_free_t)gr_tcp_req_free
-    };
+    //TODO: UDP not implement
+    gr_worker_t * p = (gr_worker_t *)g_ghost_rocket_global.worker;
+    assert( thread_id >= 0 && thread_id < p->threads.thread_count );
+    return & p->threads.threads[ thread_id ];
+}
 
-    // avoid if statment
-    assert( 1 == queue_item->is_tcp || 0 == queue_item->is_tcp );
-    free_queue_item_funcs[ queue_item->is_tcp ]( queue_item );
+static_inline
+void worker_free_queue_item( int thread_id, gr_queue_item_t * queue_item )
+{
+    if ( queue_item->is_tcp ) {
+        gr_worker_t *   self;
+        self = (gr_worker_t *)g_ghost_rocket_global.worker;
+        gr_tcp_req_free( (gr_tcp_req_t *)queue_item, true );
+    } else {
+        gr_udp_req_free( (gr_udp_req_t *)queue_item );
+    }
 }
 
 static_inline
@@ -138,13 +147,14 @@ void alarm_event_if_need(
 
 static_inline
 void worker_queue_push(
+    int                         thread_id,
     gr_worker_item_t *          worker,
-    gr_queue_item_compact_t *   item
+    gr_queue_item_t *   item
 )
 {
-    gr_queue_item_compact_t * will_del = NULL;
-    gr_queue_item_compact_t * t;
-    gr_queue_item_compact_t * curr;
+    gr_queue_item_t * will_del = NULL;
+    gr_queue_item_t * t;
+    gr_queue_item_t * curr;
     
     curr = worker->curr;
     if ( QUEUE_ALL_DONE == curr ) {
@@ -163,7 +173,7 @@ void worker_queue_push(
             worker->head = worker->head->next;
 
             assert( t != item );
-            worker_free_queue_item( t );
+            worker_free_queue_item( thread_id, t );
         }
         // 注意,如果worker->head为NULL,则此时worker->tail还非NULL呢
     }
@@ -207,12 +217,12 @@ void worker_queue_destroy(
     gr_worker_item_t *          worker
 )
 {
-    gr_queue_item_compact_t *   item;
+    gr_queue_item_t *   item;
 
     worker->tail = NULL;
     while ( NULL != ( item = worker->head ) ) {
         worker->head = item->next;
-        worker_free_queue_item( item );
+        worker_free_queue_item( -1, item );
     }
 
     gr_event_destroy( & worker->event );
@@ -220,7 +230,7 @@ void worker_queue_destroy(
 }
 
 static_inline
-gr_queue_item_compact_t * worker_queue_top_inner(
+gr_queue_item_t * worker_queue_top_inner(
     gr_worker_item_t *      worker
 )
 {
@@ -234,11 +244,11 @@ gr_queue_item_compact_t * worker_queue_top_inner(
 }
 
 static_inline
-gr_queue_item_compact_t * worker_queue_top(
+gr_queue_item_t * worker_queue_top(
     gr_worker_item_t *      worker
 )
 {
-    gr_queue_item_compact_t * p = NULL;
+    gr_queue_item_t * p = NULL;
 
     // 2013-10-26 07:32 这个优化基本是无效的, non_event_wait_ok_count 的比例太小了
     /*
@@ -286,15 +296,15 @@ gr_queue_item_compact_t * worker_queue_top(
 static_inline
 void worker_queue_pop_top(
     gr_worker_item_t *          worker,
-    gr_queue_item_compact_t *   item
+    gr_queue_item_t *   item
 )
 {
-    gr_queue_item_compact_t *  curr;
-    gr_queue_item_compact_t *  next;
+    gr_queue_item_t *  curr;
+    gr_queue_item_t *  next;
 
     curr = worker->curr;
     assert( curr == item );
-    next = (gr_queue_item_compact_t *)curr->next;
+    next = (gr_queue_item_t *)curr->next;
 
     if ( NULL == next ) {
         worker->curr = QUEUE_ALL_DONE;
@@ -303,6 +313,77 @@ void worker_queue_pop_top(
     }
 
     gr_debug( "[svr.worker][before_pop_curr=%p][next=%p][after_pop_curr=%p]pop req", curr, next, worker->curr );
+}
+
+static_inline
+int try_to_send_tcp_rsp(
+    gr_tcp_req_t *      req,
+    gr_proc_ctxt_t *    ctxt,
+    int *               sent
+)
+{
+    int r;
+    int need_send;
+
+    // 试图直接发送回复包, 这会减少一部分系统调用和线程切换  
+
+    if ( gr_tcp_conn_has_pending_rsp( req->parent ) ) {
+        // 如果已经有了等待的回复包, 则必须排队发, 没办法了  
+        * sent = 0;
+        return 0;
+    }
+
+    // 直接发!
+
+    * sent = 0;
+    while ( * sent < ctxt->pc_result_buf_len ) {
+
+        need_send = ctxt->pc_result_buf_len - * sent;
+        r = send(
+            req->parent->fd,
+            & ctxt->pc_result_buf[ * sent ],
+            need_send,
+            MSG_NOSIGNAL
+        );
+        if ( r >= 0 ) {
+            * sent += r;
+#ifdef GR_DEBUG_CONN
+            req->parent->send_bytes += r;
+#endif
+            gr_debug( "[tcp.output] send %d bytes", r );
+
+            if ( r < need_send ) {
+                // 缓冲区发满了, 没出错。不要再调一次 send 了，如果进系统调用后发现不能发就赔了  
+                if ( 0 == r ) {
+                    gr_warning( "sent return 0, err = %d:%s!!!!!!!!!!!!!", errno, strerror( errno ) );
+                }
+                return 0;
+            }
+
+            continue;
+        }
+
+        if ( EINTR == errno ) {
+            continue;
+        }
+        if ( EAGAIN == errno ) {
+            // 缓冲区发满了, 没出错  
+            return 0;
+        }
+
+        // 发失败了
+        gr_error( "[tcp.output]send failed" );
+
+        req->parent->is_network_error = 1;
+        if ( req->parent->close_type > GR_NEED_CLOSE ) {
+            req->parent->close_type = GR_NEED_CLOSE;
+        }
+
+        return -1;
+    }
+
+    // 会有这事儿? 
+    return 0;
 }
 
 static_inline
@@ -321,7 +402,8 @@ void process_tcp(
     char *              req_buf         = req->buf;
     int                 req_buf_max     = req->buf_max;
     int                 req_buf_len     = req->buf_len;
-    int     r;
+    int                 r;
+    int                 sent;
 
     assert( req->buf_len > 0 && req->buf );
     req->parent->worker_locked = 1;
@@ -365,6 +447,25 @@ void process_tcp(
 
         // 有回复数据包
 
+        // 试着直接发走
+        r = try_to_send_tcp_rsp( req, ctxt, & sent );
+        if ( 0 != r || 0 == ctxt->pc_result_buf_len ) {
+            // 如果网络异常，则不需要发送数据
+            // 把数据长度清0即可，等下次用。
+            if ( 0 != ctxt->pc_result_buf_len ) {
+                ctxt->pc_result_buf_len = 0;
+            }
+            break;
+        }
+
+        assert( sent <= ctxt->pc_result_buf_len );
+        if ( sent == ctxt->pc_result_buf_len ) {
+            // 前面 try_to_send_tcp_rsp 已经把整个返回包都发出去了，给力！  
+            // 把数据长度清0即可，等下次用。
+            ctxt->pc_result_buf_len = 0;
+            break;
+        }
+
         // 检查网络是否异常
         if ( req->parent->close_type < GR_NEED_CLOSE || req->parent->is_network_error ) {
             // 如果状态已经进行到GR_NEED_CLOSE的下一步，则说明模块已经确认连接关闭，不需要再发数据包了。
@@ -387,7 +488,7 @@ void process_tcp(
         }
 
         // 将设置返回包缓冲区
-        gr_tcp_rsp_set_buf( rsp, ctxt->pc_result_buf, ctxt->pc_result_buf_max, ctxt->pc_result_buf_len );
+        gr_tcp_rsp_set_buf( rsp, ctxt->pc_result_buf, ctxt->pc_result_buf_max, ctxt->pc_result_buf_len, sent );
         // 由于用户模块的返回数据已经从ctxt移动到返回包里了，所以要将ctxt中记录的返回数据信息清掉。
         ctxt->pc_result_buf        = NULL;
         ctxt->pc_result_buf_max    = 0;
@@ -423,21 +524,30 @@ void process_udp(
 }
 
 static_inline
-int hash_worker_tcp( gr_tcp_req_t * req, gr_worker_t * self )
+int hash_worker_tcp_by_conn(
+    gr_tcp_conn_item_t * conn
+)
 {
     // TCP，按SOCKET描述符算HASH
     // 同一个IP的多个TCP连接可能会分配到不同的处理线程
-    return req->parent->fd % self->threads.thread_count;
+    return conn->fd % ((gr_worker_t *)g_ghost_rocket_global.worker)->threads.thread_count;
 }
 
 static_inline
-int hash_worker_udp( gr_udp_req_t * req, gr_worker_t * self )
+int hash_worker_tcp( gr_tcp_req_t * req )
+{
+    return hash_worker_tcp_by_conn( req->parent );
+}
+
+static_inline
+int hash_worker_udp( gr_udp_req_t * req )
 {
     // UDP, 按客户端IP算HASH
     // 同一个IP的不同UDP地址会影射到相同的处理线程，这也是合理的，UDP能够给服务器的压力会很大。
     if ( AF_INET == req->addr.sa_family ) {
         // IPV4
-        return req->addr_v4.sin_addr.s_addr % self->threads.thread_count;
+        return req->addr_v4.sin_addr.s_addr %
+            ((gr_worker_t *)g_ghost_rocket_global.worker)->threads.thread_count;
     } else if ( AF_INET6 == req->addr.sa_family ) {
         // IPV6
         //TODO: 性能需要优化一下
@@ -447,7 +557,7 @@ int hash_worker_udp( gr_udp_req_t * req, gr_worker_t * self )
         for ( i = 0; i < sizeof( req->addr_v6.sin6_addr ); ++ i ) {
             n = n * 13 + p[ i ];
         }
-        return abs( n ) % self->threads.thread_count;
+        return abs( n ) % ((gr_worker_t *)g_ghost_rocket_global.worker)->threads.thread_count;
     }
 
     return 0;
@@ -455,17 +565,14 @@ int hash_worker_udp( gr_udp_req_t * req, gr_worker_t * self )
 
 static_inline
 int worker_hash(
-    gr_queue_item_compact_t *   queue_item
+    gr_queue_item_t *   queue_item
 )
 {
     int             hash_id;
-    gr_worker_t *   self;
-    
-    self = (gr_worker_t *)g_ghost_rocket_global.worker;
 
     if ( queue_item->is_tcp ) {
         gr_tcp_req_t *  req     = (gr_tcp_req_t *)queue_item;
-        hash_id = hash_worker_tcp( req, self );
+        hash_id = hash_worker_tcp( req );
 
         if ( ! req->parent->worker_open ) {
             //gr_atomic_add( 1, & req->parent->thread_refs );
@@ -473,8 +580,7 @@ int worker_hash(
             req->parent->worker_open = true;
         }
     } else {
-        gr_udp_req_t *  req = (gr_udp_req_t *)queue_item;
-        hash_id = hash_worker_udp( req, self );
+        hash_id = hash_worker_udp( (gr_udp_req_t *)queue_item );
     }
 
     return hash_id;
@@ -482,18 +588,16 @@ int worker_hash(
 
 static_inline
 int gr_worker_add(
-    gr_queue_item_compact_t *   queue_item
+    int                         hash_id,
+    gr_queue_item_t *   queue_item
 )
 {
-    int             hash_id;
     gr_worker_t *   self;
     
     self = (gr_worker_t *)g_ghost_rocket_global.worker;
     if ( NULL == self ) {
         return -1;
     }
-
-    hash_id = worker_hash( queue_item );
 
     if ( queue_item->is_tcp ) {
         if ( ! ((gr_tcp_req_t *)queue_item)->parent->worker_open ) {
@@ -503,7 +607,11 @@ int gr_worker_add(
         }
     }
 
-    worker_queue_push( & self->items[ hash_id ], queue_item );
+    worker_queue_push(
+        hash_id,
+        & self->items[ hash_id ],
+        queue_item
+    );
 
     return 0;
 }
@@ -520,7 +628,7 @@ void worker_routine( gr_thread_t * thread )
 #define     WORK_WAIT_TIMEOUT   100
     gr_worker_t *               self        = (gr_worker_t *)thread->param;
     gr_worker_item_t *          item        = & self->items[ thread->id ];
-    gr_queue_item_compact_t *   queue_item;
+    gr_queue_item_t *   queue_item;
     int                         r;
 
     typedef int ( * func_proc_item_t )( gr_worker_t * self, gr_thread_t * thread, void * req );
@@ -594,10 +702,8 @@ int gr_worker_init()
     }
 
     if ( worker_disabled ) {
-        // 如果禁用 worker，则修改线程数为 UDP 和 TCP 的总和，反正也不启那么多线程。
-        //TODO: 2013-10-26 查了一下HASH算法，和线程数量没关系，那为什么把HASH映射到
-        //      tcp_in_count 和 udp_in_count 的总和而不是它们的最大值?
-        thread_count    = tcp_in_count + udp_in_count;
+        // 如果禁用 worker，则修改线程数为 UDP + TCP 的和。
+        thread_count = tcp_in_count + udp_in_count;
     }
     if ( thread_count < 1 ) {
         gr_fatal( "[init]gr_worker_init thread_count invalid" );
@@ -726,6 +832,9 @@ int prepare_add_tcp_req(
     * left_len    = req->buf_len - * package_len;
     if ( * left_len > 0 ) {
 
+        gr_worker_t *   self;
+        self = (gr_worker_t *)g_ghost_rocket_global.worker;
+
         // pipe line 请求支持
 
         // 缓冲区里是多包数据，剩余的数据不能放在当前请求中，要放回连接对象。
@@ -734,8 +843,11 @@ int prepare_add_tcp_req(
         // 必须将 req 扔给 worker，不能将新分配的 new_req 扔给 worker 因为老的 req 有很多状态
         // 要是新分配再拷贝，太不划算。
 
-        // 分配个新的请求对象，将剩余数据拷贝到新分配的请求对象中。如果如果剩余的字节数较小会比较划算。
-        * new_req = gr_tcp_req_alloc( req->parent, req->buf_max );
+        // 分配个新的请求对象，将剩余数据拷贝到新分配的请求对象中。如果如果剩余的字节数较小会比较划算。  
+        * new_req = gr_tcp_req_alloc(
+            req->parent,
+            req->buf_max
+        );
         if ( NULL == * new_req ) {
             gr_fatal( "[tcp.input ]gr_tcp_req_alloc failed" );
             return -2;
@@ -766,14 +878,13 @@ int gr_worker_add_tcp(
     gr_tcp_req_t *  req
 )
 {
-    int                         r;
-    int                         package_len;
-    int                         left_len;
-    gr_queue_item_compact_t *   queue_item;
-    gr_tcp_req_t *              new_req;
+    int             r;
+    int             package_len;
+    int             left_len;
+    gr_tcp_req_t *  new_req;
+    int             hash_id;
 
-    queue_item = (gr_queue_item_compact_t *)req;
-    assert( queue_item->is_tcp );
+    hash_id = worker_hash( (gr_queue_item_t *)req );
 
     r = prepare_add_tcp_req( req, & new_req, & package_len, & left_len );
     if ( 0 != r ) {
@@ -782,7 +893,7 @@ int gr_worker_add_tcp(
     }
 
     // 试图将请求加入worker
-    r = gr_worker_add( queue_item );
+    r = gr_worker_add( hash_id, (gr_queue_item_t *)req );
     if ( 0 == r ) {
         return 0;
     }
@@ -796,12 +907,15 @@ int gr_worker_add_tcp(
     // 还要再把请求对象扔回连接对象
     if ( NULL != new_req ) {
 
+        gr_worker_t *   self;
+        self = (gr_worker_t *)g_ghost_rocket_global.worker;
+
         // 有多包数据，要删除刚分配出的存放剩余数据的请求
         // 恢复原来数据长度
         req->buf_len = package_len + left_len;
 
         // 删除刚刚分配的请求包
-        gr_tcp_req_free( new_req );
+        gr_tcp_req_free( new_req, true );
     }
     req->parent->req = req;
 
@@ -812,12 +926,9 @@ int gr_worker_add_udp(
     gr_tcp_req_t *  req
 )
 {
-    gr_queue_item_compact_t * queue_item = (gr_queue_item_compact_t *)req;
-    if ( false != queue_item->is_tcp ) {
-        return -1;
-    }
-
-    return gr_worker_add( queue_item );
+    return gr_worker_add(
+        worker_hash( (gr_queue_item_t *)req ),
+        (gr_queue_item_t *)req );
 }
 
 int gr_worker_process_tcp( gr_tcp_req_t * req )
@@ -829,16 +940,29 @@ int gr_worker_process_tcp( gr_tcp_req_t * req )
     gr_tcp_req_t *  new_req;
     gr_worker_t *   self;
 
-    assert( ((gr_queue_item_compact_t *)req)->is_tcp );
+    assert( ((gr_queue_item_t *)req)->is_tcp );
     self = (gr_worker_t *)g_ghost_rocket_global.worker;
+
+    hash_id = worker_hash( (gr_queue_item_t *)req );
+
     r = prepare_add_tcp_req( req, & new_req, & package_len, & left_len );
     if ( 0 != r ) {
         gr_fatal( "[svr.worker]gr_worker_addprepare_add_tcp_req failed" );
         return -2;
     }
 
-    hash_id = worker_hash( (gr_queue_item_compact_t *)req );
     process_tcp( self, & self->threads.threads[ hash_id ], req );
-    gr_tcp_req_free( req );
+
+    gr_tcp_req_free(
+        req,
+        gr_worker_get_thread( true, hash_id )
+    );
     return 0;
+}
+
+gr_thread_t * gr_worker_get_thread_by_tcp_conn( gr_tcp_conn_item_t * conn )
+{
+    return & ((gr_worker_t *)g_ghost_rocket_global.worker)->threads.threads[
+        hash_worker_tcp_by_conn( conn )
+    ];
 }
